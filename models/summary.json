@@ -1,0 +1,10 @@
+{
+  "last_updated": "2025-08-18",
+  "providers": [
+    "anthropic"
+  ],
+  "updated_providers": [
+    "anthropic"
+  ],
+  "total_models": 2
+}

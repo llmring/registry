@@ -1,0 +1,422 @@
+#!/usr/bin/env python3
+"""Registry CLI - Main command-line interface for model registry management."""
+
+import json
+import logging
+import shutil
+from datetime import datetime
+from pathlib import Path
+
+import click
+
+# Configure logging
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(levelname)s: %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+@click.group()
+@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.pass_context
+def cli(ctx, verbose):
+    """
+    Registry CLI for managing LLM model data.
+    
+    Extract and version model information from provider documentation.
+    """
+    if verbose:
+        logging.getLogger().setLevel(logging.INFO)
+    ctx.ensure_object(dict)
+
+
+@cli.command()
+@click.option('--provider', type=click.Choice(['openai', 'anthropic', 'google', 'all']), 
+              default='all', help='Provider to fetch')
+@click.option('--output-dir', default='pdfs', help='Directory to save PDFs')
+def fetch(provider, output_dir):
+    """
+    Fetch pricing and model pages as PDFs (requires Playwright).
+    
+    Install Playwright first:
+      uv add playwright
+      uv run playwright install chromium
+    """
+    try:
+        from .fetch_pdfs import fetch_all_pdfs
+        import asyncio
+        
+        providers = [provider] if provider != 'all' else ['openai', 'anthropic', 'google']
+        output_path = Path(output_dir)
+        
+        click.echo(f"🌐 Fetching PDFs for: {', '.join(providers)}")
+        click.echo(f"📁 Output directory: {output_path}")
+        
+        # Run async function
+        asyncio.run(fetch_all_pdfs(providers, output_path))
+        
+    except ImportError:
+        click.echo("❌ Playwright not installed!")
+        click.echo("\nTo install:")
+        click.echo("  uv add playwright")
+        click.echo("  uv run playwright install chromium")
+        click.echo("\nAlternatively, use 'registry sources' to see manual instructions")
+
+
+@cli.command(name='fetch-html')
+@click.option('--provider', type=click.Choice(['openai', 'anthropic', 'google', 'all']), 
+              default='all', help='Provider to fetch')
+@click.option('--output-dir', default='html_cache', help='Directory to save HTML')
+def fetch_html(provider, output_dir):
+    """
+    Fetch pricing pages as HTML (lightweight, no browser needed).
+    
+    This doesn't require Playwright but won't capture JavaScript-rendered content.
+    """
+    try:
+        from .fetch_html import fetch_html_pages
+        import requests
+        import bs4
+    except ImportError as e:
+        click.echo(f"❌ Missing dependencies: {e}")
+        click.echo("\nTo install:")
+        click.echo("  uv add requests beautifulsoup4")
+        return
+    
+    # Call the fetch function with defaults
+    ctx = click.get_current_context()
+    ctx.invoke(fetch_html_pages, provider=provider, output_dir=output_dir, format='both')
+
+
+@cli.command()
+def sources():
+    """Show where to get pricing documentation for each provider."""
+    
+    sources_info = {
+        "OpenAI": {
+            "url": "https://openai.com/api/pricing/",
+            "docs": "https://platform.openai.com/docs/models",
+            "instructions": [
+                "1. Visit the pricing page",
+                "2. Press Cmd+P (Mac) or Ctrl+P (Windows/Linux)",
+                "3. Save as PDF to registry/pdfs/YYYY-MM-DD-openai-pricing.pdf",
+                "4. Also save the models documentation page"
+            ]
+        },
+        "Anthropic": {
+            "url": "https://www.anthropic.com/pricing",
+            "docs": "https://docs.anthropic.com/en/docs/models-overview",
+            "instructions": [
+                "1. Visit the pricing page",
+                "2. Press Cmd+P (Mac) or Ctrl+P (Windows/Linux)",
+                "3. Save as PDF to registry/pdfs/YYYY-MM-DD-anthropic-pricing.pdf",
+                "4. Also save the models overview documentation"
+            ]
+        },
+        "Google": {
+            "url": "https://ai.google.dev/pricing",
+            "docs": "https://ai.google.dev/gemini-api/docs/models/gemini",
+            "instructions": [
+                "1. Visit the Gemini API pricing page",
+                "2. Press Cmd+P (Mac) or Ctrl+P (Windows/Linux)",
+                "3. Save as PDF to registry/pdfs/YYYY-MM-DD-google-pricing.pdf",
+                "4. Also save the models documentation"
+            ]
+        }
+    }
+    
+    click.echo("📚 Model Documentation Sources\n")
+    click.echo("Save PDFs to: registry/pdfs/\n")
+    
+    for provider, info in sources_info.items():
+        click.echo(f"🏢 {provider}")
+        click.echo(f"   💰 Pricing: {info['url']}")
+        click.echo(f"   📖 Docs:    {info['docs']}")
+        click.echo("\n   Instructions:")
+        for instruction in info['instructions']:
+            click.echo(f"      {instruction}")
+        click.echo()
+
+
+@cli.command(name='extract-comprehensive')
+@click.option('--provider', type=click.Choice(['openai', 'anthropic', 'google', 'all']), 
+              default='all', help='Provider to extract')
+@click.option('--html-dir', default='html_cache', help='Directory containing HTML files')
+@click.option('--pdf-dir', default='pdfs', help='Directory containing PDF files')
+@click.option('--models-dir', default='models', help='Directory to save model JSONs')
+@click.option('--interactive', is_flag=True, help='Interactively resolve conflicts')
+def extract_comprehensive(provider, html_dir, pdf_dir, models_dir, interactive):
+    """
+    Extract models using BOTH HTML regex and PDF LLM extraction.
+    
+    Compares both sources and marks uncertain fields.
+    """
+    from .extract_comprehensive import extract_comprehensive as extract_func
+    
+    ctx = click.get_current_context()
+    ctx.invoke(extract_func, provider=provider, html_dir=html_dir, 
+               pdf_dir=pdf_dir, models_dir=models_dir, interactive=interactive, 
+               llm_model='best')
+
+
+@cli.command(name='extract-html')
+@click.option('--provider', type=click.Choice(['openai', 'anthropic', 'google', 'all']), 
+              default='all', help='Provider to extract')
+@click.option('--html-dir', default='html_cache', help='Directory containing HTML files')
+@click.option('--models-dir', default='models', help='Directory to save model JSONs')
+@click.option('--merge', is_flag=True, help='Merge with existing model files')
+def extract_html(provider, html_dir, models_dir, merge):
+    """
+    Extract model details from cached HTML files.
+    
+    Extracts model names, pricing, token limits, and capabilities.
+    """
+    from .extract_from_html import extract_from_html as extract_func
+    
+    ctx = click.get_current_context()
+    ctx.invoke(extract_func, provider=provider, html_dir=html_dir, 
+               models_dir=models_dir, merge=merge)
+
+
+@cli.command()
+@click.option('--provider', type=click.Choice(['openai', 'anthropic', 'google', 'all']), 
+              default='all', help='Provider to extract')
+@click.option('--pdfs-dir', default='pdfs', help='Directory containing PDFs')
+@click.option('--models-dir', default='models', help='Directory for model JSONs')
+@click.option('--versions-dir', default='versions', help='Directory for versioned JSONs')
+@click.option('--force', is_flag=True, help='Force update even if no changes')
+def extract(provider, pdfs_dir, models_dir, versions_dir, force):
+    """Extract models from PDFs and create/update JSON files."""
+    from .extract_with_versioning import extract_models_from_pdfs, compare_json_models, archive_old_version
+    
+    pdfs_path = Path(pdfs_dir)
+    models_path = Path(models_dir)
+    versions_path = Path(versions_dir)
+    
+    # Ensure directories exist
+    models_path.mkdir(exist_ok=True)
+    
+    providers_to_process = [provider] if provider != 'all' else ['openai', 'anthropic', 'google']
+    
+    updated_providers = []
+    
+    for prov in providers_to_process:
+        click.echo(f"\n📄 Processing {prov}...")
+        
+        # Check for PDFs
+        pdf_files = list(pdfs_path.glob(f"*{prov}*.pdf"))
+        if not pdf_files:
+            click.echo(f"  ⚠️  No PDFs found for {prov}")
+            click.echo(f"      Run 'registry sources' to see where to get them")
+            continue
+        
+        click.echo(f"  Found {len(pdf_files)} PDF(s)")
+        
+        # Extract from PDFs
+        new_data = extract_models_from_pdfs(prov, pdfs_path)
+        if not new_data:
+            click.echo(f"  ⚠️  No data extracted for {prov}")
+            continue
+        
+        # Check if existing JSON exists
+        existing_file = models_path / f"{prov}.json"
+        
+        if existing_file.exists():
+            # Load existing data
+            with open(existing_file) as f:
+                old_data = json.load(f)
+            
+            # Compare
+            if compare_json_models(old_data, new_data) or force:
+                click.echo(f"  🔄 Changes detected in {prov} models")
+                
+                # Archive old version
+                archive_old_version(existing_file, versions_path)
+                
+                # Write new version
+                with open(existing_file, 'w') as f:
+                    json.dump(new_data, f, indent=2)
+                click.echo(f"  ✅ Updated {existing_file}")
+                updated_providers.append(prov)
+            else:
+                click.echo(f"  ✓ No changes in {prov} models")
+        else:
+            # New file, just write it
+            with open(existing_file, 'w') as f:
+                json.dump(new_data, f, indent=2)
+            click.echo(f"  ✅ Created {existing_file}")
+            updated_providers.append(prov)
+    
+    # Update summary
+    if updated_providers:
+        summary_file = models_path / "summary.json"
+        summary = {
+            "last_updated": datetime.now().strftime("%Y-%m-%d"),
+            "providers": providers_to_process,
+            "updated_providers": updated_providers,
+            "total_models": sum(
+                len(json.load(open(models_path / f"{p}.json"))["models"])
+                for p in providers_to_process
+                if (models_path / f"{p}.json").exists()
+            )
+        }
+        
+        with open(summary_file, 'w') as f:
+            json.dump(summary, f, indent=2)
+        
+        click.echo(f"\n📊 Summary: Updated {len(updated_providers)} providers")
+        click.echo(f"   Total models: {summary['total_models']}")
+    else:
+        click.echo("\n✓ No updates needed")
+
+
+@cli.command(name='list')
+@click.option('--models-dir', default='models', help='Directory containing model JSONs')
+def list_models(models_dir):
+    """List all models in the registry."""
+    models_path = Path(models_dir)
+    if not models_path.exists():
+        click.echo("❌ Models directory not found")
+        click.echo("   Run 'registry extract' to create model files")
+        return
+    
+    total_count = 0
+    
+    for provider in ['openai', 'anthropic', 'google']:
+        json_file = models_path / f"{provider}.json"
+        if json_file.exists():
+            with open(json_file) as f:
+                data = json.load(f)
+            
+            models = data.get('models', [])
+            if models:
+                click.echo(f"\n📦 {provider.upper()} ({len(models)} models)")
+                click.echo(f"   Last updated: {data.get('last_updated', 'Unknown')}")
+                
+                for model in models:
+                    click.echo(f"   • {model['model_id']}: ${model.get('dollars_per_million_tokens_input', 0):.2f}/$M input, "
+                             f"${model.get('dollars_per_million_tokens_output', 0):.2f}/$M output")
+                
+                total_count += len(models)
+    
+    if total_count > 0:
+        click.echo(f"\n📊 Total: {total_count} models")
+    else:
+        click.echo("No models found. Run 'registry extract' to create model files.")
+
+
+@cli.command()
+@click.option('--models-dir', default='models', help='Directory containing model JSONs')
+@click.option('--output', type=click.Choice(['json', 'markdown']), 
+              default='markdown', help='Output format')
+def export(models_dir, output):
+    """Export registry data for documentation or API use."""
+    models_path = Path(models_dir)
+    
+    all_models = []
+    for provider in ['openai', 'anthropic', 'google']:
+        json_file = models_path / f"{provider}.json"
+        if json_file.exists():
+            with open(json_file) as f:
+                data = json.load(f)
+                for model in data.get('models', []):
+                    model['provider'] = provider
+                    all_models.append(model)
+    
+    if output == 'json':
+        result = {
+            'export_date': datetime.now().isoformat(),
+            'total_models': len(all_models),
+            'models': all_models
+        }
+        click.echo(json.dumps(result, indent=2))
+    
+    elif output == 'markdown':
+        click.echo("# LLM Model Registry")
+        click.echo(f"\n*Updated: {datetime.now().strftime('%Y-%m-%d')}*")
+        click.echo(f"\n**Total Models:** {len(all_models)}")
+        
+        for provider in ['openai', 'anthropic', 'google']:
+            provider_models = [m for m in all_models if m['provider'] == provider]
+            if provider_models:
+                click.echo(f"\n## {provider.title()}")
+                click.echo("\n| Model | Input $/M | Output $/M | Context | Vision | Functions |")
+                click.echo("|-------|-----------|------------|---------|--------|-----------|")
+                
+                for model in provider_models:
+                    vision = "✓" if model.get('supports_vision') else ""
+                    functions = "✓" if model.get('supports_function_calling') else ""
+                    click.echo(f"| {model['model_id']} | "
+                             f"${model.get('dollars_per_million_tokens_input', 0):.2f} | "
+                             f"${model.get('dollars_per_million_tokens_output', 0):.2f} | "
+                             f"{model.get('max_context', 0):,} | "
+                             f"{vision} | {functions} |")
+
+
+@cli.command()
+@click.option('--models-dir', default='models', help='Directory containing model JSONs')
+def validate(models_dir):
+    """Validate model JSON files."""
+    models_path = Path(models_dir)
+    
+    if not models_path.exists():
+        click.echo("❌ Models directory not found")
+        return 1
+    
+    required_fields = [
+        'model_id', 'display_name', 'max_context',
+        'dollars_per_million_tokens_input', 'dollars_per_million_tokens_output'
+    ]
+    
+    errors = []
+    warnings = []
+    
+    for provider in ['openai', 'anthropic', 'google']:
+        json_file = models_path / f"{provider}.json"
+        
+        if not json_file.exists():
+            warnings.append(f"Missing {provider}.json")
+            continue
+        
+        try:
+            with open(json_file) as f:
+                data = json.load(f)
+            
+            # Check structure
+            if 'models' not in data:
+                errors.append(f"{provider}.json: Missing 'models' field")
+                continue
+            
+            # Check each model
+            for i, model in enumerate(data.get('models', [])):
+                for field in required_fields:
+                    if field not in model:
+                        errors.append(f"{provider}.json: Model {model.get('model_id', i)} missing '{field}'")
+        
+        except json.JSONDecodeError as e:
+            errors.append(f"{provider}.json: Invalid JSON - {e}")
+    
+    # Report results
+    if errors:
+        click.echo("❌ Validation failed:")
+        for error in errors:
+            click.echo(f"   • {error}")
+    else:
+        click.echo("✅ All model files are valid")
+    
+    if warnings:
+        click.echo("\n⚠️  Warnings:")
+        for warning in warnings:
+            click.echo(f"   • {warning}")
+    
+    return 0 if len(errors) == 0 else 1
+
+
+def main():
+    """Main entry point."""
+    cli()
+
+
+if __name__ == '__main__':
+    main()

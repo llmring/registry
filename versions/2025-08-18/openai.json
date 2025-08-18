@@ -1,0 +1,34 @@
+{
+  "provider": "openai",
+  "last_updated": "2025-08-18",
+  "source": "pdf",
+  "extraction_date": "2025-08-18T18:17:21.149394",
+  "models": [
+    {
+      "model_id": "gpt-4o",
+      "display_name": "GPT-4o",
+      "description": "Most capable model, multimodal",
+      "max_context": 128000,
+      "max_output_tokens": 16384,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 2.5,
+      "dollars_per_million_tokens_output": 10.0
+    },
+    {
+      "model_id": "gpt-4o-mini",
+      "display_name": "GPT-4o Mini",
+      "description": "Affordable small model",
+      "max_context": 128000,
+      "max_output_tokens": 16384,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 0.15,
+      "dollars_per_million_tokens_output": 0.6
+    }
+  ]
+}

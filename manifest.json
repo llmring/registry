@@ -1,0 +1,27 @@
+{
+  "version": "2025-08-18",
+  "updated_at": "2025-08-18T21:00:00Z",
+  "providers": {
+    "openai": {
+      "file": "models/openai.json",
+      "model_count": 12,
+      "last_updated": "2025-08-18"
+    },
+    "anthropic": {
+      "file": "models/anthropic.json",
+      "model_count": 12,
+      "last_updated": "2025-08-18"
+    },
+    "google": {
+      "file": "models/google.json",
+      "model_count": 9,
+      "last_updated": "2025-08-18"
+    }
+  },
+  "schema_version": "2.0",
+  "registry_url": "https://llmring.github.io/registry/",
+  "extraction_methods": {
+    "html": "regex patterns from provider websites",
+    "pdf": "LLM extraction via LLMRing unified interface"
+  }
+}

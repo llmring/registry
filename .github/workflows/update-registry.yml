@@ -1,0 +1,137 @@
+name: Update Registry
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: 'Provider to update (all, openai, anthropic, google)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - openai
+        - anthropic
+        - google
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          
+      - name: Install dependencies
+        run: uv sync
+        
+      - name: Fetch HTML documentation
+        run: |
+          provider="${{ github.event.inputs.provider || 'all' }}"
+          uv run registry fetch-html --provider $provider
+          
+      - name: Extract models (comprehensive)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          provider="${{ github.event.inputs.provider || 'all' }}"
+          uv run registry extract-comprehensive --provider $provider
+          
+      - name: Validate extracted models
+        run: uv run registry validate
+        
+      - name: Generate manifest
+        run: |
+          python -c "
+          import json
+          from datetime import datetime
+          from pathlib import Path
+          
+          models_dir = Path('models')
+          manifest = {
+              'version': datetime.now().strftime('%Y-%m-%d'),
+              'updated_at': datetime.now().isoformat() + 'Z',
+              'providers': {},
+              'schema_version': '2.0',
+              'registry_url': 'https://llmring.github.io/registry/',
+              'extraction_methods': {
+                  'html': 'regex patterns from provider websites',
+                  'pdf': 'LLM extraction via LLMRing unified interface'
+              }
+          }
+          
+          for provider in ['openai', 'anthropic', 'google']:
+              json_file = models_dir / f'{provider}.json'
+              if json_file.exists():
+                  with open(json_file) as f:
+                      data = json.load(f)
+                      model_count = len(data.get('models', []))
+                      manifest['providers'][provider] = {
+                          'file': f'models/{provider}.json',
+                          'model_count': model_count,
+                          'last_updated': data.get('last_updated', datetime.now().strftime('%Y-%m-%d'))
+                      }
+          
+          with open('manifest.json', 'w') as f:
+              json.dump(manifest, f, indent=2)
+          "
+          
+      - name: Archive old versions
+        run: |
+          if [ -d "models" ]; then
+            archive_dir="versions/$(date +%Y-%m-%d)"
+            mkdir -p "$archive_dir"
+            cp models/*.json "$archive_dir/" 2>/dev/null || true
+          fi
+          
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          git add models/ manifest.json versions/
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update model registry $(date +%Y-%m-%d)"
+            git push
+          fi
+          
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## Registry Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "**Provider:** ${{ github.event.inputs.provider || 'all' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "models/openai.json" ]; then
+            count=$(jq '.models | length' models/openai.json)
+            echo "- **OpenAI:** $count models" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "models/anthropic.json" ]; then
+            count=$(jq '.models | length' models/anthropic.json)
+            echo "- **Anthropic:** $count models" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -f "models/google.json" ]; then
+            count=$(jq '.models | length' models/google.json)
+            echo "- **Google:** $count models" >> $GITHUB_STEP_SUMMARY
+          fi
