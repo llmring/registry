@@ -88,6 +88,8 @@
     
     <p><strong>The official model registry for LLMRing</strong> - providing up-to-date pricing, capabilities, and metadata for all major LLM providers.</p>
     
+    <p><strong>Schema Version 3.2</strong> - Models are now organized by provider directories with provider-prefixed keys (e.g., "openai:gpt-4o", "anthropic:claude-sonnet-4").</p>
+    
     <div class="stats">
         <div class="stat-card">
             <div class="stat-number">3</div>
@@ -106,9 +108,9 @@
     <h2>📁 Registry Files</h2>
     <div class="registry-links">
         <a href="manifest.json">📋 manifest.json - Registry metadata and version info</a>
-        <a href="models/openai.json">🟢 models/openai.json - OpenAI models and pricing</a>
-        <a href="models/anthropic.json">🔴 models/anthropic.json - Anthropic models and pricing</a>
-        <a href="models/google.json">🔵 models/google.json - Google models and pricing</a>
+        <a href="openai/models.json">🟢 openai/models.json - OpenAI models and pricing</a>
+        <a href="anthropic/models.json">🔴 anthropic/models.json - Anthropic models and pricing</a>
+        <a href="google/models.json">🔵 google/models.json - Google models and pricing</a>
         <a href="models/summary.json">📊 models/summary.json - Summary statistics</a>
     </div>
 
@@ -126,8 +128,8 @@ manifest = requests.get('https://llmring.github.io/registry/manifest.json').json
 print(manifest)</code></pre>
 
     <h3>Get Model Information</h3>
-    <pre><code>// Fetch OpenAI models
-fetch('https://llmring.github.io/registry/models/openai.json')
+    <pre><code>// Fetch OpenAI models (v3.2 format)
+fetch('https://llmring.github.io/registry/openai/models.json')
   .then(res => res.json())
   .then(data => {
     console.log(`Found ${Object.keys(data.models).length} OpenAI models`);

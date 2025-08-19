@@ -1,0 +1,374 @@
+{
+  "provider": "openai",
+  "last_updated": "2025-08-18",
+  "extraction_method": "comprehensive",
+  "extraction_sources": {
+    "html_files": [
+      "2025-08-18-openai-models.html",
+      "2025-08-18-openai-pricing.html"
+    ],
+    "pdf_files": [
+      "2025-06-16-openai-pricing-context.pdf",
+      "2025-06-16-openai-models-pricing.pdf"
+    ]
+  },
+  "extraction_date": "2025-08-18T21:01:00.983933",
+  "extraction_confidence": {
+    "certain_fields": 0,
+    "total_fields": 139,
+    "conflicts": 0
+  },
+  "models": {
+    "openai:gpt-5": {
+      "model_id": "gpt-5",
+      "display_name": "GPT-5",
+      "description": "Most capable model for coding and agentic tasks",
+      "dollars_per_million_tokens_input": 1.25,
+      "dollars_per_million_tokens_output": 10.0,
+      "max_context": 200000,
+      "max_output_tokens": 16384,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls"
+      ]
+    },
+    "openai:gpt-5-mini": {
+      "model_id": "gpt-5-mini",
+      "display_name": "GPT-5 Mini",
+      "description": "Faster, cheaper version for well-defined tasks",
+      "dollars_per_million_tokens_input": 0.25,
+      "dollars_per_million_tokens_output": 2.0,
+      "max_context": 128000,
+      "max_output_tokens": 16384,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls"
+      ]
+    },
+    "openai:gpt-5-nano": {
+      "model_id": "gpt-5-nano",
+      "display_name": "GPT-5 Nano",
+      "description": "Fastest, cheapest for summarization and classification",
+      "dollars_per_million_tokens_input": 0.05,
+      "dollars_per_million_tokens_output": 0.4,
+      "max_context": 128000,
+      "max_output_tokens": 16384,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls"
+      ]
+    },
+    "openai:gpt-4o": {
+      "model_id": "gpt-4o",
+      "display_name": "GPT-4o",
+      "dollars_per_million_tokens_input": 1.25,
+      "dollars_per_million_tokens_output": 10.0,
+      "max_context": 128000,
+      "max_output_tokens": 16384,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls"
+      ]
+    },
+    "openai:o4-mini": {
+      "model_id": "o4-mini",
+      "display_name": "O4-mini",
+      "description": "A faster and more affordable reasoning model that offers a good balance between performance and cost efficiency",
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 1.1,
+      "dollars_per_million_tokens_output": 4.4,
+      "use_cases": [
+        "Reasoning tasks",
+        "Cost-sensitive applications",
+        "Applications requiring faster response times"
+      ],
+      "notes": "Offers cached input pricing at $0.28 per million tokens",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    },
+    "openai:o3": {
+      "model_id": "o3",
+      "display_name": "O3",
+      "description": "The most powerful reasoning model in the lineup, designed for advanced reasoning tasks and complex problem-solving",
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 2.0,
+      "dollars_per_million_tokens_output": 8.0,
+      "use_cases": [
+        "Complex reasoning",
+        "Advanced problem-solving",
+        "High-stakes applications requiring maximum capability"
+      ],
+      "notes": "Offers cached input pricing at $0.50 per million tokens",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    },
+    "openai:gpt-4.1": {
+      "model_id": "gpt-4.1",
+      "display_name": "GPT-4.1",
+      "description": "Flagship GPT model optimized for complex tasks, offering high intelligence and good speed",
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 2.0,
+      "dollars_per_million_tokens_output": 8.0,
+      "use_cases": [
+        "Complex tasks",
+        "General-purpose AI applications",
+        "Applications requiring strong intelligence capabilities"
+      ],
+      "notes": "Offers cached input pricing at $0.50 per million tokens",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    },
+    "openai:gpt-4.1-20250414": {
+      "model_id": "gpt-4.1-20250414",
+      "display_name": "GPT-4.1",
+      "description": "Latest version of GPT-4 series offering powerful language understanding and generation capabilities",
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 2.0,
+      "dollars_per_million_tokens_output": 8.0,
+      "use_cases": [
+        "Complex reasoning",
+        "Creative writing",
+        "Code generation",
+        "Analysis"
+      ],
+      "release_date": "2025-04-14",
+      "notes": "Supports cached input at $0.50 per million tokens",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date",
+        "notes"
+      ]
+    },
+    "openai:gpt-4.1-mini-20250414": {
+      "model_id": "gpt-4.1-mini-20250414",
+      "display_name": "GPT-4.1 Mini",
+      "description": "Smaller, more efficient version of GPT-4.1 with good performance at lower cost",
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 0.4,
+      "dollars_per_million_tokens_output": 1.6,
+      "use_cases": [
+        "General text generation",
+        "Content creation",
+        "Summarization"
+      ],
+      "release_date": "2025-04-14",
+      "notes": "Supports cached input at $0.10 per million tokens",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date",
+        "notes"
+      ]
+    },
+    "openai:gpt-4.1-nano-20250414": {
+      "model_id": "gpt-4.1-nano-20250414",
+      "display_name": "GPT-4.1 Nano",
+      "description": "Most compact version of GPT-4.1, optimized for efficiency and cost-effectiveness",
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 0.1,
+      "dollars_per_million_tokens_output": 0.4,
+      "use_cases": [
+        "Basic text completion",
+        "Simple queries",
+        "Light processing tasks"
+      ],
+      "release_date": "2025-04-14",
+      "notes": "Supports cached input at $0.025 per million tokens",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date",
+        "notes"
+      ]
+    },
+    "openai:gpt-4.5-preview-20250227": {
+      "model_id": "gpt-4.5-preview-20250227",
+      "display_name": "GPT-4.5 Preview",
+      "description": "Preview version of next-generation GPT-4.5 with advanced capabilities",
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 75.0,
+      "dollars_per_million_tokens_output": 150.0,
+      "use_cases": [
+        "Cutting-edge AI research",
+        "Complex problem solving",
+        "Advanced reasoning"
+      ],
+      "release_date": "2025-02-27",
+      "notes": "Preview model with cached input at $37.50 per million tokens",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date",
+        "notes"
+      ]
+    },
+    "openai:gpt-3.5-turbo-0125": {
+      "model_id": "gpt-3.5-turbo-0125",
+      "display_name": "GPT-3.5 Turbo",
+      "description": "Fast and cost-effective model for general purpose text generation",
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 0.5,
+      "dollars_per_million_tokens_output": 1.5,
+      "use_cases": [
+        "Chat applications",
+        "Content generation",
+        "Basic assistance"
+      ],
+      "release_date": "2024-01-25",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date"
+      ]
+    }
+  }
+}

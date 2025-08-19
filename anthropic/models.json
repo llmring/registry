@@ -1,0 +1,400 @@
+{
+  "provider": "anthropic",
+  "last_updated": "2025-08-18",
+  "extraction_method": "comprehensive",
+  "extraction_sources": {
+    "html_files": [
+      "2025-08-18-anthropic-pricing.html",
+      "2025-08-18-anthropic-models.html"
+    ],
+    "pdf_files": [
+      "2025-06-16-anthropic-models.pdf",
+      "2025-06-16-anthropic-pricing-context.pdf"
+    ]
+  },
+  "extraction_date": "2025-08-18T20:42:40.423602",
+  "extraction_confidence": {
+    "certain_fields": 0,
+    "total_fields": 148,
+    "conflicts": 0
+  },
+  "models": {
+    "anthropic:claude-opus-4-20250514": {
+      "model_id": "claude-opus-4-20250514",
+      "display_name": "Claude Opus 4",
+      "description": "Most capable and intelligent model yet, setting new standards in complex reasoning and advanced coding. Offers superior reasoning capabilities and top-tier results in multilingual tasks, long-context handling, honesty, and image processing.",
+      "max_context": 200000,
+      "max_output_tokens": 32000,
+      "supports_vision": true,
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "use_cases": [
+        "Complex reasoning tasks",
+        "Advanced coding",
+        "Long-context analysis",
+        "Image understanding",
+        "Rich interactive applications"
+      ],
+      "release_date": "2025-05-14",
+      "notes": "Priority tier access available",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date",
+        "notes"
+      ]
+    },
+    "anthropic:claude-sonnet-4-20250514": {
+      "model_id": "claude-sonnet-4-20250514",
+      "display_name": "Claude Sonnet 4",
+      "description": "High-performance model with exceptional reasoning capabilities, offering balanced performance and efficiency. Supports both text and image inputs with strong multilingual capabilities.",
+      "max_context": 200000,
+      "max_output_tokens": 64000,
+      "supports_vision": true,
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "use_cases": [
+        "General purpose tasks",
+        "Reasoning applications",
+        "Image analysis",
+        "Multilingual processing",
+        "Long-context tasks"
+      ],
+      "release_date": "2025-05-14",
+      "notes": "Priority tier access available",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date",
+        "notes"
+      ]
+    },
+    "anthropic:claude-3-7-sonnet-20250219": {
+      "model_id": "claude-3-7-sonnet-20250219",
+      "display_name": "Claude Sonnet 3.7",
+      "description": "High-performance model with early extended thinking capabilities. Strong multilingual support and comprehensive knowledge base through October 2024.",
+      "max_context": 200000,
+      "max_output_tokens": 64000,
+      "supports_vision": true,
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "use_cases": [
+        "Extended thinking tasks",
+        "General reasoning",
+        "Multilingual applications",
+        "Image processing"
+      ],
+      "release_date": "2025-02-19",
+      "notes": "Can enable 128k token output with beta header output-128k-2025-02-19",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date",
+        "notes"
+      ]
+    },
+    "anthropic:claude-3-5-haiku-20241022": {
+      "model_id": "claude-3-5-haiku-20241022",
+      "display_name": "Claude Haiku 3.5",
+      "description": "Fastest model in the Claude family, optimized for speed while maintaining strong intelligence capabilities.",
+      "max_context": 200000,
+      "max_output_tokens": 8192,
+      "supports_vision": true,
+      "dollars_per_million_tokens_input": 0.8,
+      "dollars_per_million_tokens_output": 4.0,
+      "use_cases": [
+        "Speed-critical applications",
+        "Quick responses",
+        "Real-time processing",
+        "Image analysis"
+      ],
+      "release_date": "2024-10-22",
+      "notes": "Priority tier access available",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date",
+        "notes"
+      ]
+    },
+    "anthropic:claude-3-opus-20240229": {
+      "model_id": "claude-3-opus-20240229",
+      "display_name": "Claude Opus 3",
+      "description": "Powerful model for complex tasks with top-level intelligence, fluency, and understanding.",
+      "max_context": 200000,
+      "max_output_tokens": 4096,
+      "supports_vision": true,
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "use_cases": [
+        "Complex reasoning",
+        "Detailed analysis",
+        "Advanced comprehension",
+        "Image processing"
+      ],
+      "release_date": "2024-02-29",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "max_output_tokens",
+        "supports_vision",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date"
+      ]
+    },
+    "anthropic:claude-3-haiku-20240307": {
+      "model_id": "claude-3-haiku-20240307",
+      "display_name": "Claude Haiku 3",
+      "description": "Fast and efficient model for basic tasks",
+      "max_context": 200000,
+      "supports_vision": true,
+      "dollars_per_million_tokens_input": 0.25,
+      "dollars_per_million_tokens_output": 1.25,
+      "use_cases": [
+        "Quick processing",
+        "Simple queries",
+        "Basic tasks",
+        "Image analysis"
+      ],
+      "release_date": "2024-03-07",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "supports_vision",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "release_date"
+      ]
+    },
+    "anthropic:claude-opus-4": {
+      "model_id": "claude-opus-4",
+      "display_name": "Claude Opus 4",
+      "description": "Most intelligent model for complex tasks, offering the highest level of reasoning and analytical capabilities",
+      "max_context": 200000,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "use_cases": [
+        "Complex analysis",
+        "Advanced reasoning",
+        "Research",
+        "Long-form content generation"
+      ],
+      "notes": "50% discount available with batch processing",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    },
+    "anthropic:claude-sonnet-4": {
+      "model_id": "claude-sonnet-4",
+      "display_name": "Claude Sonnet 4",
+      "description": "Balanced model optimizing for intelligence, cost, and speed",
+      "max_context": 200000,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "use_cases": [
+        "General purpose tasks",
+        "Business applications",
+        "Content generation",
+        "Analysis"
+      ],
+      "notes": "50% discount available with batch processing",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    },
+    "anthropic:claude-haiku-3.5": {
+      "model_id": "claude-haiku-3.5",
+      "display_name": "Claude Haiku 3.5",
+      "description": "Fastest and most cost-effective model, optimized for speed and efficiency",
+      "max_context": 200000,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 0.8,
+      "dollars_per_million_tokens_output": 4.0,
+      "use_cases": [
+        "High-throughput applications",
+        "Real-time interactions",
+        "Cost-sensitive applications",
+        "Simple tasks"
+      ],
+      "notes": "60% faster inference speed in Amazon Bedrock. 50% discount available with batch processing",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    },
+    "anthropic:claude-opus-3": {
+      "model_id": "claude-opus-3",
+      "display_name": "Claude Opus 3",
+      "description": "Legacy version of the Opus model line",
+      "max_context": 200000,
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "use_cases": [
+        "Complex analysis",
+        "Advanced reasoning",
+        "Research"
+      ],
+      "notes": "Legacy model. 50% discount available with batch processing",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    },
+    "anthropic:claude-sonnet-3.7": {
+      "model_id": "claude-sonnet-3.7",
+      "display_name": "Claude Sonnet 3.7",
+      "description": "Legacy version of the Sonnet model line",
+      "max_context": 200000,
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "use_cases": [
+        "General purpose tasks",
+        "Business applications",
+        "Content generation"
+      ],
+      "notes": "Legacy model. 50% discount available with batch processing",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    },
+    "anthropic:claude-haiku-3": {
+      "model_id": "claude-haiku-3",
+      "display_name": "Claude Haiku 3",
+      "description": "Legacy version of the Haiku model line",
+      "max_context": 200000,
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "dollars_per_million_tokens_input": 0.25,
+      "dollars_per_million_tokens_output": 1.25,
+      "use_cases": [
+        "High-throughput applications",
+        "Simple tasks",
+        "Cost-sensitive applications"
+      ],
+      "notes": "Legacy model. 50% discount available with batch processing",
+      "_uncertain_fields": [
+        "model_id",
+        "display_name",
+        "description",
+        "max_context",
+        "supports_vision",
+        "supports_function_calling",
+        "supports_json_mode",
+        "supports_parallel_tool_calls",
+        "dollars_per_million_tokens_input",
+        "dollars_per_million_tokens_output",
+        "use_cases",
+        "notes"
+      ]
+    }
+  }
+}
