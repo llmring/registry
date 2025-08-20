@@ -33,3 +33,14 @@ dev = [
     "pytest>=8.4.1",
     "ruff>=0.12.9",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/registry"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/registry",
+    "README.md",
+    "pyproject.toml",
+    "pages",
+]

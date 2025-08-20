@@ -225,8 +225,8 @@ def extract(provider, pdfs_dir, models_dir, versions_dir, force):
         draft_file = drafts_path / f"{prov}.{datetime.now().strftime('%Y-%m-%d')}.json"
         with open(draft_file, 'w') as f:
             json.dump(new_data, f, indent=2)
-        click.echo(f"  ✍️  Wrote draft: {draft_file}
-  Next: uv run registry review-draft --provider {prov} --draft {draft_file}")
+        click.echo(f"  ✍️  Wrote draft: {draft_file}")
+        click.echo(f"  Next: uv run llmring-registry review-draft --provider {prov} --draft {draft_file}")
 
         # Also maintain previous behavior for models_dir if explicitly requested via --force
         existing_file = models_path / f"{prov}.json"
