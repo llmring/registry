@@ -39,8 +39,7 @@ def fetch(provider, output_dir):
     """
     Fetch pricing and model pages as PDFs (requires Playwright).
     
-    Install Playwright first:
-      uv add playwright
+    Install browsers for Playwright first:
       uv run playwright install chromium
     """
     try:

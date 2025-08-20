@@ -158,6 +158,7 @@ fetch('https://llmring.github.io/registry/openai/models.json')
     <pre><code># 0) (Optional) Gather sources
 uv run registry sources
 uv run registry fetch-html --provider openai --output-dir html_cache
+uv run playwright install chromium
 uv run registry fetch --provider openai --output-dir pdfs
 
 # 1) Generate a draft (best-effort) from PDFs (writes to drafts/)

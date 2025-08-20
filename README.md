@@ -65,7 +65,7 @@ uv run registry sources
 uv run registry fetch-html --provider openai --output-dir html_cache
 
 # Generate PDFs with a headless browser
-uv add llmring-registry[playwright]
+# (Playwright is installed via dependencies; install browsers once per machine)
 uv run playwright install chromium
 uv run registry fetch --provider openai --output-dir pdfs
 ```
