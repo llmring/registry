@@ -17,7 +17,6 @@ dependencies = [
 
 [project.scripts]
 llmring-registry = "registry.__main__:main"
-registry = "registry.__main__:main"  # backwards-compat
 
 [build-system]
 requires = ["hatchling"]
