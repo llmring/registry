@@ -1,6 +1,7 @@
 from click.testing import CliRunner
 from pathlib import Path
 import json
+import hashlib
 
 from registry.__main__ import cli
 
@@ -72,3 +73,9 @@ def test_review_and_promote_workflow(tmp_path: Path):
 		published_data = json.loads(published.read_text())
 		assert published_data['version'] == 3
 		assert 'updated_at' in published_data
+		assert 'content_sha256_jcs' in published_data
+		# Recompute digest excluding the digest field itself
+		tmp = dict(published_data)
+		digest = tmp.pop('content_sha256_jcs')
+		canonical = json.dumps(tmp, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+		assert hashlib.sha256(canonical.encode('utf-8')).hexdigest() == digest

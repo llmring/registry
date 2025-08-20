@@ -2,6 +2,7 @@
 """Registry CLI - Main command-line interface for model registry management."""
 
 import json
+import hashlib
 import logging
 import shutil
 from datetime import datetime
@@ -493,6 +494,22 @@ def _diff_models_dict(old: dict, new: dict) -> dict:
     return diff
 
 
+def _strip_digest_fields(obj: object) -> object:
+    if isinstance(obj, dict):
+        return {k: _strip_digest_fields(v) for k, v in obj.items() if k not in {"content_sha256_jcs"}}
+    if isinstance(obj, list):
+        return [_strip_digest_fields(v) for v in obj]
+    return obj
+
+
+def _compute_content_sha256_jcs(data: dict) -> str:
+    # Compute a stable SHA-256 over a JCS-like canonical JSON (sorted keys, no extra whitespace),
+    # excluding the digest field itself.
+    stripped = _strip_digest_fields(data)
+    canonical = json.dumps(stripped, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 @cli.command(name='review-draft')
 @click.option('--provider', required=True, type=click.Choice(['openai', 'anthropic', 'google']))
 @click.option('--draft', 'draft_path', required=True, type=click.Path(path_type=Path))
@@ -561,6 +578,7 @@ def promote_reviewed(provider, reviewed_path):
     reviewed['version'] = new_version
     reviewed['provider'] = provider
     reviewed['updated_at'] = datetime.utcnow().isoformat() + 'Z'
+    reviewed['content_sha256_jcs'] = _compute_content_sha256_jcs(reviewed)
 
     archive_path = provider_dir / 'v' / str(new_version) / 'models.json'
     _write_json(archive_path, reviewed)
