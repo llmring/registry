@@ -55,7 +55,12 @@ pip install -e .
 
 ### Manual Curation Workflow (Human-validated)
 
-1. Prepare a draft JSON for a provider (v3.5 schema; dictionary of models).
+1. Generate a draft JSON using the extractor (best-effort), or by hand:
+
+```bash
+# Best-effort draft generation from PDFs (writes to drafts/ only)
+uv run registry extract --provider openai --pdfs-dir pdfs
+```
 2. Review differences vs current curated file:
 
 ```bash

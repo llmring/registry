@@ -43,8 +43,6 @@ def fetch(provider, output_dir):
       uv add playwright
       uv run playwright install chromium
     """
-    click.echo("⚠️  Deprecated: Automated fetching is no longer part of the standard workflow.")
-    click.echo("   Use 'registry sources' for manual instructions and 'review-draft' + 'promote' for curation.\n")
     try:
         from .fetch_pdfs import fetch_all_pdfs
         import asyncio
@@ -76,8 +74,6 @@ def fetch_html(provider, output_dir):
     
     This doesn't require Playwright but won't capture JavaScript-rendered content.
     """
-    click.echo("⚠️  Deprecated: Automated HTML fetching is no longer part of the standard workflow.")
-    click.echo("   Use 'registry sources' for manual instructions and 'review-draft' + 'promote' for curation.\n")
     try:
         from .fetch_html import fetch_html_pages
         import requests
@@ -156,8 +152,6 @@ def extract_comprehensive(provider, html_dir, pdf_dir, models_dir, interactive):
     
     Compares both sources and marks uncertain fields.
     """
-    click.echo("⚠️  Deprecated: Automated extraction is no longer part of the standard workflow.")
-    click.echo("   Instead, prepare a draft JSON manually, then run 'registry review-draft' followed by 'registry promote'.\n")
     from .extract_comprehensive import extract_comprehensive as extract_func
     
     ctx = click.get_current_context()
@@ -178,8 +172,6 @@ def extract_html(provider, html_dir, models_dir, merge):
     
     Extracts model names, pricing, token limits, and capabilities.
     """
-    click.echo("⚠️  Deprecated: Automated HTML extraction is no longer part of the standard workflow.")
-    click.echo("   Instead, prepare a draft JSON manually, then run 'registry review-draft' followed by 'registry promote'.\n")
     from .extract_from_html import extract_from_html as extract_func
     
     ctx = click.get_current_context()
@@ -195,14 +187,13 @@ def extract_html(provider, html_dir, models_dir, merge):
 @click.option('--versions-dir', default='versions', help='Directory for versioned JSONs')
 @click.option('--force', is_flag=True, help='Force update even if no changes')
 def extract(provider, pdfs_dir, models_dir, versions_dir, force):
-    """Extract models from PDFs and create/update JSON files."""
-    click.echo("⚠️  Deprecated: Automated PDF extraction is no longer part of the standard workflow.")
-    click.echo("   Instead, prepare a draft JSON manually, then run 'registry review-draft' followed by 'registry promote'.\n")
+    """Generate draft models from PDFs into the drafts/ directory (does not publish)."""
     from .extract_with_versioning import extract_models_from_pdfs, compare_json_models, archive_old_version
     
     pdfs_path = Path(pdfs_dir)
     models_path = Path(models_dir)
     versions_path = Path(versions_dir)
+    drafts_path = Path('drafts')
     
     # Ensure directories exist
     models_path.mkdir(exist_ok=True)
@@ -229,7 +220,15 @@ def extract(provider, pdfs_dir, models_dir, versions_dir, force):
             click.echo(f"  ⚠️  No data extracted for {prov}")
             continue
         
-        # Check if existing JSON exists
+        # Always write to drafts directory (manual review required)
+        drafts_path.mkdir(exist_ok=True)
+        draft_file = drafts_path / f"{prov}.{datetime.now().strftime('%Y-%m-%d')}.json"
+        with open(draft_file, 'w') as f:
+            json.dump(new_data, f, indent=2)
+        click.echo(f"  ✍️  Wrote draft: {draft_file}
+  Next: uv run registry review-draft --provider {prov} --draft {draft_file}")
+
+        # Also maintain previous behavior for models_dir if explicitly requested via --force
         existing_file = models_path / f"{prov}.json"
         
         if existing_file.exists():

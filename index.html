@@ -155,7 +155,9 @@ fetch('https://llmring.github.io/registry/openai/models.json')
   });</code></pre>
 
     <h2>🧑‍⚖️ Manual Curation Workflow</h2>
-    <pre><code># 1) Prepare a draft JSON for a provider (v3.5 schema)
+# 1) Generate a draft (best-effort) from PDFs (writes to drafts/)
+uv run registry extract --provider openai --pdfs-dir pdfs
+
 # 2) Review differences vs current curated file
 uv run registry review-draft --provider openai --draft drafts/openai.2025-08-20.json
 # Examine the .diff.json report next to the draft
