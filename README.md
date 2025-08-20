@@ -55,6 +55,19 @@ pip install -e .
 
 ### Manual Curation Workflow (Human-validated)
 
+0. Gather source materials (optional but recommended):
+
+```bash
+# Show where to get docs and how to save PDFs
+uv run registry sources
+
+# Fetch pricing/docs HTML (lightweight)
+uv run registry fetch-html --provider openai --output-dir html_cache
+
+# Generate PDFs with a headless browser (requires Playwright)
+uv run registry fetch --provider openai --output-dir pdfs
+```
+
 1. Generate a draft JSON using the extractor (best-effort), or by hand:
 
 ```bash

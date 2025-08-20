@@ -155,6 +155,11 @@ fetch('https://llmring.github.io/registry/openai/models.json')
   });</code></pre>
 
     <h2>🧑‍⚖️ Manual Curation Workflow</h2>
+    <pre><code># 0) (Optional) Gather sources
+uv run registry sources
+uv run registry fetch-html --provider openai --output-dir html_cache
+uv run registry fetch --provider openai --output-dir pdfs
+
 # 1) Generate a draft (best-effort) from PDFs (writes to drafts/)
 uv run registry extract --provider openai --pdfs-dir pdfs
 
