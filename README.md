@@ -53,7 +53,33 @@ uv sync
 pip install -e .
 ```
 
-### Basic Usage
+### Manual Curation Workflow (Human-validated)
+
+1. Prepare a draft JSON for a provider (v3.5 schema; dictionary of models).
+2. Review differences vs current curated file:
+
+```bash
+uv run registry review-draft --provider openai --draft drafts/openai.2025-08-20.json
+# Inspect the generated .diff.json report
+
+# Optionally accept all to create a reviewed file
+uv run registry review-draft --provider openai --draft drafts/openai.2025-08-20.json --accept-all
+```
+
+3. Promote the reviewed file to publish and archive:
+
+```bash
+uv run registry promote --provider openai --reviewed drafts/openai.reviewed.json
+```
+
+This will:
+- Bump `version` and `updated_at`
+- Write `openai/v/<version>/models.json`
+- Replace `openai/models.json`
+
+### Legacy Automation (deprecated)
+
+Commands like `fetch`, `fetch-html`, and `extract*` remain for reference but are deprecated. The official process is manual, human-validated curation.
 
 ```bash
 # View available commands

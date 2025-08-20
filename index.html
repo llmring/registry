@@ -154,6 +154,18 @@ fetch('https://llmring.github.io/registry/openai/models.json')
     console.log('GPT-4o pricing:', data.models['openai:gpt-4o']);
   });</code></pre>
 
+    <h2>🧑‍⚖️ Manual Curation Workflow</h2>
+    <pre><code># 1) Prepare a draft JSON for a provider (v3.5 schema)
+# 2) Review differences vs current curated file
+uv run registry review-draft --provider openai --draft drafts/openai.2025-08-20.json
+# Examine the .diff.json report next to the draft
+
+# 3) Optionally accept all and generate a reviewed file
+uv run registry review-draft --provider openai --draft drafts/openai.2025-08-20.json --accept-all
+
+# 4) Promote the reviewed file to publish & archive
+uv run registry promote --provider openai --reviewed drafts/openai.reviewed.json</code></pre>
+
     <h2>📚 Documentation</h2>
     <p>
         For more information about the LLMRing project:

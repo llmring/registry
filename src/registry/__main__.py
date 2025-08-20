@@ -43,6 +43,8 @@ def fetch(provider, output_dir):
       uv add playwright
       uv run playwright install chromium
     """
+    click.echo("⚠️  Deprecated: Automated fetching is no longer part of the standard workflow.")
+    click.echo("   Use 'registry sources' for manual instructions and 'review-draft' + 'promote' for curation.\n")
     try:
         from .fetch_pdfs import fetch_all_pdfs
         import asyncio
@@ -74,6 +76,8 @@ def fetch_html(provider, output_dir):
     
     This doesn't require Playwright but won't capture JavaScript-rendered content.
     """
+    click.echo("⚠️  Deprecated: Automated HTML fetching is no longer part of the standard workflow.")
+    click.echo("   Use 'registry sources' for manual instructions and 'review-draft' + 'promote' for curation.\n")
     try:
         from .fetch_html import fetch_html_pages
         import requests
@@ -152,6 +156,8 @@ def extract_comprehensive(provider, html_dir, pdf_dir, models_dir, interactive):
     
     Compares both sources and marks uncertain fields.
     """
+    click.echo("⚠️  Deprecated: Automated extraction is no longer part of the standard workflow.")
+    click.echo("   Instead, prepare a draft JSON manually, then run 'registry review-draft' followed by 'registry promote'.\n")
     from .extract_comprehensive import extract_comprehensive as extract_func
     
     ctx = click.get_current_context()
@@ -172,6 +178,8 @@ def extract_html(provider, html_dir, models_dir, merge):
     
     Extracts model names, pricing, token limits, and capabilities.
     """
+    click.echo("⚠️  Deprecated: Automated HTML extraction is no longer part of the standard workflow.")
+    click.echo("   Instead, prepare a draft JSON manually, then run 'registry review-draft' followed by 'registry promote'.\n")
     from .extract_from_html import extract_from_html as extract_func
     
     ctx = click.get_current_context()
@@ -188,6 +196,8 @@ def extract_html(provider, html_dir, models_dir, merge):
 @click.option('--force', is_flag=True, help='Force update even if no changes')
 def extract(provider, pdfs_dir, models_dir, versions_dir, force):
     """Extract models from PDFs and create/update JSON files."""
+    click.echo("⚠️  Deprecated: Automated PDF extraction is no longer part of the standard workflow.")
+    click.echo("   Instead, prepare a draft JSON manually, then run 'registry review-draft' followed by 'registry promote'.\n")
     from .extract_with_versioning import extract_models_from_pdfs, compare_json_models, archive_old_version
     
     pdfs_path = Path(pdfs_dir)
@@ -278,7 +288,7 @@ def list_models(models_dir):
     models_path = Path(models_dir)
     if not models_path.exists():
         click.echo("❌ Models directory not found")
-        click.echo("   Run 'registry extract' to create model files")
+        click.echo("   Place curated files under provider directories (e.g., openai/models.json)")
         return
     
     total_count = 0
@@ -295,8 +305,10 @@ def list_models(models_dir):
                 click.echo(f"   Last updated: {data.get('last_updated', 'Unknown')}")
                 
                 for model in models:
-                    click.echo(f"   • {model['model_id']}: ${model.get('dollars_per_million_tokens_input', 0):.2f}/$M input, "
-                             f"${model.get('dollars_per_million_tokens_output', 0):.2f}/$M output")
+                    mid = model.get('model_id') or model.get('model_name', 'unknown')
+                    inp = model.get('dollars_per_million_tokens_input', 0)
+                    outp = model.get('dollars_per_million_tokens_output', 0)
+                    click.echo(f"   • {mid}: ${inp:.2f}/$M input, ${outp:.2f}/$M output")
                 
                 total_count += len(models)
     
@@ -347,10 +359,12 @@ def export(models_dir, output):
                 for model in provider_models:
                     vision = "✓" if model.get('supports_vision') else ""
                     functions = "✓" if model.get('supports_function_calling') else ""
-                    click.echo(f"| {model['model_id']} | "
+                    mid = model.get('model_id') or model.get('model_name', 'unknown')
+                    ctx = model.get('max_context') or model.get('max_input_tokens', 0)
+                    click.echo(f"| {mid} | "
                              f"${model.get('dollars_per_million_tokens_input', 0):.2f} | "
                              f"${model.get('dollars_per_million_tokens_output', 0):.2f} | "
-                             f"{model.get('max_context', 0):,} | "
+                             f"{ctx:,} | "
                              f"{vision} | {functions} |")
 
 
@@ -365,7 +379,8 @@ def validate(models_dir):
         return 1
     
     required_fields = [
-        'model_id', 'display_name', 'max_context',
+        # v3.5 schema
+        'model_name', 'display_name',
         'dollars_per_million_tokens_input', 'dollars_per_million_tokens_output'
     ]
     
@@ -388,11 +403,21 @@ def validate(models_dir):
                 errors.append(f"{provider}.json: Missing 'models' field")
                 continue
             
-            # Check each model
-            for i, model in enumerate(data.get('models', [])):
-                for field in required_fields:
-                    if field not in model:
-                        errors.append(f"{provider}.json: Model {model.get('model_id', i)} missing '{field}'")
+            # Support both list and dict formats
+            models_section = data.get('models')
+            if isinstance(models_section, dict):
+                iterator = models_section.items()
+                for model_key, model in iterator:
+                    for field in required_fields:
+                        if field not in model:
+                            label = model.get('model_name', model_key)
+                            errors.append(f"{provider}.json: Model {label} missing '{field}'")
+            else:
+                for i, model in enumerate(models_section or []):
+                    for field in required_fields:
+                        if field not in model:
+                            label = model.get('model_id') or model.get('model_name', i)
+                            errors.append(f"{provider}.json: Model {label} missing '{field}'")
         
         except json.JSONDecodeError as e:
             errors.append(f"{provider}.json: Invalid JSON - {e}")
@@ -416,6 +441,133 @@ def validate(models_dir):
 def main():
     """Main entry point."""
     cli()
+
+
+# -------- Manual Curation Workflow Commands & helpers (appended) --------
+import typing as _t
+
+def _load_json(path: Path) -> dict:
+    with open(path) as f:
+        return json.load(f)
+
+
+def _write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
+def _diff_models_dict(old: dict, new: dict) -> dict:
+    """Compute a field-by-field diff between two models dicts (prefers v3.5 dict schema)."""
+    def to_dict(data: dict) -> dict:
+        models = data.get('models', {})
+        if isinstance(models, dict):
+            return models
+        # convert list -> dict if needed using provider+model_name/id
+        result = {}
+        provider = data.get('provider')
+        for m in models or []:
+            name = m.get('model_name') or m.get('model_id')
+            key = f"{provider}:{name}" if provider and name else name
+            if key:
+                result[key] = m
+        return result
+
+    old_models = to_dict(old)
+    new_models = to_dict(new)
+
+    diff = {"added_models": {}, "removed_models": [], "changed_models": {}}
+
+    for key in new_models.keys() - old_models.keys():
+        diff["added_models"][key] = new_models[key]
+    for key in old_models.keys() - new_models.keys():
+        diff["removed_models"].append(key)
+    for key in new_models.keys() & old_models.keys():
+        changes = {}
+        old_m = old_models[key]
+        new_m = new_models[key]
+        all_fields = set(old_m.keys()) | set(new_m.keys())
+        for field in sorted(all_fields):
+            if old_m.get(field) != new_m.get(field):
+                changes[field] = {"old": old_m.get(field), "new": new_m.get(field)}
+        if changes:
+            diff["changed_models"][key] = changes
+    return diff
+
+
+@cli.command(name='review-draft')
+@click.option('--provider', required=True, type=click.Choice(['openai', 'anthropic', 'google']))
+@click.option('--draft', 'draft_path', required=True, type=click.Path(path_type=Path))
+@click.option('--current', 'current_path', type=click.Path(path_type=Path))
+@click.option('--output', 'output_path', type=click.Path(path_type=Path))
+@click.option('--accept-all', is_flag=True, help='Accept all changes without prompting')
+def review_draft(provider, draft_path, current_path, output_path, accept_all):
+    """Review a draft models.json against the current curated file.
+
+    Produces a diff summary and an optionally merged reviewed file.
+    """
+    default_current = Path(f"{provider}/models.json")
+    current_file = Path(current_path) if current_path else default_current
+    if not current_file.exists():
+        click.echo(f"⚠️  No current file found at {current_file}. Starting review against empty set.")
+        current_data = {"provider": provider, "version": 0, "updated_at": None, "models": {}}
+    else:
+        current_data = _load_json(current_file)
+
+    draft_data = _load_json(draft_path)
+    draft_data["provider"] = provider
+
+    diff = _diff_models_dict(current_data, draft_data)
+
+    click.echo(f"\n📋 Review Summary for {provider}")
+    click.echo(f"  Added models: {len(diff['added_models'])}")
+    click.echo(f"  Removed models: {len(diff['removed_models'])}")
+    click.echo(f"  Changed models: {len(diff['changed_models'])}")
+
+    if not accept_all:
+        report_path = draft_path.with_suffix('.diff.json')
+        _write_json(report_path, diff)
+        click.echo(f"\n📝 Wrote diff report: {report_path}")
+        click.echo("Run again with --accept-all to generate a reviewed merged file, or edit the draft and rerun.")
+        return
+
+    reviewed = dict(draft_data)
+    reviewed['version'] = (current_data.get('version') or 0) + 1
+    reviewed['updated_at'] = datetime.utcnow().isoformat() + 'Z'
+
+    if output_path is None:
+        output_path = draft_path.with_name(f"{provider}.reviewed.json")
+    _write_json(Path(output_path), reviewed)
+    click.echo(f"\n✅ Wrote reviewed file: {output_path}")
+    click.echo("Next: run 'registry promote' to archive and publish.")
+
+
+@cli.command(name='promote')
+@click.option('--provider', required=True, type=click.Choice(['openai', 'anthropic', 'google']))
+@click.option('--reviewed', 'reviewed_path', required=True, type=click.Path(path_type=Path))
+def promote_reviewed(provider, reviewed_path):
+    """Promote a reviewed file: bump version, archive to v/<n>/models.json, and update current models.json."""
+    reviewed = _load_json(reviewed_path)
+
+    provider_dir = Path(provider)
+    current_file = provider_dir / 'models.json'
+
+    current_version = 0
+    if current_file.exists():
+        current_data = _load_json(current_file)
+        current_version = int(current_data.get('version') or 0)
+
+    new_version = int(reviewed.get('version') or (current_version + 1))
+    reviewed['version'] = new_version
+    reviewed['provider'] = provider
+    reviewed['updated_at'] = datetime.utcnow().isoformat() + 'Z'
+
+    archive_path = provider_dir / 'v' / str(new_version) / 'models.json'
+    _write_json(archive_path, reviewed)
+    _write_json(current_file, reviewed)
+
+    click.echo(f"📦 Archived: {archive_path}")
+    click.echo(f"📤 Published: {current_file}")
 
 
 if __name__ == '__main__':
