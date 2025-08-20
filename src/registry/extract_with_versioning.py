@@ -6,7 +6,7 @@ import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import click
 
@@ -125,7 +125,14 @@ def extract_models_from_pdfs(provider: str, pdf_dir: Path) -> Dict[str, Any]:
             },
         ]
     else:
-        return None
+        # Return an empty structured result for unknown providers
+        return {
+            "provider": provider,
+            "last_updated": datetime.now().strftime("%Y-%m-%d"),
+            "source": "pdf",
+            "extraction_date": datetime.now().isoformat(),
+            "models": [],
+        }
 
     # Format with metadata
     return {

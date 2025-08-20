@@ -268,7 +268,7 @@ def extract_anthropic_models(html: str) -> List[Dict[str, Any]]:
     # If no models found, log a warning - don't use defaults
     if not models:
         logger.warning(
-            f"No Anthropic models could be extracted from HTML - regex patterns may need updating"
+            "No Anthropic models could be extracted from HTML - regex patterns may need updating"
         )
 
     return models

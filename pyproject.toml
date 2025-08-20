@@ -38,6 +38,7 @@ dev = [
     "mypy>=1.17.1",
     "pytest>=8.4.1",
     "ruff>=0.12.9",
+    "types-requests>=2.32.0.20240914",
 ]
 
 [tool.hatch.build.targets.wheel]

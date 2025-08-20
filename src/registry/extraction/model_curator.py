@@ -26,7 +26,7 @@ class CurationCriteria:
 class ModelCurator:
     """Curate and select the best models from each provider."""
 
-    def __init__(self, criteria: CurationCriteria = None):
+    def __init__(self, criteria: CurationCriteria | None = None):
         """Initialize curator with selection criteria."""
         self.criteria = criteria or CurationCriteria()
 
@@ -201,7 +201,7 @@ class ModelCurator:
                 # Normalize: 0 days = 1.0, 365 days = 0.5, 730+ days = 0.0
                 recency_score = max(0, 1 - (days_old / 730))
                 score += recency_score * self.criteria.recency_weight
-            except:
+            except Exception:
                 pass
 
         return score

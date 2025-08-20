@@ -4,7 +4,6 @@
 import hashlib
 import json
 import logging
-import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -83,10 +82,8 @@ def fetch_html(provider, output_dir):
     This doesn't require Playwright but won't capture JavaScript-rendered content.
     """
     try:
-        import bs4
-        import requests
-
         from .fetch_html import fetch_html_pages
+        # Lazy import inside the function; availability verified in try/except
     except ImportError as e:
         click.echo(f"❌ Missing dependencies: {e}")
         click.echo("\nTo install:")
@@ -255,7 +252,7 @@ def extract(provider, pdfs_dir, models_dir, versions_dir, force):
         pdf_files = list(pdfs_path.glob(f"*{prov}*.pdf"))
         if not pdf_files:
             click.echo(f"  ⚠️  No PDFs found for {prov}")
-            click.echo(f"      Run 'registry sources' to see where to get them")
+            click.echo("      Run 'registry sources' to see where to get them")
             continue
 
         click.echo(f"  Found {len(pdf_files)} PDF(s)")
@@ -511,7 +508,6 @@ def main():
 
 
 # -------- Manual Curation Workflow Commands & helpers (appended) --------
-import typing as _t
 
 
 def _load_json(path: Path) -> dict:
@@ -523,6 +519,9 @@ def _write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
+
+
+from typing import Any, Dict, List, Tuple
 
 
 def _diff_models_dict(old: dict, new: dict) -> dict:
@@ -545,14 +544,14 @@ def _diff_models_dict(old: dict, new: dict) -> dict:
     old_models = to_dict(old)
     new_models = to_dict(new)
 
-    diff = {"added_models": {}, "removed_models": [], "changed_models": {}}
+    diff: Dict[str, Any] = {"added_models": {}, "removed_models": [], "changed_models": {}}
 
     for key in new_models.keys() - old_models.keys():
         diff["added_models"][key] = new_models[key]
     for key in old_models.keys() - new_models.keys():
         diff["removed_models"].append(key)
     for key in new_models.keys() & old_models.keys():
-        changes = {}
+        changes: Dict[str, Dict[str, Any]] = {}
         old_m = old_models[key]
         new_m = new_models[key]
         all_fields = set(old_m.keys()) | set(new_m.keys())

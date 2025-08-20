@@ -67,20 +67,20 @@ class ModelExtraction:
 
     def get_consensus_model(self) -> Dict[str, Any]:
         """Get the consensus model with confidence indicators."""
-        result = {"model_id": self.model_id}
-        uncertain_fields = []
+        result: Dict[str, Any] = {"model_id": self.model_id}
+        uncertain_fields: List[str] = []
 
-        for field_name, field in self.fields.items():
-            value, confidence = field.get_consensus()
+        for field_name, model_field in self.fields.items():
+            value, confidence = model_field.get_consensus()
             if value is not None:
                 result[field_name] = value
                 if confidence != "certain":
                     uncertain_fields.append(field_name)
-            elif field.html_value is not None or field.pdf_value is not None:
+            elif model_field.html_value is not None or model_field.pdf_value is not None:
                 # Disagreement - include both values for transparency
                 result[f"{field_name}_conflict"] = {
-                    "html": field.html_value,
-                    "pdf": field.pdf_value,
+                    "html": model_field.html_value,
+                    "pdf": model_field.pdf_value,
                 }
                 uncertain_fields.append(field_name)
 
@@ -183,24 +183,25 @@ def interactive_resolution(extraction: ModelExtraction) -> Dict[str, Any]:
     click.echo(f"\n🔍 Resolving model: {extraction.model_id}")
     result = {"model_id": extraction.model_id}
 
-    for field_name, field in extraction.fields.items():
+    for field_name, model_field in extraction.fields.items():
         if field_name == "model_id":
             continue
 
-        value, confidence = field.get_consensus()
+        value, confidence = model_field.get_consensus()
 
         if confidence == "certain":
-            result[field_name] = value
+            # value may be Any; coerce to string for safety in this interactive path
+            result[field_name] = value if value is not None else ""
         else:
             click.echo(f"\n  Field: {field_name}")
 
             choices = []
-            if field.html_value is not None:
-                click.echo(f"    1) HTML extraction: {field.html_value}")
-                choices.append(("1", field.html_value))
-            if field.pdf_value is not None:
-                click.echo(f"    2) PDF extraction: {field.pdf_value}")
-                choices.append(("2", field.pdf_value))
+            if model_field.html_value is not None:
+                click.echo(f"    1) HTML extraction: {model_field.html_value}")
+                choices.append(("1", model_field.html_value))
+            if model_field.pdf_value is not None:
+                click.echo(f"    2) PDF extraction: {model_field.pdf_value}")
+                choices.append(("2", model_field.pdf_value))
 
             if not choices:
                 click.echo("    No values found")
@@ -221,7 +222,9 @@ def interactive_resolution(extraction: ModelExtraction) -> Dict[str, Any]:
                 )
 
                 if choice in [c[0] for c in choices]:
-                    result[field_name] = next(c[1] for c in choices if c[0] == choice)
+                    selected = next((c[1] for c in choices if c[0] == choice), None)
+                    if selected is not None:
+                        result[field_name] = selected
                 elif choice == "3":
                     manual = click.prompt("    Enter value")
                     result[field_name] = manual
@@ -319,22 +322,22 @@ def extract_comprehensive(
         conflicts = 0
 
         for model_id, extraction in extractions.items():
-            for field_name, field in extraction.fields.items():
+            for field_name, model_field in extraction.fields.items():
                 if field_name == "model_id":
                     continue
                 total_fields += 1
-                value, confidence = field.get_consensus()
+                value, confidence = model_field.get_consensus()
                 if confidence == "certain":
                     certain_fields += 1
                 elif (
-                    field.html_value != field.pdf_value
-                    and field.html_value
-                    and field.pdf_value
+                    model_field.html_value != model_field.pdf_value
+                    and model_field.html_value
+                    and model_field.pdf_value
                 ):
                     conflicts += 1
 
         if total_fields > 0:
-            click.echo(f"\n  📈 Extraction confidence:")
+            click.echo("\n  📈 Extraction confidence:")
             click.echo(
                 f"     Certain fields: {certain_fields}/{total_fields} ({certain_fields*100//total_fields}%)"
             )
@@ -378,7 +381,7 @@ def extract_comprehensive(
         if uncertain_count > 0:
             click.echo(f"  ⚠️  {uncertain_count} models have uncertain fields")
             if not interactive:
-                click.echo(f"     Run with --interactive to resolve conflicts")
+                click.echo("     Run with --interactive to resolve conflicts")
 
 
 if __name__ == "__main__":

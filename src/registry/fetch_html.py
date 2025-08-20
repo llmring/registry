@@ -5,7 +5,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import click
 
@@ -29,7 +29,7 @@ PROVIDER_URLS = {
 }
 
 
-def fetch_html(url: str) -> str:
+def fetch_html(url: str) -> Optional[str]:
     """
     Fetch HTML content from a URL.
 
@@ -154,7 +154,7 @@ def fetch_html_pages(provider, output_dir, format):
                 if format in ["json", "both"]:
                     extracted_data[doc_type] = extract_pricing_info(html, prov)
             else:
-                click.echo(f"  ✗ Failed to fetch")
+                click.echo("  ✗ Failed to fetch")
 
         # Save extracted data as JSON
         if format in ["json", "both"] and extracted_data:
