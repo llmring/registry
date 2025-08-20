@@ -1,5 +1,5 @@
 [project]
-name = "registry"
+name = "llmring-registry"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -16,7 +16,8 @@ dependencies = [
 ]
 
 [project.scripts]
-registry = "registry.__main__:main"
+llmring-registry = "registry.__main__:main"
+registry = "registry.__main__:main"  # backwards-compat
 
 [build-system]
 requires = ["hatchling"]
