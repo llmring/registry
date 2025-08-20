@@ -1,5 +1,9 @@
 # LLMRing Registry
 
+> ⚠️ Pre-release notice
+>
+> The pricing, token limits, and capabilities in this registry are under active validation and may be inaccurate. Do not rely on these numbers for production decisions. Always verify against the providers' official documentation.
+
 *Complies with source-of-truth v3.5*
 
 The official model registry for LLMRing - providing up-to-date pricing, capabilities, and metadata for all major LLM providers.

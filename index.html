@@ -81,11 +81,26 @@
             color: #7f8c8d;
             font-size: 0.9em;
         }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .warning strong {
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
     <h1>⭕ LLMRing Registry</h1>
     
+    <div class="warning">
+        <strong>Warning:</strong> This is a pre-release registry. The pricing, limits, and capabilities listed here are still being validated and may be inaccurate. Do not use these numbers for production decisions. Always verify with official provider documentation.
+    </div>
+
     <p><strong>The official model registry for LLMRing</strong> - providing up-to-date pricing, capabilities, and metadata for all major LLM providers.</p>
     
     <p><strong>Schema Version 3.5</strong> - Dictionary-based models with standardized fields (e.g., max_input_tokens, dollars_per_million_tokens_input) and per-provider version numbers.</p>
