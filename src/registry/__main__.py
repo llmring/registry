@@ -504,7 +504,8 @@ def review_draft(provider, draft_path, current_path, output_path, accept_all):
 
     Produces a diff summary and an optionally merged reviewed file.
     """
-    default_current = Path(f"{provider}/models.json")
+    # Default to the published site structure under pages/<provider>/models.json
+    default_current = Path("pages") / provider / "models.json"
     current_file = Path(current_path) if current_path else default_current
     if not current_file.exists():
         click.echo(f"⚠️  No current file found at {current_file}. Starting review against empty set.")
@@ -547,7 +548,8 @@ def promote_reviewed(provider, reviewed_path):
     """Promote a reviewed file: bump version, archive to v/<n>/models.json, and update current models.json."""
     reviewed = _load_json(reviewed_path)
 
-    provider_dir = Path(provider)
+    # Publish under the site structure pages/<provider>
+    provider_dir = Path("pages") / provider
     current_file = provider_dir / 'models.json'
 
     current_version = 0
