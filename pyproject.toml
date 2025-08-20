@@ -15,6 +15,11 @@ dependencies = [
     "requests>=2.32.4",
 ]
 
+[project.optional-dependencies]
+playwright = [
+    "playwright>=1.45.0",
+]
+
 [project.scripts]
 llmring-registry = "registry.__main__:main"
 
