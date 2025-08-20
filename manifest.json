@@ -1,6 +1,6 @@
 {
-  "version": "2025-08-18",
-  "updated_at": "2025-08-18T21:00:00Z",
+  "version": "2025-08-20",
+  "updated_at": "2025-08-20T00:00:00Z",
   "providers": {
     "openai": {
       "file": "openai/models.json",
@@ -18,7 +18,7 @@
       "last_updated": "2025-08-18"
     }
   },
-  "schema_version": "3.2",
+  "schema_version": "3.5",
   "registry_url": "https://llmring.github.io/registry/",
   "extraction_methods": {
     "html": "regex patterns from provider websites",

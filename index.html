@@ -88,7 +88,7 @@
     
     <p><strong>The official model registry for LLMRing</strong> - providing up-to-date pricing, capabilities, and metadata for all major LLM providers.</p>
     
-    <p><strong>Schema Version 3.2</strong> - Models are now organized by provider directories with provider-prefixed keys (e.g., "openai:gpt-4o", "anthropic:claude-sonnet-4").</p>
+    <p><strong>Schema Version 3.5</strong> - Dictionary-based models with standardized fields (e.g., max_input_tokens, dollars_per_million_tokens_input) and per-provider version numbers.</p>
     
     <div class="stats">
         <div class="stat-card">
@@ -128,7 +128,7 @@ manifest = requests.get('https://llmring.github.io/registry/manifest.json').json
 print(manifest)</code></pre>
 
     <h3>Get Model Information</h3>
-    <pre><code>// Fetch OpenAI models (v3.2 format)
+    <pre><code>// Fetch OpenAI models (v3.5 format)
 fetch('https://llmring.github.io/registry/openai/models.json')
   .then(res => res.json())
   .then(data => {
@@ -158,14 +158,14 @@ fetch('https://llmring.github.io/registry/openai/models.json')
     <p>Each model entry includes:</p>
     <ul>
         <li><code>provider</code> - Provider identifier (openai, anthropic, google)</li>
-        <li><code>model_id</code> - Model identifier</li>
+        <li><code>model_name</code> - Model identifier</li>
         <li><code>display_name</code> - Human-readable name</li>
-        <li><code>context_window</code> - Maximum context length</li>
-        <li><code>max_output_tokens</code> - Maximum output length</li>
-        <li><code>input_per_million</code> - Cost per million input tokens (USD)</li>
-        <li><code>output_per_million</code> - Cost per million output tokens (USD)</li>
-        <li><code>capabilities</code> - Array of supported features</li>
-        <li><code>deprecation</code> - Deprecation date if applicable</li>
+        <li><code>max_input_tokens</code> - Maximum input tokens</li>
+        <li><code>max_output_tokens</code> - Maximum output tokens</li>
+        <li><code>dollars_per_million_tokens_input</code> - Cost per million input tokens (USD)</li>
+        <li><code>dollars_per_million_tokens_output</code> - Cost per million output tokens (USD)</li>
+        <li><code>supports_vision</code>, <code>supports_function_calling</code>, <code>supports_json_mode</code>, <code>supports_parallel_tool_calls</code></li>
+        <li><code>is_active</code> - Whether the model is currently active</li>
     </ul>
 
     <hr style="margin-top: 50px; border: none; border-top: 1px solid #ecf0f1;">

@@ -1,6 +1,6 @@
 # LLMRing Registry
 
-*Complies with source-of-truth v2.0*
+*Complies with source-of-truth v3.5*
 
 The official model registry for LLMRing - providing up-to-date pricing, capabilities, and metadata for all major LLM providers.
 
@@ -95,21 +95,28 @@ The registry uses a **dual extraction approach** for maximum accuracy:
 
 ## Model Schema
 
-Each provider's JSON file contains models with this structure:
+Each provider's JSON file contains models with this structure (dictionary, not list):
 
 ```json
 {
-  "openai:gpt-4o-mini": {
-    "provider": "openai",
-    "model_id": "gpt-4o-mini",
-    "display_name": "GPT-4 Optimized Mini",
-    "context_window": 128000,
-    "max_output_tokens": 16384,
-    "input_per_million": 0.15,
-    "output_per_million": 0.60,
-    "cached_input_per_million": 0.075,
-    "capabilities": ["vision", "tools", "json_mode"],
-    "deprecation": null
+  "provider": "openai",
+  "version": 2,
+  "updated_at": "2025-08-20T00:00:00Z",
+  "models": {
+    "openai:gpt-4o-mini": {
+      "provider": "openai",
+      "model_name": "gpt-4o-mini",
+      "display_name": "GPT-4 Optimized Mini",
+      "max_input_tokens": 128000,
+      "max_output_tokens": 16384,
+      "dollars_per_million_tokens_input": 0.15,
+      "dollars_per_million_tokens_output": 0.60,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "is_active": true
+    }
   }
 }
 ```
