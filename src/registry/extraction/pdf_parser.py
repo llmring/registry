@@ -44,6 +44,7 @@ class PDFParser:
         """Initialize parser with LLMRing."""
         try:
             from llmring import LLMRing
+
             # Use LLMRing with its default configuration
             # It will automatically handle PDFs appropriately for each provider
             self.service = LLMRing(enable_db_logging=False)
@@ -75,40 +76,42 @@ class PDFParser:
         if not self.initialized:
             logger.error("LLMRing not initialized")
             return []
-        
+
         # Use LLMRing's file handling capabilities
+        import asyncio
+
         from llmring.file_utils import analyze_file
         from llmring.schemas import LLMRequest, Message
-        import asyncio
-        
+
         all_models = []
-        
+
         for pdf_path in pdf_paths:
             if not pdf_path.exists():
                 logger.warning(f"PDF not found: {pdf_path}")
                 continue
 
             logger.info(f"Processing {pdf_path}")
-            
+
             try:
                 # Use LLMRing's analyze_file to create proper content for any provider
                 content = analyze_file(
-                    str(pdf_path),
-                    self._create_extraction_prompt_text(provider)
+                    str(pdf_path), self._create_extraction_prompt_text(provider)
                 )
-                
+
                 # Create request using LLMRing's unified interface
                 request = LLMRequest(
                     messages=[Message(role="user", content=content)],
                     model=self._get_best_model(),  # Auto-select best available model
                     max_tokens=4000,
                     temperature=0,
-                    response_format={"type": "json_object"} if self._supports_json_mode() else None
+                    response_format=(
+                        {"type": "json_object"} if self._supports_json_mode() else None
+                    ),
                 )
-                
+
                 # Run async request
                 response = asyncio.run(self.service.chat(request))
-                
+
                 # Parse response
                 try:
                     # First try direct JSON parsing
@@ -118,21 +121,24 @@ class PDFParser:
                 except json.JSONDecodeError:
                     # Try to find JSON array in response
                     import re
-                    json_match = re.search(r'\[.*\]', response.content, re.DOTALL)
+
+                    json_match = re.search(r"\[.*\]", response.content, re.DOTALL)
                     if json_match:
                         models_data = json.loads(json_match.group())
                     else:
-                        logger.warning(f"Could not parse JSON from response for {pdf_path}")
+                        logger.warning(
+                            f"Could not parse JSON from response for {pdf_path}"
+                        )
                         models_data = []
-                
+
                 # Add parsed models to results
                 if models_data:
                     all_models.extend(models_data)
-                    
+
             except Exception as e:
                 logger.error(f"Failed to process {pdf_path}: {e}")
                 continue
-        
+
         # Convert to ModelInfo objects
         models = []
         for model_data in all_models:
@@ -143,35 +149,35 @@ class PDFParser:
                 logger.error(f"Data: {model_data}")
 
         return models
-    
+
     def _get_best_model(self) -> str:
         """Get the best available model for PDF extraction."""
         available_models = self.service.get_available_models()
-        
+
         # Prefer models in this order for best PDF understanding
         preferred_models = [
             "claude-3-5-sonnet-20241022",  # Best for PDFs
-            "gpt-4o",                       # Good with Assistants API
-            "gemini-1.5-flash",             # Fast and capable
-            "claude-3-5-haiku-20241022",   # Fast Claude
-            "gpt-4o-mini",                  # Fallback
+            "gpt-4o",  # Good with Assistants API
+            "gemini-1.5-flash",  # Fast and capable
+            "claude-3-5-haiku-20241022",  # Fast Claude
+            "gpt-4o-mini",  # Fallback
         ]
-        
+
         for model in preferred_models:
             for provider_models in available_models.values():
                 if model in provider_models:
                     logger.info(f"Using model: {model}")
                     return model
-        
+
         # Fallback to first available model
         for provider_models in available_models.values():
             if provider_models:
                 model = provider_models[0]
                 logger.info(f"Using fallback model: {model}")
                 return model
-        
+
         raise ValueError("No models available")
-    
+
     def _supports_json_mode(self) -> bool:
         """Check if the selected model supports JSON response format."""
         # Most modern models support JSON mode
