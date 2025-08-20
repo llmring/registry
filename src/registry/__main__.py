@@ -635,7 +635,8 @@ def review_draft(provider, draft_path, current_path, output_path, accept_all):
 
     reviewed = dict(draft_data)
     reviewed["version"] = (current_data.get("version") or 0) + 1
-    reviewed["updated_at"] = datetime.utcnow().isoformat() + "Z"
+    from datetime import UTC
+    reviewed["updated_at"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
     if output_path is None:
         output_path = draft_path.with_name(f"{provider}.reviewed.json")
@@ -667,7 +668,8 @@ def promote_reviewed(provider, reviewed_path):
     new_version = int(reviewed.get("version") or (current_version + 1))
     reviewed["version"] = new_version
     reviewed["provider"] = provider
-    reviewed["updated_at"] = datetime.utcnow().isoformat() + "Z"
+    from datetime import UTC
+    reviewed["updated_at"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     reviewed["content_sha256_jcs"] = _compute_content_sha256_jcs(reviewed)
 
     archive_path = provider_dir / "v" / str(new_version) / "models.json"
