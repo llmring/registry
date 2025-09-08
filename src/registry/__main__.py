@@ -9,6 +9,8 @@ from pathlib import Path
 
 import click
 
+from .extract_with_llm import extract_with_llm
+
 # Configure logging
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -358,11 +360,15 @@ def list_models(models_dir):
 
                 for model in model_list:
                     mid = model.get("model_id") or model.get("model_name", "unknown")
-                    inp = model.get("dollars_per_million_tokens_input", 0)
-                    outp = model.get("dollars_per_million_tokens_output", 0)
-                    click.echo(
-                        f"   • {mid}: ${inp:.2f}/$M input, ${outp:.2f}/$M output"
-                    )
+                    inp = model.get("dollars_per_million_tokens_input")
+                    outp = model.get("dollars_per_million_tokens_output")
+                    
+                    if inp is not None and outp is not None:
+                        click.echo(
+                            f"   • {mid}: ${inp:.2f}/$M input, ${outp:.2f}/$M output"
+                        )
+                    else:
+                        click.echo(f"   • {mid}: pricing not available")
 
                 total_count += len(model_list)
 
@@ -684,6 +690,10 @@ def promote_reviewed(provider, reviewed_path):
 
     click.echo(f"📦 Archived: {archive_path}")
     click.echo(f"📤 Published: {current_file}")
+
+
+# Add the LLM extraction command
+cli.add_command(extract_with_llm, name="extract-llm")
 
 
 if __name__ == "__main__":

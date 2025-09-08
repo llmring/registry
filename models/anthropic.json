@@ -1,0 +1,92 @@
+{
+  "provider": "anthropic",
+  "last_updated": "2025-09-08",
+  "source": "llm_extraction",
+  "extraction_date": "2025-09-08T15:59:43.741316",
+  "models": {
+    "anthropic:claude-opus-4.1": {
+      "model_name": "claude-opus-4.1",
+      "display_name": "Claude Opus 4.1",
+      "description": "Our most intelligent model for highly complex tasks requiring deep expertise",
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "max_input_tokens": 200000,
+      "max_output_tokens": 4096,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "provider": "anthropic"
+    },
+    "anthropic:claude-sonnet-4.1": {
+      "model_name": "claude-sonnet-4.1",
+      "display_name": "Claude Sonnet 4.1",
+      "description": "Fast and cost-effective model with strong performance across a wide range of tasks",
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "max_input_tokens": 200000,
+      "max_output_tokens": 4096,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "provider": "anthropic"
+    },
+    "anthropic:claude-haiku-4.1": {
+      "model_name": "claude-haiku-4.1",
+      "display_name": "Claude Haiku 4.1",
+      "description": "Our fastest and most compact model for near-instant responsiveness",
+      "dollars_per_million_tokens_input": 0.25,
+      "dollars_per_million_tokens_output": 1.25,
+      "max_input_tokens": 200000,
+      "max_output_tokens": 4096,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "provider": "anthropic"
+    },
+    "anthropic:claude-opus-4": {
+      "model_name": "claude-opus-4",
+      "display_name": "Claude Opus 4",
+      "description": "Our most intelligent model for highly complex tasks requiring deep expertise",
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "max_input_tokens": 200000,
+      "max_output_tokens": 4096,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "provider": "anthropic"
+    },
+    "anthropic:claude-haiku-4": {
+      "model_name": "claude-haiku-4",
+      "display_name": "Claude Haiku 4",
+      "description": "Our fastest model, ideal for near-instant responsiveness",
+      "dollars_per_million_tokens_input": 0.25,
+      "dollars_per_million_tokens_output": 1.25,
+      "max_input_tokens": 200000,
+      "max_output_tokens": 4096,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "provider": "anthropic"
+    },
+    "anthropic:claude-sonnet-4": {
+      "model_name": "claude-sonnet-4",
+      "display_name": "Claude Sonnet 4",
+      "description": "Our mid-tier model, balancing intelligence and speed",
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "max_input_tokens": 200000,
+      "max_output_tokens": 4096,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "provider": "anthropic"
+    }
+  }
+}

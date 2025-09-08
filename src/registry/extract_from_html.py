@@ -197,48 +197,56 @@ def extract_anthropic_models(html: str) -> List[Dict[str, Any]]:
 
     # Look for Claude models with more precise patterns
     # Using (?:Input|input) and looking for dollar signs or "per" to avoid matching model dates
+    # Updated patterns for Claude 4 models (as of Aug 2025)
+    # HTML structure: data-price-full="15">15</span> / MTok
     model_patterns = [
         (
-            r"Claude[\s-]3[\s-]5[\s-]Sonnet.*?(?:Input|input)[:\s]*\$?([\d.]+)\s*(?:per|/)\s*(?:1M|million).*?(?:Output|output)[:\s]*\$?([\d.]+)",
-            "claude-3-5-sonnet-20241022",
-            "Claude 3.5 Sonnet",
+            r'Claude\s+Opus\s+4\.1.*?Input.*?data-price-full="([\d.]+)".*?Output.*?data-price-full="([\d.]+)"',
+            "claude-opus-4.1",
+            "Claude Opus 4.1",
         ),
         (
-            r"Claude[\s-]3[\s-]5[\s-]Haiku.*?(?:Input|input)[:\s]*\$?([\d.]+)\s*(?:per|/)\s*(?:1M|million).*?(?:Output|output)[:\s]*\$?([\d.]+)",
-            "claude-3-5-haiku-20241022",
-            "Claude 3.5 Haiku",
+            r'Claude\s+Sonnet\s+4</h2>.*?â¤\s+200K\s+tokens.*?data-price-full="([\d.]+)".*?â¤\s+200K\s+tokens.*?data-price-full="([\d.]+)"',
+            "claude-sonnet-4",
+            "Claude Sonnet 4",
         ),
         (
-            r"Claude[\s-]3[\s-]Opus.*?(?:Input|input)[:\s]*\$?([\d.]+)\s*(?:per|/)\s*(?:1M|million).*?(?:Output|output)[:\s]*\$?([\d.]+)",
-            "claude-3-opus-20240229",
-            "Claude 3 Opus",
+            r'Claude\s+Haiku\s+3\.5.*?Input.*?data-price-full="([\d.]+)".*?Output.*?data-price-full="([\d.]+)"',
+            "claude-haiku-3.5",
+            "Claude Haiku 3.5",
+        ),
+        # Also check for older Claude 3 models if they're still listed
+        (
+            r'Claude\s+Opus\s+4</h2>.*?Input.*?data-price-full="([\d.]+)".*?Output.*?data-price-full="([\d.]+)"',
+            "claude-opus-4",
+            "Claude Opus 4",
         ),
         (
-            r"Claude[\s-]3[\s-]Sonnet(?!.*3[\s-]5).*?(?:Input|input)[:\s]*\$?([\d.]+)\s*(?:per|/)\s*(?:1M|million).*?(?:Output|output)[:\s]*\$?([\d.]+)",
-            "claude-3-sonnet-20240229",
-            "Claude 3 Sonnet",
-        ),
-        (
-            r"Claude[\s-]3[\s-]Haiku(?!.*3[\s-]5).*?(?:Input|input)[:\s]*\$?([\d.]+)\s*(?:per|/)\s*(?:1M|million).*?(?:Output|output)[:\s]*\$?([\d.]+)",
-            "claude-3-haiku-20240307",
-            "Claude 3 Haiku",
+            r'Claude\s+Sonnet\s+3\.7.*?Input.*?data-price-full="([\d.]+)".*?Output.*?data-price-full="([\d.]+)"',
+            "claude-sonnet-3.7",
+            "Claude Sonnet 3.7",
         ),
     ]
 
     for pattern, model_id, display_name in model_patterns:
-        match = re.search(pattern, text, re.I | re.S)
+        # Search in raw HTML to preserve data attributes
+        match = re.search(pattern, html, re.I | re.S)
         if match:
             try:
                 input_price = float(match.group(1))
                 output_price = float(match.group(2))
 
                 # Don't override extracted prices - if they look wrong, flag them
-                if "opus" in model_id:
-                    desc = "Most capable Claude model"
+                if "opus-4.1" in model_id:
+                    desc = "Most intelligent model for complex tasks"
+                elif "opus" in model_id:
+                    desc = "Highly capable Claude model"
+                elif "sonnet-4" in model_id:
+                    desc = "Optimal balance of intelligence, cost, and speed"
                 elif "sonnet" in model_id:
                     desc = "Balanced performance and cost"
                 else:  # haiku
-                    desc = "Fast and affordable"
+                    desc = "Fastest, most cost-effective model"
 
                 # Flag suspicious prices
                 if input_price > 1000 or output_price > 1000:
@@ -255,7 +263,7 @@ def extract_anthropic_models(html: str) -> List[Dict[str, Any]]:
                         "dollars_per_million_tokens_input": input_price,
                         "dollars_per_million_tokens_output": output_price,
                         "max_input_tokens": 200000,
-                        "max_output_tokens": 8192 if "3-5" in model_id else 4096,
+                        "max_output_tokens": 8192,
                         "supports_vision": True,
                         "supports_function_calling": True,
                         "supports_json_mode": False,

@@ -45,12 +45,21 @@ jobs:
           provider="${{ github.event.inputs.provider || 'all' }}"
           uv run llmring-registry fetch-html --provider $provider
           
-      - name: Extract models from HTML
-        # Note: Using extract-html instead of extract-comprehensive 
-        # since PDF extraction requires LLM API keys which may not be configured
+      - name: Extract models using LLM
+        # Use LLM-based extraction for better adaptability to HTML changes
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           provider="${{ github.event.inputs.provider || 'all' }}"
-          uv run llmring-registry extract-html --provider $provider
+          # Try LLM extraction if API keys are available
+          if [ -n "$OPENAI_API_KEY" ] || [ -n "$ANTHROPIC_API_KEY" ]; then
+            uv run llmring-registry extract-llm --provider $provider || \
+              uv run llmring-registry extract-html --provider $provider
+          else
+            # Fall back to regex extraction if no API keys
+            uv run llmring-registry extract-html --provider $provider
+          fi
           
       - name: Validate extracted models
         run: uv run llmring-registry validate
