@@ -36,23 +36,24 @@ jobs:
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           
       - name: Install dependencies
-        run: uv sync
+        run: |
+          uv sync
+          uv pip install -e .
         
       - name: Fetch HTML documentation
         run: |
           provider="${{ github.event.inputs.provider || 'all' }}"
-          uv run registry fetch-html --provider $provider
+          uv run llmring-registry fetch-html --provider $provider
           
-      - name: Extract models (comprehensive)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Extract models from HTML
+        # Note: Using extract-html instead of extract-comprehensive 
+        # since PDF extraction requires LLM API keys which may not be configured
         run: |
           provider="${{ github.event.inputs.provider || 'all' }}"
-          uv run registry extract-comprehensive --provider $provider
+          uv run llmring-registry extract-html --provider $provider
           
       - name: Validate extracted models
-        run: uv run registry validate
+        run: uv run llmring-registry validate
         
       - name: Generate manifest
         run: |
@@ -79,7 +80,8 @@ jobs:
               if json_file.exists():
                   with open(json_file) as f:
                       data = json.load(f)
-                      model_count = len(data.get('models', []))
+                      models = data.get('models', {})
+                      model_count = len(models) if isinstance(models, dict) else len(models)
                       manifest['providers'][provider] = {
                           'file': f'models/{provider}.json',
                           'model_count': model_count,
@@ -122,16 +124,16 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ -f "models/openai.json" ]; then
-            count=$(jq '.models | length' models/openai.json)
+            count=$(jq '.models | if type == "object" then length else length end' models/openai.json)
             echo "- **OpenAI:** $count models" >> $GITHUB_STEP_SUMMARY
           fi
           
           if [ -f "models/anthropic.json" ]; then
-            count=$(jq '.models | length' models/anthropic.json)
+            count=$(jq '.models | if type == "object" then length else length end' models/anthropic.json)
             echo "- **Anthropic:** $count models" >> $GITHUB_STEP_SUMMARY
           fi
           
           if [ -f "models/google.json" ]; then
-            count=$(jq '.models | length' models/google.json)
+            count=$(jq '.models | if type == "object" then length else length end' models/google.json)
             echo "- **Google:** $count models" >> $GITHUB_STEP_SUMMARY
           fi

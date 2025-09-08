@@ -345,12 +345,18 @@ def list_models(models_dir):
             with open(json_file) as f:
                 data = json.load(f)
 
-            models = data.get("models", [])
+            models = data.get("models", {})
             if models:
-                click.echo(f"\n📦 {provider.upper()} ({len(models)} models)")
+                # Handle both dict (v3.5) and list (legacy) formats
+                if isinstance(models, dict):
+                    model_list = list(models.values())
+                else:
+                    model_list = models
+                
+                click.echo(f"\n📦 {provider.upper()} ({len(model_list)} models)")
                 click.echo(f"   Last updated: {data.get('last_updated', 'Unknown')}")
 
-                for model in models:
+                for model in model_list:
                     mid = model.get("model_id") or model.get("model_name", "unknown")
                     inp = model.get("dollars_per_million_tokens_input", 0)
                     outp = model.get("dollars_per_million_tokens_output", 0)
@@ -358,7 +364,7 @@ def list_models(models_dir):
                         f"   • {mid}: ${inp:.2f}/$M input, ${outp:.2f}/$M output"
                     )
 
-                total_count += len(models)
+                total_count += len(model_list)
 
     if total_count > 0:
         click.echo(f"\n📊 Total: {total_count} models")
@@ -478,7 +484,7 @@ def validate(models_dir):
                 for i, model in enumerate(models_section or []):
                     for field in required_fields:
                         if field not in model:
-                            label = model.get("model_id") or model.get("model_name", i)
+                            label = model.get("model_name", i)
                             errors.append(
                                 f"{provider}.json: Model {label} missing '{field}'"
                             )

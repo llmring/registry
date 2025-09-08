@@ -1,7 +1,7 @@
 [project]
 name = "llmring-registry"
 version = "0.1.0"
-description = "LLMRing public model registry CLI and tools (manual curation workflow)"
+description = "LLMRing public model registry CLI and tools - extracts and maintains LLM model pricing and capabilities"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [

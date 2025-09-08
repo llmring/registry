@@ -82,12 +82,12 @@ def extract_openai_models(html: str) -> List[Dict[str, Any]]:
 
                 models.append(
                     {
-                        "model_id": model_id,
+                        "model_name": model_id,
                         "display_name": display_name,
                         "description": description,
                         "dollars_per_million_tokens_input": input_price,
                         "dollars_per_million_tokens_output": output_price,
-                        "max_context": context,
+                        "max_input_tokens": context,
                         "max_output_tokens": 16384,
                         "supports_vision": True,
                         "supports_function_calling": True,
@@ -131,11 +131,11 @@ def extract_openai_models(html: str) -> List[Dict[str, Any]]:
 
                 models.append(
                     {
-                        "model_id": model_id,
+                        "model_name": model_id,
                         "display_name": display_name,
                         "dollars_per_million_tokens_input": input_price,
                         "dollars_per_million_tokens_output": output_price,
-                        "max_context": 128000 if "4" in model_id else 16385,
+                        "max_input_tokens": 128000 if "4" in model_id else 16385,
                         "max_output_tokens": 16384 if "4o" in model_id else 4096,
                         "supports_vision": "gpt-4o" in model_id
                         or "gpt-4-turbo" in model_id,
@@ -170,11 +170,11 @@ def extract_openai_models(html: str) -> List[Dict[str, Any]]:
 
                 models.append(
                     {
-                        "model_id": model_id,
+                        "model_name": model_id,
                         "display_name": display_name,
                         "dollars_per_million_tokens_input": input_price,
                         "dollars_per_million_tokens_output": output_price,
-                        "max_context": 128000,
+                        "max_input_tokens": 128000,
                         "max_output_tokens": 32768,
                         "supports_vision": False,
                         "supports_function_calling": False,
@@ -249,12 +249,12 @@ def extract_anthropic_models(html: str) -> List[Dict[str, Any]]:
 
                 models.append(
                     {
-                        "model_id": model_id,
+                        "model_name": model_id,
                         "display_name": display_name,
                         "description": desc,
                         "dollars_per_million_tokens_input": input_price,
                         "dollars_per_million_tokens_output": output_price,
-                        "max_context": 200000,
+                        "max_input_tokens": 200000,
                         "max_output_tokens": 8192 if "3-5" in model_id else 4096,
                         "supports_vision": True,
                         "supports_function_calling": True,
@@ -317,11 +317,11 @@ def extract_google_models(html: str) -> List[Dict[str, Any]]:
 
                 models.append(
                     {
-                        "model_id": model_id,
+                        "model_name": model_id,
                         "display_name": model_name,
                         "dollars_per_million_tokens_input": input_price,
                         "dollars_per_million_tokens_output": output_price,
-                        "max_context": context,
+                        "max_input_tokens": context,
                         "max_output_tokens": 8192,
                         "supports_vision": "1.5" in model_id,
                         "supports_function_calling": True,
@@ -343,14 +343,14 @@ def merge_with_existing(new_models: List[Dict], existing_file: Path) -> List[Dic
     with open(existing_file) as f:
         existing_data = json.load(f)
 
-    existing_models = {m["model_id"]: m for m in existing_data.get("models", [])}
+    existing_models = {m["model_name"]: m for m in existing_data.get("models", [])}
 
     # Update existing models with new data
     for new_model in new_models:
-        model_id = new_model["model_id"]
-        if model_id in existing_models:
+        model_name = new_model["model_name"]
+        if model_name in existing_models:
             # Update pricing and keep other fields
-            existing_models[model_id].update(
+            existing_models[model_name].update(
                 {
                     "dollars_per_million_tokens_input": new_model.get(
                         "dollars_per_million_tokens_input"
@@ -363,7 +363,7 @@ def merge_with_existing(new_models: List[Dict], existing_file: Path) -> List[Dic
             )
         else:
             # Add new model
-            existing_models[model_id] = new_model
+            existing_models[model_name] = new_model
 
     return list(existing_models.values())
 
@@ -434,8 +434,8 @@ def extract_from_html(provider, html_dir, models_dir, merge):
             # Remove duplicates and validate
             unique_models = {}
             for model in all_models:
-                model_id = model.get("model_id")
-                if model_id and model_id not in unique_models:
+                model_name = model.get("model_name")
+                if model_name and model_name not in unique_models:
                     # Validate the extracted data
                     issues = []
 
@@ -460,9 +460,9 @@ def extract_from_html(provider, html_dir, models_dir, merge):
 
                     if issues:
                         model["extraction_warnings"] = issues
-                        click.echo(f"    ⚠️  {model_id}: {', '.join(issues)}")
+                        click.echo(f"    ⚠️  {model_name}: {', '.join(issues)}")
 
-                    unique_models[model_id] = model
+                    unique_models[model_name] = model
 
             final_models = list(unique_models.values())
 
@@ -472,13 +472,26 @@ def extract_from_html(provider, html_dir, models_dir, merge):
                 final_models = merge_with_existing(final_models, output_file)
                 click.echo(f"  ✓ Merged with existing {output_file.name}")
 
-            # Create output data
+            # Create output data with models as dictionary (v3.5 schema)
+            # Convert list to dictionary with "provider:model" keys for O(1) lookup
+            models_dict = {}
+            for model in final_models:
+                model_name = model.get("model_name")
+                if model_name:
+                    # Create key in "provider:model" format
+                    model_key = f"{prov}:{model_name}"
+                    
+                    # Add provider field
+                    model["provider"] = prov
+                    
+                    models_dict[model_key] = model
+            
             output_data = {
                 "provider": prov,
                 "last_updated": datetime.now().strftime("%Y-%m-%d"),
                 "source": "html_extraction",
                 "extraction_date": datetime.now().isoformat(),
-                "models": final_models,
+                "models": models_dict,  # Dictionary format for O(1) lookup
             }
 
             # Save to JSON
