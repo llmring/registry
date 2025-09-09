@@ -1,15 +1,15 @@
 {
   "version": "2025-09-08",
-  "updated_at": "2025-09-08T17:22:49.623593Z",
+  "updated_at": "2025-09-08T17:54:52.990229Z",
   "providers": {
     "openai": {
       "file": "models/openai.json",
-      "model_count": 10,
+      "model_count": 13,
       "last_updated": "2025-09-08"
     },
     "anthropic": {
       "file": "models/anthropic.json",
-      "model_count": 6,
+      "model_count": 7,
       "last_updated": "2025-09-08"
     },
     "google": {
