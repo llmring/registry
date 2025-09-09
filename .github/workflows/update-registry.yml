@@ -46,20 +46,13 @@ jobs:
           uv run llmring-registry fetch-html --provider $provider
           
       - name: Extract models using LLM
-        # Use LLM-based extraction for better adaptability to HTML changes
+        # Use LLM-based extraction via llmring for adaptive parsing
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           provider="${{ github.event.inputs.provider || 'all' }}"
-          # Try LLM extraction if API keys are available
-          if [ -n "$OPENAI_API_KEY" ] || [ -n "$ANTHROPIC_API_KEY" ]; then
-            uv run llmring-registry extract-llm --provider $provider || \
-              uv run llmring-registry extract-html --provider $provider
-          else
-            # Fall back to regex extraction if no API keys
-            uv run llmring-registry extract-html --provider $provider
-          fi
+          uv run llmring-registry extract --provider $provider
           
       - name: Validate extracted models
         run: uv run llmring-registry validate
