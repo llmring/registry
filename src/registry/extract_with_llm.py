@@ -26,7 +26,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-async def extract_models_from_html(provider: str, html_content: str) -> List[Dict[str, Any]]:
+async def extract_models_from_html(provider: str, html_content: str, quiet: bool = False) -> List[Dict[str, Any]]:
     """
     Extract model information from HTML using an LLM.
     
@@ -44,27 +44,15 @@ async def extract_models_from_html(provider: str, html_content: str) -> List[Dic
         
         # Make sure we have API keys
         if not os.getenv("OPENAI_API_KEY") and not os.getenv("ANTHROPIC_API_KEY"):
-            logger.error("No API keys found. Set OPENAI_API_KEY or ANTHROPIC_API_KEY")
+            if not quiet:
+                logger.error("No API keys found. Set OPENAI_API_KEY or ANTHROPIC_API_KEY")
             return []
         
         service = LLMRing()
-        
-        # Check available models
-        available_models = service.get_available_models()
-        if not available_models:
-            logger.error("No models available in LLMRing")
-            return []
-        
-        # Pick the best available model
-        model = None
-        for provider_models in available_models.values():
-            if provider_models:
-                model = provider_models[0]
-                break
-        
-        if not model:
-            logger.error("No suitable model found")
-            return []
+
+        # Use single-source configured model
+        from .config import DEFAULT_EXTRACTION_MODEL
+        model = DEFAULT_EXTRACTION_MODEL
         
         # Create extraction prompt
         prompt = f"""Extract all AI model pricing information from this {provider} pricing page HTML.
@@ -120,7 +108,8 @@ HTML content:
             messages=[Message(role="user", content=prompt)],
             model=model,
             temperature=0,
-            max_tokens=4000
+            max_tokens=4000,
+            response_format={"type": "json_object"}
         )
         
         response = await service.chat(request)
@@ -147,7 +136,8 @@ HTML content:
             else:
                 models = result if isinstance(result, list) else []
         except json.JSONDecodeError:
-            logger.error(f"Failed to parse LLM response as JSON: {response.content[:500]}")
+            if not quiet:
+                logger.error("Failed to parse LLM response as JSON")
             models = []
         
         # Add provider field to each model
@@ -158,10 +148,12 @@ HTML content:
         return models
         
     except ImportError:
-        logger.error("LLMRing not available. Install with: uv add llmring")
+        if not quiet:
+            logger.error("LLMRing not available. Install with: uv add llmring")
         return []
     except Exception as e:
-        logger.error(f"LLM extraction failed: {e}")
+        if not quiet:
+            logger.error(f"LLM extraction failed: {e}")
         return []
 
 
@@ -185,15 +177,9 @@ async def validate_extracted_models(models: List[Dict[str, Any]], provider: str)
         service = LLMRing()
         
         # Get best available model
-        available_models = service.get_available_models()
-        model = None
-        for provider_models in available_models.values():
-            if provider_models:
-                model = provider_models[0]
-                break
-        
-        if not model:
-            return models
+        # Use single-source configured model
+        from .config import DEFAULT_EXTRACTION_MODEL
+        model = DEFAULT_EXTRACTION_MODEL
         
         # Create validation prompt
         prompt = f"""Validate and correct this extracted model data for {provider}.
@@ -219,12 +205,12 @@ Please review each model and:
    - is_reasoning_model: true for o1, o3, gpt-5 series
    - speed_tier: "fast" for mini/flash variants, "slow" for reasoning models, "standard" for others
    - intelligence_tier: "basic" for gpt-3.5/mini variants, "advanced" for opus/o-series, "standard" for others
-   - model_family: extract from model name (e.g., "gpt-4" from "gpt-4o", "claude-3" from "claude-3-sonnet")
+   - model_family: extract from model name (e.g., "gpt-4" from "gpt-4o", "claude-4" from "claude-opus-4-1-20250805")
    - is_active: true unless explicitly deprecated
 
 Known patterns:
 - OpenAI: gpt-4o, gpt-4o-mini, gpt-3.5-turbo, o1, o3, etc.
-- Anthropic: claude-3-opus-20240229, claude-3-sonnet-20240229, claude-3-haiku-20240307, etc.
+- Anthropic: claude-opus-4-1-20250805, claude-opus-4-20250514, claude-3-7-sonnet-20250219, etc.
 - Google: gemini-1.5-flash, gemini-1.5-pro, etc.
 
 Return the corrected JSON array of models."""

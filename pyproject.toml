@@ -21,7 +21,7 @@ classifiers = [
 dependencies = [
     "beautifulsoup4>=4.13.4",
     "click>=8.2.1",
-    "llmring>=0.3.0",
+    "llmring",
     "playwright>=1.54.0",
     "python-dotenv>=1.1.1",
     "requests>=2.32.4",
@@ -63,3 +63,6 @@ include = [
     "pyproject.toml",
     "pages",
 ]
+
+[tool.uv.sources]
+llmring = { path = "../llmring" }

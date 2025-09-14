@@ -10,7 +10,8 @@
     "anthropic": {
       "file": "models/anthropic.json",
       "model_count": 7,
-      "last_updated": "2025-09-08"
+      "last_updated": "2025-09-14",
+      "version": 1
     },
     "google": {
       "file": "models/google.json",

@@ -67,9 +67,9 @@ class PDFParser:
         try:
             from llmring import LLMRing
 
-            # Use LLMRing with its default configuration
-            # It will automatically handle PDFs appropriately for each provider
-            self.service = LLMRing(enable_db_logging=False)
+            # Use LLMRing with its default configuration; avoid optional args
+            # for compatibility across versions
+            self.service = LLMRing()
             self.initialized = True
         except ImportError:
             logger.error("LLMRing not available. Install with: uv add llmring")
@@ -80,8 +80,8 @@ class PDFParser:
             self.service = None
             self.initialized = False
 
-    def parse_provider_docs(
-        self, provider: str, pdf_paths: List[Path]
+    async def parse_provider_docs_async(
+        self, provider: str, pdf_paths: List[Path], timeout_seconds: int | None = 60
     ) -> List[ModelInfo]:
         """
         Parse PDF documents for a provider to extract model information.
@@ -114,91 +114,189 @@ class PDFParser:
 
             logger.info(f"Processing {pdf_path}")
 
+            # Use LLMRing's analyze_file to create proper content for any provider
+            content = analyze_file(
+                str(pdf_path), self._create_extraction_prompt_text(provider)
+            )
+
+            # Create request using LLMRing with JSON Schema so Anthropic adapter enforces structure
+            # IMPORTANT: Anthropic tools require input_schema.type == "object". We wrap our array under an object.
+            model_schema = {
+                "type": "object",
+                "properties": {
+                    "model_name": {"type": "string"},
+                    "display_name": {"type": "string"},
+                    "description": {"type": "string"},
+                    "dollars_per_million_tokens_input": {"type": "number"},
+                    "dollars_per_million_tokens_output": {"type": "number"},
+                    "max_input_tokens": {"type": ["integer", "null"]},
+                    "max_output_tokens": {"type": ["integer", "null"]},
+                    "supports_vision": {"type": ["boolean", "null"]},
+                    "supports_function_calling": {"type": ["boolean", "null"]},
+                    "supports_json_mode": {"type": ["boolean", "null"]},
+                    "supports_parallel_tool_calls": {"type": ["boolean", "null"]},
+                    "supports_streaming": {"type": ["boolean", "null"]},
+                    "supports_documents": {"type": ["boolean", "null"]},
+                    "is_active": {"type": ["boolean", "null"]}
+                },
+                "required": [
+                    "model_name",
+                    "display_name",
+                    "dollars_per_million_tokens_input",
+                    "dollars_per_million_tokens_output"
+                ]
+            }
+
+            # Tool input schema must be an object; include an array property 'models'
+            tool_input_schema = {
+                "type": "object",
+                "properties": {
+                    "models": {
+                        "type": "array",
+                        "items": model_schema,
+                    }
+                },
+                "required": ["models"],
+            }
+
+            request = LLMRequest(
+                messages=[Message(role="user", content=content)],
+                model=self._get_best_model(),
+                max_tokens=4000,
+                temperature=0,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {"schema": tool_input_schema},
+                    "strict": True,
+                },
+            )
+
+            # Run async request with timeout
             try:
-                # Use LLMRing's analyze_file to create proper content for any provider
-                content = analyze_file(
-                    str(pdf_path), self._create_extraction_prompt_text(provider)
+                response = await asyncio.wait_for(
+                    self.service.chat(request), timeout=timeout_seconds
                 )
+            except asyncio.TimeoutError as e:
+                raise TimeoutError(f"Timed out processing {pdf_path}") from e
 
-                # Create request using LLMRing's unified interface
-                request = LLMRequest(
-                    messages=[Message(role="user", content=content)],
-                    model=self._get_best_model(),  # Auto-select best available model
-                    max_tokens=4000,
-                    temperature=0,
-                    response_format=(
-                        {"type": "json_object"} if self._supports_json_mode() else None
-                    ),
-                )
+            # Parse response (prefer structured parsed payload if available)
+            parsed_payload = getattr(response, "parsed", None)
+            content = response.content.strip()
+            # Strip code fences if present
+            if content.startswith("```json"):
+                content = content[7:]
+                if content.endswith("```"):
+                    content = content[:-3]
+                content = content.strip()
+            elif content.startswith("```"):
+                content = content[3:]
+                if content.endswith("```"):
+                    content = content[:-3]
+                content = content.strip()
 
-                # Run async request
-                response = asyncio.run(self.service.chat(request))
-
-                # Parse response
+            if parsed_payload is not None:
+                # Expecting {"models": [...]} per tool_input_schema
+                if isinstance(parsed_payload, dict) and "models" in parsed_payload:
+                    models_data = parsed_payload["models"]
+                else:
+                    models_data = parsed_payload
+            else:
                 try:
-                    # First try direct JSON parsing
-                    models_data = json.loads(response.content)
+                    models_data = json.loads(content)
                     if isinstance(models_data, dict) and "models" in models_data:
                         models_data = models_data["models"]
-                except json.JSONDecodeError:
-                    # Try to find JSON array in response
-                    import re
+                except json.JSONDecodeError as e:
+                    raise ValueError(
+                        f"PDF parse returned non-JSON content for {pdf_path}: {content[:500]}"
+                    ) from e
 
-                    json_match = re.search(r"\[.*\]", response.content, re.DOTALL)
-                    if json_match:
-                        models_data = json.loads(json_match.group())
-                    else:
-                        logger.warning(
-                            f"Could not parse JSON from response for {pdf_path}"
-                        )
-                        models_data = []
+            # Add parsed models to results
+            if models_data:
+                all_models.extend(models_data)
 
-                # Add parsed models to results
-                if models_data:
-                    all_models.extend(models_data)
-
-            except Exception as e:
-                logger.error(f"Failed to process {pdf_path}: {e}")
-                continue
-
-        # Convert to ModelInfo objects
-        models = []
+        # Convert to ModelInfo objects mapping JSON keys to dataclass fields
+        models: List[ModelInfo] = []
         for model_data in all_models:
             try:
-                models.append(ModelInfo(**model_data))
-            except Exception as e:
-                logger.error(f"Failed to parse model data: {e}")
-                logger.error(f"Data: {model_data}")
+                # Accept both "model_id" and "model_name"
+                model_id = model_data.get("model_id") or model_data.get("model_name")
+                display_name = model_data.get("display_name") or model_id
+                description = model_data.get("description") or ""
+                use_cases = model_data.get("use_cases") or model_data.get("recommended_use_cases") or []
+                max_context = (
+                    model_data.get("max_context")
+                    or model_data.get("context_window_tokens")
+                    or model_data.get("max_input_tokens")
+                    or 0
+                )
+                max_output_tokens = model_data.get("max_output_tokens")
+                supports_vision = bool(model_data.get("supports_vision", False))
+                supports_function_calling = bool(model_data.get("supports_function_calling", False))
+                supports_json_mode = bool(model_data.get("supports_json_mode", False))
+                supports_parallel_tool_calls = bool(model_data.get("supports_parallel_tool_calls", False))
+                dollars_in = float(model_data.get("dollars_per_million_tokens_input", 0) or 0)
+                dollars_out = float(model_data.get("dollars_per_million_tokens_output", 0) or 0)
+                release_date = model_data.get("release_date")
+                deprecation_date = model_data.get("deprecated_date") or model_data.get("deprecation_date")
+                notes = model_data.get("notes")
+
+                mi = ModelInfo(
+                    model_id=model_id,
+                    display_name=display_name,
+                    description=description,
+                    use_cases=use_cases,
+                    max_context=max_context,
+                    max_output_tokens=max_output_tokens,
+                    supports_vision=supports_vision,
+                    supports_function_calling=supports_function_calling,
+                    supports_json_mode=supports_json_mode,
+                    supports_parallel_tool_calls=supports_parallel_tool_calls,
+                    dollars_per_million_tokens_input=dollars_in,
+                    dollars_per_million_tokens_output=dollars_out,
+                    release_date=release_date,
+                    deprecation_date=deprecation_date,
+                    notes=notes,
+                    supports_streaming=bool(model_data.get("supports_streaming", True)),
+                    supports_audio=bool(model_data.get("supports_audio", False)),
+                    supports_documents=bool(model_data.get("supports_documents", False)),
+                    context_window_tokens=model_data.get("context_window_tokens"),
+                    supports_json_schema=bool(model_data.get("supports_json_schema", False)),
+                    supports_logprobs=bool(model_data.get("supports_logprobs", False)),
+                    supports_multiple_responses=bool(model_data.get("supports_multiple_responses", False)),
+                    supports_caching=bool(model_data.get("supports_caching", False)),
+                    is_reasoning_model=bool(model_data.get("is_reasoning_model", False)),
+                    speed_tier=model_data.get("speed_tier"),
+                    intelligence_tier=model_data.get("intelligence_tier"),
+                    requires_tier=model_data.get("requires_tier"),
+                    requires_waitlist=bool(model_data.get("requires_waitlist", False)),
+                    model_family=model_data.get("model_family"),
+                    recommended_use_cases=model_data.get("recommended_use_cases"),
+                    is_active=bool(model_data.get("is_active", True)),
+                    added_date=model_data.get("added_date"),
+                )
+                models.append(mi)
+            except Exception:
+                # Skip invalid items silently during validation flow
+                continue
 
         return models
 
+    def parse_provider_docs(
+        self, provider: str, pdf_paths: List[Path], timeout_seconds: int | None = 60
+    ) -> List[ModelInfo]:
+        """Synchronous wrapper for environments without an event loop."""
+        import asyncio as _asyncio
+        return _asyncio.run(
+            self.parse_provider_docs_async(provider, pdf_paths, timeout_seconds)
+        )
+
     def _get_best_model(self) -> str:
-        """Get the best available model for PDF extraction."""
-        available_models = self.service.get_available_models()
-
-        # Prefer models in this order for best PDF understanding
-        preferred_models = [
-            "claude-3-5-sonnet-20241022",  # Best for PDFs
-            "gpt-4o",  # Good with Assistants API
-            "gemini-1.5-flash",  # Fast and capable
-            "claude-3-5-haiku-20241022",  # Fast Claude
-            "gpt-4o-mini",  # Fallback
-        ]
-
-        for model in preferred_models:
-            for provider_models in available_models.values():
-                if model in provider_models:
-                    logger.info(f"Using model: {model}")
-                    return model
-
-        # Fallback to first available model
-        for provider_models in available_models.values():
-            if provider_models:
-                model = provider_models[0]
-                logger.info(f"Using fallback model: {model}")
-                return model
-
-        raise ValueError("No models available")
+        """Return configured model for PDF extraction (no async calls)."""
+        try:
+            from ..config import DEFAULT_EXTRACTION_MODEL
+            return DEFAULT_EXTRACTION_MODEL
+        except Exception:
+            return "anthropic:claude-opus-4-1-20250805"
 
     def _supports_json_mode(self) -> bool:
         """Check if the selected model supports JSON response format."""

@@ -58,6 +58,26 @@ uv pip install -e .
 pip install -e .
 ```
 
+### Default Workflow (Recommended)
+
+```bash
+# 1) Fetch both HTML and PDFs into the standard directories
+uv run llmring-registry fetch --provider all
+
+# 2) Extract comprehensively (auto-creates html_cache/, pdfs/, drafts/)
+uv run llmring-registry extract --provider all --timeout 60
+
+# 3) Review latest drafts and accept
+uv run llmring-registry review-draft --provider openai --accept-all
+uv run llmring-registry review-draft --provider anthropic --accept-all
+uv run llmring-registry review-draft --provider google --accept-all
+
+# 4) Promote reviewed files (auto-discovers them in drafts/)
+uv run llmring-registry promote --provider openai
+uv run llmring-registry promote --provider anthropic
+uv run llmring-registry promote --provider google
+```
+
 ### Manual Curation Workflow (Human-validated)
 
 0. Gather source materials (optional but recommended):
@@ -66,41 +86,45 @@ pip install -e .
 # Show where to get docs and how to save PDFs
 uv run llmring-registry sources
 
-# Fetch pricing/docs HTML (lightweight)
-uv run llmring-registry fetch-html --provider openai --output-dir html_cache
-
-# Generate PDFs with a headless browser
-# (Playwright is installed via dependencies; install browsers once per machine)
-uv run playwright install chromium
-uv run llmring-registry fetch --provider openai --output-dir pdfs
+# Fetch both HTML and PDFs (recommended)
+# (First time only: uv run playwright install chromium)
+uv run llmring-registry fetch --provider openai
 ```
 
 1. Generate a draft JSON using the extractor (best-effort), or by hand:
 
 ```bash
-# Best-effort draft generation from PDFs (writes to drafts/ only)
-uv run llmring-registry extract --provider openai --pdfs-dir pdfs
+# Comprehensive draft generation from both HTML and PDFs
+# Directories html_cache/, pdfs/, and drafts/ are auto-created if missing
+# You can also set a per-PDF timeout in seconds (default 60)
+uv run llmring-registry extract --provider openai --timeout 60
 ```
 2. Review differences vs current curated file:
 
 ```bash
-uv run llmring-registry review-draft --provider openai --draft drafts/openai.2025-08-28.json
-# Inspect the generated .diff.json report
+# Review latest draft for the provider (no path needed)
+uv run llmring-registry review-draft --provider openai
+# This writes a sibling diff file: drafts/<draft>.diff.json
 
-# Optionally accept all to create a reviewed file
-uv run llmring-registry review-draft --provider openai --draft drafts/openai.2025-08-28.json --accept-all
+# Accept all changes to produce a reviewed file (and delete the draft)
+uv run llmring-registry review-draft --provider openai --accept-all
+# This writes drafts/openai.reviewed.json and removes the original draft
 ```
 
 3. Promote the reviewed file to publish and archive:
 
 ```bash
-uv run llmring-registry promote --provider openai --reviewed drafts/openai.reviewed.json
+# Promote latest reviewed file for the provider (no path needed)
+uv run llmring-registry promote --provider openai
+# On success, the reviewed file is deleted
 ```
 
 This will:
-- Bump `version` and `updated_at`
-- Write `openai/v/<version>/models.json`
-- Replace `openai/models.json`
+- Validate and publish to `pages/openai/models.json`
+- Archive snapshot at `pages/openai/v/<version>/models.json`
+- Write `models/openai.json` for local consumption
+- Bump `version` and set `updated_at`
+- Add `content_sha256_jcs` integrity hash
 
 ### Legacy Automation (deprecated)
 
@@ -117,7 +141,7 @@ uv run llmring-registry fetch-html --provider all
 uv run llmring-registry extract-html --provider all
 
 # Extract models with comprehensive dual-source validation
-uv run llmring-registry extract-comprehensive --provider all
+uv run llmring-registry extract --provider all --timeout 60
 
 # List all extracted models
 uv run llmring-registry list
@@ -200,11 +224,14 @@ Each provider's JSON file contains models in dictionary format with `provider:mo
 ### Fetching Documentation
 
 ```bash
-# Fetch HTML pages (no browser required)
-uv run llmring-registry fetch-html --provider openai
-
-# Fetch as PDFs (requires Playwright)
+# Preferred: fetch everything in one step
 uv run llmring-registry fetch --provider all
+
+# Also available individually:
+# - Fetch HTML pages (no browser required)
+uv run llmring-registry fetch-html --provider openai
+# - Fetch as PDFs (requires Playwright)
+uv run llmring-registry fetch-pdf --provider all
 ```
 
 ### Extraction
@@ -214,13 +241,26 @@ uv run llmring-registry fetch --provider all
 uv run llmring-registry extract-html --provider all
 
 # Extract from PDFs only (requires LLM API keys)
-uv run llmring-registry extract --provider all
+uv run llmring-registry extract-pdf --provider all
 
 # Comprehensive extraction (recommended)
-uv run llmring-registry extract-comprehensive --provider all
+uv run llmring-registry extract --provider all --timeout 60
 
 # Interactive mode for conflict resolution
-uv run llmring-registry extract-comprehensive --provider all --interactive
+uv run llmring-registry extract --provider all --interactive
+
+### Review & Promote
+
+```bash
+# Review the latest draft for a provider (auto-discovers drafts/)
+uv run llmring-registry review-draft --provider openai
+
+# Accept all changes to create a reviewed file (and delete the draft)
+uv run llmring-registry review-draft --provider openai --accept-all
+
+# Promote the latest reviewed file (auto-discovers drafts/)
+uv run llmring-registry promote --provider openai
+```
 ```
 
 ### Data Management
@@ -249,6 +289,14 @@ export GOOGLE_API_KEY="..."
 ```
 
 The system will automatically use the best available model for extraction.
+
+## Behavior Notes
+
+- Directories `html_cache/`, `pdfs/`, and `drafts/` are auto-created if missing by `extract-comprehensive`.
+- `review-draft` without `--draft` picks the most recent `drafts/<provider>*.draft.json`.
+- `review-draft --accept-all` creates `drafts/<provider>.reviewed.json` and deletes the source draft.
+- `promote` without `--reviewed` picks the latest `drafts/<provider>.reviewed.json` and deletes it after promotion.
+- `extract-comprehensive` supports `--timeout` (seconds) per PDF; default is 60s. Timeouts are logged and skipped.
 
 ## Automation
 

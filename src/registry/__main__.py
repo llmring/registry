@@ -9,6 +9,11 @@ from pathlib import Path
 import click
 
 from .extract_with_llm import extract_with_llm
+from .extract_comprehensive import extract_comprehensive
+from .review import review_draft
+from .promote import promote
+from .export_cmd import export_cmd
+from .extract_pdf import extract_pdf
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
@@ -29,7 +34,7 @@ def cli(ctx, verbose):
     ctx.ensure_object(dict)
 
 
-@cli.command()
+@cli.command(name="fetch-pdf")
 @click.option(
     "--provider",
     type=click.Choice(["openai", "anthropic", "google", "all"]),
@@ -37,13 +42,28 @@ def cli(ctx, verbose):
     help="Provider to fetch",
 )
 @click.option("--output-dir", default="pdfs", help="Directory to save PDFs")
-def fetch(provider, output_dir):
+@click.option("--timeout", default=60, help="Per-page fetch timeout (seconds)")
+@click.option("--print-endpoints", is_flag=True, default=False, help="Print PDF endpoints and exit (no fetching)")
+def fetch_pdf_cmd(provider, output_dir, timeout, print_endpoints):
     """
     Fetch pricing and model pages as PDFs (requires Playwright).
 
     Install browsers for Playwright first:
       uv run playwright install chromium
     """
+    if print_endpoints:
+        from .fetch_pdfs import PROVIDER_URLS as PDF_URLS
+        providers = [provider] if provider != "all" else ["openai", "anthropic", "google"]
+        click.echo("PDF endpoints:")
+        for prov in providers:
+            urls = PDF_URLS.get(prov, {})
+            if not urls:
+                continue
+            click.echo(f"\n{prov.upper()}:")
+            for name, url in urls.items():
+                click.echo(f"  - {name}: {url}")
+        return
+
     try:
         import asyncio
 
@@ -55,7 +75,7 @@ def fetch(provider, output_dir):
         click.echo(f"🌐 Fetching PDFs for: {', '.join(providers)}")
         click.echo(f"📁 Output directory: {output_path}")
 
-        asyncio.run(fetch_all_pdfs(providers, output_path, "chromium"))
+        asyncio.run(fetch_all_pdfs(providers, output_path, "chromium", timeout_seconds=timeout))
     except ImportError:
         click.echo(
             "❌ Playwright not installed. Install with: uv add playwright",
@@ -98,7 +118,7 @@ def sources(provider):
     """Show where to find pricing info for each provider."""
     urls = {
         "openai": [
-            "https://openai.com/api/pricing/",
+            "https://platform.openai.com/docs/pricing",
             "https://platform.openai.com/docs/models",
         ],
         "anthropic": [
@@ -119,11 +139,11 @@ def sources(provider):
             click.echo(f"   • {url}")
 
     click.echo(
-        "\n💡 Tip: Use 'llmring-registry fetch' to automatically download these as PDFs"
+        "\n💡 Tip: Use 'llmring-registry fetch' to download both HTML and PDFs"
     )
 
 
-@cli.command()
+@cli.command(name="extract-html")
 @click.option(
     "--provider",
     type=click.Choice(["openai", "anthropic", "google", "all"]),
@@ -162,8 +182,102 @@ def extract(provider, html_dir, models_dir, validate):
     )
 
 
-# Add the extract-llm alias for backward compatibility
+"""
+For compatibility:
+- extract-html: HTML-only LLM extraction to models/
+- extract-pdf: PDF-only extraction to drafts/
+- extract: comprehensive (HTML+PDF) to drafts/ with consensus merge
+"""
+
+# Map 'extract' to comprehensive extraction
+cli.add_command(extract_comprehensive, name="extract")
+# Backward compatibility aliases
 cli.add_command(extract, name="extract-llm")
+cli.add_command(extract_comprehensive, name="extract-comprehensive")
+cli.add_command(extract_pdf, name="extract-pdf")
+cli.add_command(review_draft, name="review-draft")
+cli.add_command(promote, name="promote")
+cli.add_command(export_cmd, name="export")
+
+
+@cli.command(name="fetch")
+@click.option("--provider", type=click.Choice(["openai", "anthropic", "google", "all"]), default="all")
+@click.option("--timeout", default=60, help="Per-page PDF fetch timeout (seconds)")
+@click.option("--cleanup/--no-cleanup", default=False, help="Remove low-content HTML/PDF after validation")
+def fetch_both(provider, timeout, cleanup):
+    """Fetch both HTML and PDFs into standard directories."""
+    ctx = click.get_current_context()
+    ctx.invoke(fetch_html, provider=provider, output_dir="html_cache")
+    try:
+        ctx.invoke(fetch_pdf_cmd, provider=provider, output_dir="pdfs", timeout=timeout)
+    except click.Abort:
+        click.echo("⚠️  PDF fetching skipped (Playwright not available)")
+
+    # Post-fetch validation: remove useless HTML/PDF and instruct manual steps if needed
+    try:
+        from .fetch_html import is_minimal_html
+        from .extract_with_llm import extract_models_from_html
+        from .extraction.pdf_parser import PDFParser
+        import asyncio
+    except Exception:
+        is_minimal_html = None
+        extract_models_from_html = None
+        PDFParser = None
+
+    providers = [provider] if provider != "all" else ["openai", "anthropic", "google"]
+    html_dir = Path("html_cache")
+    pdf_dir = Path("pdfs")
+
+    for prov in providers:
+        # Validate HTML files
+        for html_file in sorted(html_dir.glob(f"*{prov}*.html")):
+            try:
+                text = html_file.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                continue
+
+            delete_html = False
+            # Heuristic minimal check
+            if is_minimal_html and is_minimal_html(text):
+                delete_html = True
+            # LLM validation (if available), quiet to avoid noisy logs
+            if extract_models_from_html:
+                try:
+                    models = asyncio.run(extract_models_from_html(prov, text, quiet=True))
+                    if not models:
+                        delete_html = True
+                except Exception:
+                    pass
+
+            if delete_html:
+                if cleanup:
+                    try:
+                        html_file.unlink()
+                        click.echo(f"🗑️  Removed low-content HTML: {html_file.name}")
+                    except Exception:
+                        pass
+                else:
+                    click.echo(f"⚠️  Low-content HTML: {html_file.name}")
+
+        # Validate PDFs using LLM extraction; if empty, delete and instruct manual download
+        if PDFParser is not None:
+            parser = PDFParser()
+        else:
+            parser = None
+
+        for pdf_file in sorted(pdf_dir.glob(f"*{prov}*.pdf")):
+            if parser is None:
+                click.echo(f"ℹ️ Skipping PDF validation (LLMRing not available): {pdf_file.name}")
+                continue
+
+            # Let exceptions bubble to show full traceback (debugging)
+            models = parser.parse_provider_docs(
+                prov, [pdf_file], timeout_seconds=max(30, int(timeout))
+            )
+            if not models:
+                click.echo(
+                    f"⚠️ No models parsed from PDF: {pdf_file.name}. Keeping file for inspection."
+                )
 
 
 @cli.command(name="list")
@@ -234,7 +348,7 @@ def list_models(models_dir, provider, output_json):
     if total_count > 0:
         click.echo(f"\n📊 Total: {total_count} models")
     else:
-        click.echo("No models found. Run 'registry extract' to create model files.")
+        click.echo("No models found. Run 'llmring-registry extract' to create model files.")
 
 
 @cli.command()
@@ -432,7 +546,8 @@ def manifest(models_dir, output):
 
 def main():
     """Main entry point."""
-    cli()
+    # Allow exceptions to propagate for full tracebacks during debugging
+    cli(standalone_mode=False)
 
 
 if __name__ == "__main__":

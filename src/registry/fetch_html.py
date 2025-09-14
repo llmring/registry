@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 PROVIDER_URLS = {
     "openai": {
-        "pricing": "https://openai.com/api/pricing/",
+        "pricing": "https://platform.openai.com/docs/pricing",
         "models": "https://platform.openai.com/docs/models",
         "api_pricing": "https://api.openai.com/v1/models",  # API endpoint
     },
     "anthropic": {
-        "pricing": "https://www.anthropic.com/pricing",
-        "models": "https://docs.anthropic.com/en/docs/models-overview",
+        "pricing": "https://docs.anthropic.com/en/docs/about-claude/pricing",
+        "models": "https://docs.anthropic.com/en/docs/about-claude/models/overview",
     },
     "google": {
         "pricing": "https://ai.google.dev/pricing",
@@ -44,6 +44,8 @@ def fetch_html(url: str) -> Optional[str]:
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache",
     }
 
     try:
@@ -52,6 +54,33 @@ def fetch_html(url: str) -> Optional[str]:
         return response.text
     except Exception as e:
         logger.error(f"Failed to fetch {url}: {e}")
+        return None
+
+
+def is_minimal_html(text: str) -> bool:
+    """Heuristic to detect client-rendered shells with little usable content."""
+    if not text:
+        return True
+    return len(text) < 2000 and "<script" in text and "<main" not in text and "data-rh" not in text
+
+
+def fetch_rendered_html(url: str) -> Optional[str]:
+    """Fetch server-rendered content via a reader proxy as a fallback for SPAs."""
+    import requests
+
+    try:
+        # Use Jina Reader proxy to get rendered HTML
+        # It expects an http URL appended; use the host+path from original URL
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        host_path = f"{parsed.netloc}{parsed.path or ''}"
+        rendered_url = f"https://r.jina.ai/http://{host_path}"
+        resp = requests.get(rendered_url, timeout=30)
+        resp.raise_for_status()
+        return resp.text
+    except Exception as e:
+        logger.error(f"Rendered HTML fallback failed for {url}: {e}")
         return None
 
 
@@ -83,7 +112,7 @@ def extract_pricing_info(html: str, provider: str) -> Dict:
         "title": title,
         "extracted_at": datetime.now().isoformat(),
         "pricing_mentions": relevant_text[:50],  # Limit to 50 items
-        "note": "This is raw HTML extraction. Use 'registry extract' for proper model extraction.",
+        "note": "This is raw HTML extraction. Use 'llmring-registry extract' for proper model extraction.",
     }
 
 
@@ -150,6 +179,18 @@ def fetch_html_pages(provider, output_dir, format):
                         f.write(html)
                     click.echo(f"  ✓ Saved HTML to {html_file}")
 
+                    # If the HTML looks minimal (SPA shell), try rendered fallback
+                    if is_minimal_html(html):
+                        click.echo("  ⚠️  HTML looks client-rendered; trying rendered fallback…")
+                        rendered = fetch_rendered_html(url)
+                        if rendered:
+                            rendered_file = output_path / f"{date_str}-{prov}-{doc_type}.rendered.html"
+                            with open(rendered_file, "w", encoding="utf-8") as rf:
+                                rf.write(rendered)
+                            click.echo(f"     ✓ Saved rendered HTML to {rendered_file}")
+                        else:
+                            click.echo("     ✗ Rendered fallback failed")
+
                 # Extract basic info
                 if format in ["json", "both"]:
                     extracted_data[doc_type] = extract_pricing_info(html, prov)
@@ -167,7 +208,7 @@ def fetch_html_pages(provider, output_dir, format):
 
     if format in ["json", "both"]:
         click.echo(
-            "\n💡 Tip: Use 'registry extract' to properly extract model information from these files"
+            "\n💡 Tip: Use 'llmring-registry extract' to properly extract model information from these files"
         )
 
 

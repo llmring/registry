@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 PROVIDER_URLS = {
     "openai": {
-        "pricing": "https://openai.com/api/pricing/",
+        "pricing": "https://platform.openai.com/docs/pricing",
         "models": "https://platform.openai.com/docs/models",
     },
     "anthropic": {
-        "pricing": "https://www.anthropic.com/pricing",
-        "models": "https://docs.anthropic.com/en/docs/models-overview",
+        "pricing": "https://docs.anthropic.com/en/docs/about-claude/pricing",
+        "models": "https://docs.anthropic.com/en/docs/about-claude/models/overview",
     },
     "google": {
         "pricing": "https://ai.google.dev/pricing",
@@ -28,7 +28,7 @@ PROVIDER_URLS = {
 }
 
 
-async def fetch_and_save_pdf(page, url: str, output_path: Path) -> bool:
+async def fetch_and_save_pdf(page, url: str, output_path: Path, timeout_ms: int = 60000, screenshot_dir: Path | None = None) -> bool:
     """
     Fetch a URL and save it as PDF.
 
@@ -43,11 +43,52 @@ async def fetch_and_save_pdf(page, url: str, output_path: Path) -> bool:
     try:
         logger.info(f"Fetching {url}")
 
-        # Navigate to page
-        await page.goto(url, wait_until="networkidle")
+        # Navigate with a resilient strategy (dynamic docs often never reach networkidle)
+        try:
+            await page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+        except Exception:
+            try:
+                await page.goto(url, wait_until="load", timeout=timeout_ms)
+            except Exception:
+                # As a last resort, try minimal wait
+                await page.goto(url, timeout=timeout_ms)
 
-        # Wait a bit for any dynamic content
-        await page.wait_for_timeout(2000)
+        # Try to wait for meaningful content
+        try:
+            await page.wait_for_selector("main, article, #__next, body", timeout=min(30000, timeout_ms // 2))
+        except Exception:
+            pass
+
+        # Attempt incremental scroll to trigger lazy loading
+        try:
+            for _ in range(5):
+                await page.evaluate("window.scrollBy(0, document.body.scrollHeight/4)")
+                await page.wait_for_timeout(500)
+        except Exception:
+            pass
+
+        # Check content length; if too small, wait a bit more
+        try:
+            body_len = await page.evaluate("(document.body && document.body.innerText || '').length")
+            if body_len < 500:
+                await page.wait_for_timeout(3000)
+        except Exception:
+            pass
+
+        # Ensure screen media for better PDF output
+        try:
+            await page.emulate_media(media="screen")
+        except Exception:
+            pass
+
+        # Optional: save a diagnostic screenshot
+        try:
+            if screenshot_dir is not None:
+                screenshot_dir.mkdir(parents=True, exist_ok=True)
+                shot_path = screenshot_dir / (output_path.stem + ".png")
+                await page.screenshot(path=str(shot_path), full_page=True)
+        except Exception:
+            pass
 
         # Save as PDF
         await page.pdf(
@@ -55,6 +96,7 @@ async def fetch_and_save_pdf(page, url: str, output_path: Path) -> bool:
             format="A4",
             print_background=True,
             margin={"top": "20px", "bottom": "20px", "left": "20px", "right": "20px"},
+            prefer_css_page_size=True,
         )
 
         logger.info(f"✓ Saved to {output_path}")
@@ -66,7 +108,7 @@ async def fetch_and_save_pdf(page, url: str, output_path: Path) -> bool:
 
 
 async def fetch_all_pdfs(
-    providers: List[str], output_dir: Path, browser_type: str = "chromium"
+    providers: List[str], output_dir: Path, browser_type: str = "chromium", timeout_seconds: int = 60
 ):
     """
     Fetch all PDFs for specified providers.
@@ -95,10 +137,27 @@ async def fetch_all_pdfs(
         else:
             browser = await p.webkit.launch(headless=True)
 
-        # Create context with desktop viewport
+        # Create context with desktop viewport and sane defaults for SPAs
         context = await browser.new_context(
-            viewport={"width": 1280, "height": 800},
+            viewport={"width": 1366, "height": 900},
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            java_script_enabled=True,
+            bypass_csp=True,
+            locale="en-US",
+            timezone_id="UTC",
+            extra_http_headers={
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Cache-Control": "no-cache",
+                "Upgrade-Insecure-Requests": "1",
+                "DNT": "1",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+                "Sec-Fetch-User": "?1",
+                # A generic referer to look more like a human session
+                "Referer": "https://www.google.com/",
+            },
         )
 
         page = await context.new_page()
@@ -118,7 +177,9 @@ async def fetch_all_pdfs(
                 filename = f"{date_str}-{provider}-{doc_type}.pdf"
                 output_path = output_dir / filename
 
-                if await fetch_and_save_pdf(page, url, output_path):
+                screenshots_dir = output_dir / "_screenshots"
+
+                if await fetch_and_save_pdf(page, url, output_path, timeout_ms=timeout_seconds * 1000, screenshot_dir=screenshots_dir):
                     success_count += 1
 
                 # Small delay between requests
