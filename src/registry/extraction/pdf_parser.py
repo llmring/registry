@@ -35,6 +35,29 @@ class ModelInfo:
     deprecation_date: Optional[str]
     notes: Optional[str]
 
+    # Additional capabilities
+    supports_streaming: bool = True
+    supports_audio: bool = False
+    supports_documents: bool = False
+    context_window_tokens: Optional[int] = None
+    supports_json_schema: bool = False
+    supports_logprobs: bool = False
+    supports_multiple_responses: bool = False
+    supports_caching: bool = False
+    is_reasoning_model: bool = False
+
+    # Model characteristics & metadata
+    speed_tier: Optional[str] = None  # "fast" | "standard" | "slow"
+    intelligence_tier: Optional[str] = None  # "basic" | "standard" | "advanced"
+    requires_tier: Optional[int] = None
+    requires_waitlist: bool = False
+    model_family: Optional[str] = None
+    recommended_use_cases: Optional[List[str]] = None
+
+    # Status fields
+    is_active: bool = True
+    added_date: Optional[str] = None
+
 
 class PDFParser:
     """Parse PDF documents to extract model information using Claude."""

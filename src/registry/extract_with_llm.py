@@ -7,7 +7,6 @@ avoiding brittle regex patterns that break when providers update their sites.
 
 import json
 import logging
-import os
 from pathlib import Path
 from typing import Dict, List, Any
 import click
@@ -83,11 +82,35 @@ For each model found, extract:
 - supports_json_mode: Whether it supports JSON output mode (true/false)
 - supports_parallel_tool_calls: Whether it supports parallel tool calls (true/false)
 
+Additional capabilities:
+- supports_streaming: Whether it supports streaming responses (true/false, default true for modern models)
+- supports_audio: Whether it supports audio input/output (true/false)
+- supports_documents: Whether it supports document processing (true/false)
+- context_window_tokens: Total context size (input + output tokens)
+- supports_json_schema: Whether it supports structured JSON with schema validation (true/false)
+- supports_logprobs: Whether it supports log probabilities (true/false)
+- supports_multiple_responses: Whether it supports multiple completions in one request (true/false)
+- supports_caching: Whether it supports prompt caching (true/false)
+- is_reasoning_model: Whether this is a reasoning model like o1, o3 (true/false)
+
+Model characteristics:
+- speed_tier: "fast" | "standard" | "slow" (based on model type)
+- intelligence_tier: "basic" | "standard" | "advanced" (based on capabilities)
+- requires_tier: OpenAI tier requirement (integer, null if none)
+- requires_waitlist: Whether the model requires waitlist access (true/false)
+- model_family: Model family name (e.g., "gpt-4", "claude-3", "gemini-1.5", "o-series")
+- recommended_use_cases: Array of use cases like ["chat", "code", "vision", "reasoning"]
+
+Status:
+- is_active: Whether the model is currently available (true/false)
+- release_date: Release date in YYYY-MM-DD format (if mentioned)
+
 Important:
 1. Extract ONLY actual models with pricing, not plans or subscriptions
 2. Convert all prices to dollars per million tokens
-3. If a capability is not mentioned, use reasonable defaults based on the model family
-4. Return ONLY a JSON array of model objects, no other text
+3. For missing capabilities, use reasonable defaults based on provider and model family
+4. Calculate context_window_tokens as max_input_tokens + max_output_tokens when both are available
+5. Return ONLY a JSON array of model objects, no other text
 
 HTML content:
 {html_content[:50000]}  # Limit to avoid token limits
@@ -184,10 +207,24 @@ Please review each model and:
 3. Add reasonable defaults for missing capability flags based on the model family
 4. Remove any models that aren't actually API-accessible models
 5. Ensure prices are in dollars per million tokens
+6. Validate new capability fields and set appropriate defaults:
+   - supports_streaming: true for all modern models (GPT-3.5+, Claude 2+, Gemini 1+)
+   - supports_audio: true for gpt-4o variants, gemini-1.5+ models
+   - supports_documents: true for Claude 3+, Gemini 1.5+, GPT models via API
+   - context_window_tokens: calculate as max_input_tokens + max_output_tokens
+   - supports_json_schema: true for GPT-4o+, Gemini models with structured output
+   - supports_logprobs: true for OpenAI models, false for others typically
+   - supports_multiple_responses: true for OpenAI models (n parameter), false for others
+   - supports_caching: true for Anthropic models, some OpenAI features
+   - is_reasoning_model: true for o1, o3, gpt-5 series
+   - speed_tier: "fast" for mini/flash variants, "slow" for reasoning models, "standard" for others
+   - intelligence_tier: "basic" for gpt-3.5/mini variants, "advanced" for opus/o-series, "standard" for others
+   - model_family: extract from model name (e.g., "gpt-4" from "gpt-4o", "claude-3" from "claude-3-sonnet")
+   - is_active: true unless explicitly deprecated
 
 Known patterns:
-- OpenAI: gpt-4o, gpt-4o-mini, gpt-3.5-turbo, etc.
-- Anthropic: claude-opus-4.1, claude-sonnet-4, claude-haiku-3.5, etc.
+- OpenAI: gpt-4o, gpt-4o-mini, gpt-3.5-turbo, o1, o3, etc.
+- Anthropic: claude-3-opus-20240229, claude-3-sonnet-20240229, claude-3-haiku-20240307, etc.
 - Google: gemini-1.5-flash, gemini-1.5-pro, etc.
 
 Return the corrected JSON array of models."""
@@ -296,7 +333,7 @@ def extract_with_llm(provider, html_dir, models_dir, validate):
                     all_models.extend(models)
                     click.echo(f"     Found {len(models)} models")
                 else:
-                    click.echo(f"     No models extracted")
+                    click.echo("     No models extracted")
             
             if all_models:
                 # Remove duplicates based on model_name
@@ -312,7 +349,7 @@ def extract_with_llm(provider, html_dir, models_dir, validate):
                 if validate:
                     click.echo(f"  🔍 Validating {len(final_models)} models...")
                     final_models = await validate_extracted_models(final_models, prov)
-                    click.echo(f"     Validation complete")
+                    click.echo("     Validation complete")
             
                 # Convert to dictionary format for O(1) lookup
                 models_dict = {}

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Registry CLI - Main command-line interface for model registry management."""
 
-import hashlib
 import json
 import logging
 from datetime import datetime
@@ -48,9 +47,15 @@ def fetch(provider, output_dir):
     try:
         import asyncio
 
-        from .fetch_pdfs import fetch_pdfs
+        from .fetch_pdfs import fetch_all_pdfs
 
-        asyncio.run(fetch_pdfs(provider, output_dir))
+        providers = [provider] if provider != "all" else ["openai", "anthropic", "google"]
+        output_path = Path(output_dir)
+
+        click.echo(f"🌐 Fetching PDFs for: {', '.join(providers)}")
+        click.echo(f"📁 Output directory: {output_path}")
+
+        asyncio.run(fetch_all_pdfs(providers, output_path, "chromium"))
     except ImportError:
         click.echo(
             "❌ Playwright not installed. Install with: uv add playwright",
@@ -76,10 +81,10 @@ def fetch_html(provider, output_dir):
 
     Saves raw HTML for extraction.
     """
-    from .fetch_html import fetch_html as fetch_func
+    from .fetch_html import fetch_html_pages
 
     ctx = click.get_current_context()
-    ctx.invoke(fetch_func, provider=provider, output_dir=output_dir)
+    ctx.invoke(fetch_html_pages, provider=provider, output_dir=output_dir, format="both")
 
 
 @cli.command()
@@ -301,6 +306,8 @@ def validate(models_dir, provider, verbose):
                 "dollars_per_million_tokens_output",
                 "max_input_tokens",
                 "max_output_tokens",
+                "context_window_tokens",
+                "requires_tier",
             ]
             for field in numeric_fields:
                 if field in model:
@@ -313,13 +320,52 @@ def validate(models_dir, provider, verbose):
             # Boolean fields
             bool_fields = [
                 "supports_vision",
-                "supports_function_calling", 
+                "supports_function_calling",
                 "supports_json_mode",
                 "supports_parallel_tool_calls",
+                "supports_streaming",
+                "supports_audio",
+                "supports_documents",
+                "supports_json_schema",
+                "supports_logprobs",
+                "supports_multiple_responses",
+                "supports_caching",
+                "is_reasoning_model",
+                "requires_waitlist",
+                "is_active",
             ]
             for field in bool_fields:
                 if field in model and not isinstance(model.get(field), bool):
                     model_errors.append(f"'{field}' must be boolean")
+
+            # Enum string fields
+            enum_fields = {
+                "speed_tier": ["fast", "standard", "slow"],
+                "intelligence_tier": ["basic", "standard", "advanced"],
+            }
+            for field, allowed_values in enum_fields.items():
+                if field in model:
+                    val = model[field]
+                    if val is not None and val not in allowed_values:
+                        model_errors.append(f"'{field}' must be one of {allowed_values}, got '{val}'")
+
+            # Array fields
+            array_fields = ["recommended_use_cases"]
+            for field in array_fields:
+                if field in model:
+                    val = model[field]
+                    if val is not None and not isinstance(val, list):
+                        model_errors.append(f"'{field}' must be an array")
+
+            # Date fields (basic format validation)
+            date_fields = ["release_date", "added_date", "deprecated_date"]
+            for field in date_fields:
+                if field in model:
+                    val = model[field]
+                    if val is not None and not isinstance(val, str):
+                        model_errors.append(f"'{field}' must be a string")
+                    elif val and not val.count("-") >= 2:  # Basic YYYY-MM-DD check
+                        model_errors.append(f"'{field}' should be in YYYY-MM-DD format")
 
             if model_errors:
                 model_name = model.get("model_name", f"index_{i}")
@@ -357,7 +403,7 @@ def manifest(models_dir, output):
         "version": datetime.now().strftime("%Y-%m-%d"),
         "updated_at": datetime.now().isoformat() + "Z",
         "providers": {},
-        "schema_version": "2.0",
+        "schema_version": "3.0",
         "registry_url": "https://llmring.github.io/registry/",
         "extraction_methods": {
             "llm": "LLM-based extraction via LLMRing unified interface"
