@@ -8,6 +8,7 @@ from pathlib import Path
 
 import click
 
+from .config import HTML_CACHE_DIR, PDF_CACHE_DIR, DRAFTS_DIR, MODELS_DIR
 from .extract_with_llm import extract_with_llm
 from .extract_comprehensive import extract_comprehensive
 from .review import review_draft
@@ -41,7 +42,7 @@ def cli(ctx, verbose):
     default="all",
     help="Provider to fetch",
 )
-@click.option("--output-dir", default="pdfs", help="Directory to save PDFs")
+@click.option("--output-dir", default="cache/pdfs", help="Directory to save PDFs")
 @click.option("--timeout", default=60, help="Per-page fetch timeout (seconds)")
 @click.option("--print-endpoints", is_flag=True, default=False, help="Print PDF endpoints and exit (no fetching)")
 def fetch_pdf_cmd(provider, output_dir, timeout, print_endpoints):
@@ -94,7 +95,7 @@ def fetch_pdf_cmd(provider, output_dir, timeout, print_endpoints):
     default="all",
     help="Provider to fetch",
 )
-@click.option("--output-dir", default="html_cache", help="Directory to save HTML")
+@click.option("--output-dir", default="cache/html", help="Directory to save HTML")
 def fetch_html(provider, output_dir):
     """
     Fetch pricing and model pages as HTML.
@@ -152,7 +153,7 @@ def sources(provider):
 )
 @click.option(
     "--html-dir",
-    default="html_cache",
+    default="cache/html",
     type=click.Path(exists=True),
     help="Directory containing HTML files",
 )
@@ -207,9 +208,9 @@ cli.add_command(export_cmd, name="export")
 def fetch_both(provider, timeout, cleanup):
     """Fetch both HTML and PDFs into standard directories."""
     ctx = click.get_current_context()
-    ctx.invoke(fetch_html, provider=provider, output_dir="html_cache")
+    ctx.invoke(fetch_html, provider=provider, output_dir=str(HTML_CACHE_DIR))
     try:
-        ctx.invoke(fetch_pdf_cmd, provider=provider, output_dir="pdfs", timeout=timeout)
+        ctx.invoke(fetch_pdf_cmd, provider=provider, output_dir=str(PDF_CACHE_DIR), timeout=timeout)
     except click.Abort:
         click.echo("⚠️  PDF fetching skipped (Playwright not available)")
 
@@ -225,8 +226,8 @@ def fetch_both(provider, timeout, cleanup):
         PDFParser = None
 
     providers = [provider] if provider != "all" else ["openai", "anthropic", "google"]
-    html_dir = Path("html_cache")
-    pdf_dir = Path("pdfs")
+    html_dir = HTML_CACHE_DIR
+    pdf_dir = PDF_CACHE_DIR
 
     for prov in providers:
         # Validate HTML files

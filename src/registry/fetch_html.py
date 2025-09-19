@@ -125,7 +125,7 @@ def extract_pricing_info(html: str, provider: str) -> Dict:
 )
 @click.option(
     "--output-dir",
-    default="html_cache",
+    default="cache/html",
     help="Directory to save HTML and extracted data",
 )
 @click.option(

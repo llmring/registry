@@ -197,7 +197,7 @@ async def fetch_all_pdfs(
     default="all",
     help="Provider to fetch",
 )
-@click.option("--output-dir", default="pdfs", help="Directory to save PDFs")
+@click.option("--output-dir", default="cache/pdfs", help="Directory to save PDFs")
 @click.option(
     "--browser",
     type=click.Choice(["chromium", "firefox", "webkit"]),

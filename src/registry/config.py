@@ -1,13 +1,20 @@
-"""Registry configuration and global constants."""
+"""Configuration and default paths for the registry."""
 
-import os
+from pathlib import Path
 
+# Cache directories for fetched content
+CACHE_DIR = Path("cache")
+HTML_CACHE_DIR = CACHE_DIR / "html"
+PDF_CACHE_DIR = CACHE_DIR / "pdfs"
+SCREENSHOT_CACHE_DIR = CACHE_DIR / "screenshots"
 
-# Single source of truth for the extraction model used across the pipeline.
-# Override via env var to experiment without code changes.
-# Example: export LLMRING_EXTRACTION_MODEL="anthropic:claude-sonnet-4-20250514"
-DEFAULT_EXTRACTION_MODEL: str = os.getenv(
-    "LLMRING_EXTRACTION_MODEL", "anthropic:claude-opus-4-1-20250805"
-)
+# Working directories
+DRAFTS_DIR = Path("drafts")
 
+# Production data directories
+MODELS_DIR = Path("models")
+PAGES_DIR = Path("pages")
 
+# Legacy paths (for backward compatibility during migration)
+LEGACY_HTML_CACHE_DIR = Path("html_cache")
+LEGACY_PDF_DIR = Path("pdfs")

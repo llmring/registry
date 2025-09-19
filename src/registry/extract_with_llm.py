@@ -265,7 +265,7 @@ Return the corrected JSON array of models."""
 )
 @click.option(
     "--html-dir",
-    default="html_cache",
+    default="cache/html",
     type=click.Path(exists=True),
     help="Directory containing HTML files"
 )

@@ -27,6 +27,10 @@ The LLMRing Registry is the source of truth for model information across the LLM
 
 ```
 Registry (This Repo)
+├── cache/              # All fetched source material (can be regenerated)
+│   ├── html/           # HTML documents from provider websites
+│   ├── pdfs/           # PDF documentation files
+│   └── screenshots/    # Visual captures if needed
 ├── Extraction Pipeline
 │   ├── HTML Extraction (LLM-based adaptive extraction)
 │   ├── PDF Analysis (via LLMRing's unified interface)
@@ -65,7 +69,7 @@ pip install -e .
 # 1) Fetch both HTML and PDFs into the standard directories
 uv run llmring-registry fetch --provider all
 
-# 2) Extract comprehensively (auto-creates html_cache/, pdfs/, drafts/)
+# 2) Extract comprehensively (auto-creates cache/html/, cache/pdfs/, drafts/)
 uv run llmring-registry extract --provider all --timeout 60
 
 # 3) Review latest drafts and accept
@@ -96,7 +100,7 @@ uv run llmring-registry fetch --provider openai
 
 ```bash
 # Comprehensive draft generation from both HTML and PDFs
-# Directories html_cache/, pdfs/, and drafts/ are auto-created if missing
+# Directories cache/html/, cache/pdfs/, and drafts/ are auto-created if missing
 # You can also set a per-PDF timeout in seconds (default 60)
 uv run llmring-registry extract --provider openai --timeout 60
 ```
@@ -290,7 +294,7 @@ The system will automatically use the best available model for extraction.
 
 ## Behavior Notes
 
-- Directories `html_cache/`, `pdfs/`, and `drafts/` are auto-created if missing by `extract-comprehensive`.
+- Directories `cache/html/`, `cache/pdfs/`, and `drafts/` are auto-created if missing by `extract`.
 - `review-draft` without `--draft` picks the most recent `drafts/<provider>*.draft.json`.
 - `review-draft --accept-all` creates `drafts/<provider>.reviewed.json` and deletes the source draft.
 - `promote` without `--reviewed` picks the latest `drafts/<provider>.reviewed.json` and deletes it after promotion.
@@ -353,9 +357,12 @@ registry/
 │   │   ├── pdf_parser.py     # LLMRing-based PDF extraction
 │   │   └── model_curator.py  # Model selection logic
 │   └── fetch_html.py         # Web scraping
-├── models/                   # Output JSON files
-├── pdfs/                     # Cached PDF documentation
-└── html_cache/               # Cached HTML pages
+├── cache/                    # All cached source documents
+│   ├── html/                 # HTML pages from providers
+│   ├── pdfs/                 # PDF documentation files
+│   └── screenshots/          # Visual captures if needed
+├── models/                   # Current production JSON files
+└── drafts/                   # Work-in-progress extractions
 ```
 
 ### Adding a New Provider
