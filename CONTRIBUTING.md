@@ -40,17 +40,10 @@ PROVIDER_URLS = {
 }
 ```
 
-2. **Create extraction function** in `src/registry/extract_from_html.py`:
-```python
-def extract_newprovider_models(html: str) -> List[Dict[str, Any]]:
-    # Your extraction logic here
-    pass
-```
-
-3. **Test the extraction**:
+2. **Test the extraction** (LLM-based extraction adapts automatically):
 ```bash
-uv run registry fetch-html --provider newprovider
-uv run registry extract-comprehensive --provider newprovider
+uv run llmring-registry fetch --provider newprovider
+uv run llmring-registry extract --provider newprovider --timeout 60
 ```
 
 4. **Submit a PR** with:
@@ -58,14 +51,14 @@ uv run registry extract-comprehensive --provider newprovider
    - Test data (sample HTML)
    - Updated documentation
 
-### Improving Extraction Patterns
+### Improving Extraction
 
 If you notice incorrect or missing data:
 
 1. Identify the specific field/model affected
-2. Locate the extraction pattern in `extract_from_html.py`
-3. Update the regex pattern
-4. Test against current HTML
+2. Update the LLM prompts in `extract_with_llm.py` if needed
+3. Adjust confidence scoring in `extraction/confidence.py` for field priorities
+4. Test against current HTML and PDF sources
 5. Ensure no regressions for other models
 
 ### Development Setup
@@ -92,7 +85,7 @@ uv run pytest
 uv run pytest -k "test_openai"
 
 # Test extraction
-uv run registry extract-comprehensive --provider openai --interactive
+uv run llmring-registry extract --provider openai --timeout 60
 ```
 
 ### Code Style

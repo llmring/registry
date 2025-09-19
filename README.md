@@ -4,10 +4,10 @@
 >
 > The pricing, token limits, and capabilities in this registry are under active validation and may be inaccurate. Do not rely on these numbers for production decisions. Always verify against the providers' official documentation.
 >
-> **Current Models Detected (2025-08-28):**
-> - OpenAI: GPT-5, GPT-5-mini, GPT-5-nano, GPT-4o
-> - Google: Gemini-1.5-flash, Gemini-1.5-flash-8b
-> - Anthropic: Extraction patterns need updating for latest models
+> **Latest Update (2025-09-14):**
+> - OpenAI: 13 models including GPT-4o, GPT-4o-mini, GPT-3.5-turbo
+> - Anthropic: 14 models including Claude 3 Opus, Sonnet, Haiku, Claude 3.5 Sonnet
+> - Google: 9 models including Gemini 1.5 Flash, Pro, and Ultra variants
 
 
 The official model registry for LLMRing - providing up-to-date pricing, capabilities, and metadata for all major LLM providers.
@@ -28,17 +28,18 @@ The LLMRing Registry is the source of truth for model information across the LLM
 ```
 Registry (This Repo)
 ├── Extraction Pipeline
-│   ├── HTML Scraping (BeautifulSoup + Regex)
-│   └── PDF Analysis (via LLMRing's unified interface)
-│       ├── OpenAI: Assistants API
-│       ├── Anthropic: Direct PDF support
-│       └── Google: Direct PDF support
+│   ├── HTML Extraction (LLM-based adaptive extraction)
+│   ├── PDF Analysis (via LLMRing's unified interface)
+│   └── Confidence Scoring (dual-source consensus merging)
+├── Review & Promotion
+│   ├── Draft Generation with confidence metrics
+│   ├── Diff-based review workflow
+│   └── Version management and archiving
 └── Output
-    ├── models/
-    │   ├── openai.json
-    │   ├── anthropic.json
-    │   └── google.json
-    └── manifest.json
+    ├── models/         # Current production models
+    ├── drafts/         # Pending changes for review
+    ├── pages/          # Versioned archives
+    └── manifest.json   # Registry metadata
 ```
 
 ## Quick Start
@@ -237,17 +238,15 @@ uv run llmring-registry fetch-pdf --provider all
 ### Extraction
 
 ```bash
-# Extract from HTML only
+# Comprehensive extraction from both HTML and PDFs (recommended)
+uv run llmring-registry extract --provider all --timeout 60
+
+# Extract from HTML only (uses LLM-based extraction)
 uv run llmring-registry extract-html --provider all
 
 # Extract from PDFs only (requires LLM API keys)
 uv run llmring-registry extract-pdf --provider all
-
-# Comprehensive extraction (recommended)
-uv run llmring-registry extract --provider all --timeout 60
-
-# Interactive mode for conflict resolution
-uv run llmring-registry extract --provider all --interactive
+```
 
 ### Review & Promote
 
@@ -260,7 +259,6 @@ uv run llmring-registry review-draft --provider openai --accept-all
 
 # Promote the latest reviewed file (auto-discovers drafts/)
 uv run llmring-registry promote --provider openai
-```
 ```
 
 ### Data Management
@@ -339,7 +337,7 @@ jobs:
           git push
 ```
 
-**Note:** The workflow uses `extract-html` instead of `extract-comprehensive` since the latter requires LLM API keys for PDF extraction.
+**Note:** The workflow uses `extract-html` for CI/CD since full `extract` requires LLM API keys for PDF extraction.
 
 ## Development
 
