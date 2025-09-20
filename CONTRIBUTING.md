@@ -30,7 +30,7 @@ Please be respectful and constructive in all interactions. We aim to maintain a 
 
 To add support for a new LLM provider:
 
-1. **Add provider URLs** in `src/registry/fetch_html.py`:
+1. **Add provider URLs** in both `src/registry/fetch_html.py` and `src/registry/fetch_pdfs.py`:
 ```python
 PROVIDER_URLS = {
     "newprovider": {
@@ -44,10 +44,12 @@ PROVIDER_URLS = {
 ```bash
 uv run llmring-registry fetch --provider newprovider
 uv run llmring-registry extract --provider newprovider --timeout 60
+uv run llmring-registry review-draft --provider newprovider
 ```
 
-4. **Submit a PR** with:
-   - The new extraction code
+3. **Submit a PR** with:
+   - The updated URL configurations
+   - Test extraction results
    - Test data (sample HTML)
    - Updated documentation
 

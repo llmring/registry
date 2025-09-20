@@ -46,7 +46,7 @@ Registry (This Repo)
     └── manifest.json   # Registry metadata
 ```
 
-## Quick Start
+## Setup
 
 ### Installation
 
@@ -59,131 +59,146 @@ cd registry
 uv sync
 uv pip install -e .
 
-# Or with pip
-pip install -e .
+# First time only: install browser for PDF fetching
+uv run playwright install chromium
 ```
 
-### Default Workflow (Recommended)
+### Environment Configuration
+
+Create a `.env` file with your API keys for model extraction:
 
 ```bash
-# 1) Fetch both HTML and PDFs into the standard directories
+ANTHROPIC_API_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
+```
+
+## How to Update Models
+
+When providers release new models or change pricing, follow these steps:
+
+### 1. Fetch Latest Documentation
+
+```bash
+# Fetch HTML, PDFs, and screenshots from all providers
 uv run llmring-registry fetch --provider all
+```
 
-# 2) Extract comprehensively (auto-creates sources/html/, sources/pdfs/, drafts/)
-uv run llmring-registry extract --provider all --timeout 60
+This downloads:
+- HTML pages to `sources/html/[provider]/`
+- PDFs to `sources/pdfs/[provider]/`
+- Screenshots to `sources/screenshots/[provider]/`
 
-# 3) Review latest drafts and accept
+### 2. Extract Model Information
+
+```bash
+# Extract models using LLM-based extraction
+uv run llmring-registry extract --provider all --timeout 120
+```
+
+This creates draft files in `drafts/` with extracted model information.
+
+### 3. Review and Accept Changes
+
+```bash
+# Review changes for each provider
+uv run llmring-registry review-draft --provider openai
+uv run llmring-registry review-draft --provider anthropic
+uv run llmring-registry review-draft --provider google
+
+# If everything looks good, accept all changes
 uv run llmring-registry review-draft --provider openai --accept-all
 uv run llmring-registry review-draft --provider anthropic --accept-all
 uv run llmring-registry review-draft --provider google --accept-all
+```
 
-# 4) Promote reviewed files (auto-discovers them in drafts/)
+### 4. Publish New Version
+
+```bash
+# Promote to production
 uv run llmring-registry promote --provider openai
 uv run llmring-registry promote --provider anthropic
 uv run llmring-registry promote --provider google
 ```
 
-### Manual Curation Workflow (Human-validated)
+This creates:
+- Updated models at `pages/[provider]/models.json`
+- Version snapshot at `pages/[provider]/v/[N]/models.json`
+- Archived sources at `pages/[provider]/v/[N]/sources/`
 
-0. Gather source materials (optional but recommended):
+### 5. Commit and Push
 
 ```bash
-# Show where to get docs and how to save PDFs
-uv run llmring-registry sources
+git add -A
+git commit -m "Update models for [providers]"
+git push
+```
 
-# Fetch both HTML and PDFs (recommended)
-# (First time only: uv run playwright install chromium)
+## Single Provider Update
+
+To update just one provider (e.g., after OpenAI announces new models):
+
+```bash
+# Complete workflow for single provider
 uv run llmring-registry fetch --provider openai
-```
-
-1. Generate a draft JSON using the extractor (best-effort), or by hand:
-
-```bash
-# Comprehensive draft generation from both HTML and PDFs
-# Directories sources/html/, sources/pdfs/, and drafts/ are auto-created if missing
-# You can also set a per-PDF timeout in seconds (default 60)
-uv run llmring-registry extract --provider openai --timeout 60
-```
-2. Review differences vs current curated file:
-
-```bash
-# Review latest draft for the provider (no path needed)
-uv run llmring-registry review-draft --provider openai
-# This writes a sibling diff file: drafts/<draft>.diff.json
-
-# Accept all changes to produce a reviewed file (and delete the draft)
+uv run llmring-registry extract --provider openai
 uv run llmring-registry review-draft --provider openai --accept-all
-# This writes drafts/openai.reviewed.json and removes the original draft
-```
-
-3. Promote the reviewed file to publish and archive:
-
-```bash
-# Promote latest reviewed file for the provider (no path needed)
 uv run llmring-registry promote --provider openai
-# On success, the reviewed file is deleted
+
+# Commit
+git add -A && git commit -m "Update OpenAI models" && git push
 ```
 
-This will:
-- Validate and publish to `pages/openai/models.json`
-- Archive snapshot at `pages/openai/v/<version>/models.json`
-- Archive source documents at `pages/openai/v/<version>/sources/`
-- Write `models/openai.json` for local consumption
-- Bump `version` and set `updated_at`
-- Add `content_sha256_jcs` integrity hash
+## Directory Structure
 
-### Legacy Automation (deprecated)
+```
+registry/
+├── sources/                # Source documents (working directory)
+│   ├── html/              # HTML pages by provider
+│   │   ├── google/
+│   │   ├── anthropic/
+│   │   └── openai/
+│   ├── pdfs/              # PDF documents by provider
+│   │   └── [provider]/
+│   └── screenshots/       # Page screenshots by provider
+│       └── [provider]/
+├── drafts/                # Extracted model drafts pending review
+├── models/                # Current production models
+├── pages/                 # Versioned archives for GitHub Pages
+│   └── [provider]/
+│       ├── models.json    # Current version
+│       └── v/             # Historical versions
+│           └── [N]/
+│               ├── models.json
+│               └── sources/    # Archived source docs
+└── llmring.lock          # Model aliases for extraction
+```
 
-Commands like `fetch`, `fetch-html`, and `extract*` remain for reference but are deprecated. The official process is manual, human-validated curation.
+## Troubleshooting
+
+- **Extraction timeout**: Increase `--timeout` parameter (default 60 seconds)
+- **Missing models**: Check screenshots to verify page loaded fully
+- **Wrong data extracted**: Manually edit draft JSON before review
+- **API key errors**: Ensure `.env` file has valid API keys
+
+## Additional Commands
 
 ```bash
-# View available commands
-uv run llmring-registry --help
-
-# Fetch latest documentation
-uv run llmring-registry fetch-html --provider all
-
-# Extract models from HTML
-uv run llmring-registry extract-html --provider all
-
-# Extract models with comprehensive dual-source validation
-uv run llmring-registry extract --provider all --timeout 60
-
-# List all extracted models
+# List all models in the registry
 uv run llmring-registry list
 
-# Export to markdown for documentation
+# Export models to markdown
 uv run llmring-registry export --output markdown > models.md
+
+# Validate registry data
+uv run llmring-registry validate
+
+# Show help for any command
+uv run llmring-registry [command] --help
 ```
-
-## Extraction System
-
-The registry uses a **dual extraction approach** for maximum accuracy:
-
-### 1. HTML Extraction
-- Fast regex-based extraction from provider websites
-- Captures current pricing and basic model information
-- No API keys required
-
-### 2. PDF Extraction
-- Uses LLMRing's unified interface (requires API keys)
-- Extracts detailed capabilities and specifications
-- Automatically uses optimal method per provider:
-  - **OpenAI**: Assistants API for PDF processing
-  - **Anthropic**: Native PDF support with Claude
-  - **Google**: Direct PDF support with Gemini
-
-### 3. Validation & Consensus
-- Compares both sources for each field
-- Marks confidence levels:
-  - **Certain**: Both sources agree
-  - **Probable**: Single source only
-  - **Uncertain**: Sources conflict
-- Interactive mode available for manual resolution
 
 ## Model Schema
 
-Each provider's JSON file contains models in dictionary format with `provider:model` keys for O(1) lookup:
+Each provider's JSON file contains models in dictionary format with `provider:model` keys for fast lookup:
 
 ```json
 {
