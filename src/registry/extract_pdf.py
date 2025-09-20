@@ -77,7 +77,13 @@ def extract_pdf(provider: str, pdf_dir: str, drafts_dir: str, timeout: int):
 
     for prov in providers:
         click.echo(f"\n📄 PDF extraction for {prov}...")
-        pdf_files = list(pdf_path.glob(f"*{prov}*.pdf"))
+        # Look in provider subdirectory first
+        provider_pdf_dir = pdf_path / prov
+        if provider_pdf_dir.exists():
+            pdf_files = list(provider_pdf_dir.glob(f"*{prov}*.pdf"))
+        else:
+            # Fallback to old structure
+            pdf_files = list(pdf_path.glob(f"*{prov}*.pdf"))
         click.echo(f"  📚 PDFs found: {len(pdf_files)}")
         models = parser.parse_provider_docs(prov, pdf_files, timeout_seconds=timeout)
         keyed = _pdf_models_to_keyed(prov, models)

@@ -77,15 +77,32 @@ def _find_latest_reviewed(drafts_dir: Path, provider: str) -> Path | None:
 
 
 def _archive_sources(provider: str, version: int, sources_dir: Path, archive_dir: Path) -> None:
-    """Archive source documents (HTML/PDF) for this provider and version."""
+    """Archive source documents (HTML/PDF/Screenshots) for this provider and version."""
     html_dir = sources_dir / "html"
     pdf_dir = sources_dir / "pdfs"
+    screenshot_dir = sources_dir / "screenshots"
 
     # Find relevant source files for this provider
-    html_files = list(html_dir.glob(f"*{provider}*.html")) if html_dir.exists() else []
-    pdf_files = list(pdf_dir.glob(f"*{provider}*.pdf")) if pdf_dir.exists() else []
+    # Look in provider subdirectory first, then fallback to root
+    html_files = []
+    if (html_dir / provider).exists():
+        html_files = list((html_dir / provider).glob(f"*{provider}*.html"))
+    elif html_dir.exists():
+        html_files = list(html_dir.glob(f"*{provider}*.html"))
 
-    if not html_files and not pdf_files:
+    pdf_files = []
+    if (pdf_dir / provider).exists():
+        pdf_files = list((pdf_dir / provider).glob(f"*{provider}*.pdf"))
+    elif pdf_dir.exists():
+        pdf_files = list(pdf_dir.glob(f"*{provider}*.pdf"))
+
+    screenshot_files = []
+    if (screenshot_dir / provider).exists():
+        screenshot_files = list((screenshot_dir / provider).glob(f"*{provider}*.png"))
+    elif screenshot_dir.exists():
+        screenshot_files = list(screenshot_dir.glob(f"*{provider}*.png"))
+
+    if not html_files and not pdf_files and not screenshot_files:
         return
 
     # Create archive sources directory
@@ -105,6 +122,13 @@ def _archive_sources(provider: str, version: int, sources_dir: Path, archive_dir
         pdf_archive.mkdir(exist_ok=True)
         for pdf_file in pdf_files:
             shutil.copy2(pdf_file, pdf_archive / pdf_file.name)
+
+    # Archive screenshot files
+    if screenshot_files:
+        screenshot_archive = archive_sources / "screenshots"
+        screenshot_archive.mkdir(exist_ok=True)
+        for screenshot_file in screenshot_files:
+            shutil.copy2(screenshot_file, screenshot_archive / screenshot_file.name)
 
 
 @click.command(name="promote")

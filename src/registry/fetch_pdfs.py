@@ -9,6 +9,8 @@ from typing import List
 
 import click
 
+from .config import SCREENSHOT_SOURCES_DIR
+
 logger = logging.getLogger(__name__)
 
 
@@ -172,14 +174,19 @@ async def fetch_all_pdfs(
 
             urls = PROVIDER_URLS[provider]
 
+            # Create provider-specific directories
+            provider_pdf_dir = output_dir / provider
+            provider_pdf_dir.mkdir(parents=True, exist_ok=True)
+
+            provider_screenshots_dir = SCREENSHOT_SOURCES_DIR / provider
+            provider_screenshots_dir.mkdir(parents=True, exist_ok=True)
+
             for doc_type, url in urls.items():
                 total_count += 1
                 filename = f"{date_str}-{provider}-{doc_type}.pdf"
-                output_path = output_dir / filename
+                output_path = provider_pdf_dir / filename
 
-                screenshots_dir = output_dir / "_screenshots"
-
-                if await fetch_and_save_pdf(page, url, output_path, timeout_ms=timeout_seconds * 1000, screenshot_dir=screenshots_dir):
+                if await fetch_and_save_pdf(page, url, output_path, timeout_ms=timeout_seconds * 1000, screenshot_dir=provider_screenshots_dir):
                     success_count += 1
 
                 # Small delay between requests

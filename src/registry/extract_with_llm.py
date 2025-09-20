@@ -291,8 +291,13 @@ def extract_with_llm(provider, html_dir, models_dir, validate):
         for prov in providers:
             click.echo(f"\n🤖 Extracting {prov} models using LLM...")
             
-            # Find HTML files for this provider
-            html_files = list(html_path.glob(f"*{prov}*.html"))
+            # Find HTML files for this provider in provider subdirectory
+            provider_html_dir = html_path / prov
+            if provider_html_dir.exists():
+                html_files = list(provider_html_dir.glob(f"*{prov}*.html"))
+            else:
+                # Fallback to old structure for backward compatibility
+                html_files = list(html_path.glob(f"*{prov}*.html"))
             if not html_files:
                 click.echo(f"  ⚠️  No HTML files found for {prov}")
                 continue

@@ -1,0 +1,42 @@
+version = "1.0"
+created_at = "2025-09-20T08:00:00.000000+00:00"
+updated_at = "2025-09-20T08:00:00.000000+00:00"
+default_profile = "default"
+
+[profiles.default]
+name = "default"
+
+[[profiles.default.bindings]]
+alias = "extractor"
+provider = "anthropic"
+model = "claude-opus-4-1-20250805"
+rationale = "Best extraction accuracy with strong JSON schema compliance for registry model extraction"
+
+[[profiles.default.bindings]]
+alias = "validator"
+provider = "anthropic"
+model = "claude-opus-4-1-20250805"
+rationale = "High accuracy for validating extracted model data and fixing inconsistencies"
+
+[[profiles.default.bindings]]
+alias = "fast"
+provider = "openai"
+model = "gpt-4o-mini"
+rationale = "Quick responses for simple extraction tasks"
+
+[[profiles.default.bindings]]
+alias = "deep"
+provider = "anthropic"
+model = "claude-opus-4-1-20250805"
+rationale = "Most capable model for complex analysis"
+
+[[profiles.default.bindings]]
+alias = "balanced"
+provider = "openai"
+model = "gpt-4o"
+rationale = "Good balance of speed and capability"
+
+[profiles.default.registry_versions]
+openai = 36
+anthropic = 14
+google = 9

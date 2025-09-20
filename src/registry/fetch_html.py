@@ -121,6 +121,10 @@ def fetch_html_pages(provider, output_dir):
             click.echo(f"⚠️  Unknown provider: {prov}")
             continue
 
+        # Create provider-specific directory
+        provider_dir = output_path / prov
+        provider_dir.mkdir(parents=True, exist_ok=True)
+
         urls = PROVIDER_URLS[prov]
 
         for doc_type, url in urls.items():
@@ -134,8 +138,8 @@ def fetch_html_pages(provider, output_dir):
             if html:
                 success_count += 1
 
-                # Save HTML
-                html_file = output_path / f"{date_str}-{prov}-{doc_type}.html"
+                # Save HTML in provider subdirectory
+                html_file = provider_dir / f"{date_str}-{prov}-{doc_type}.html"
                 with open(html_file, "w", encoding="utf-8") as f:
                     f.write(html)
                 click.echo(f"  ✓ Saved HTML to {html_file}")
@@ -145,7 +149,7 @@ def fetch_html_pages(provider, output_dir):
                     click.echo("  ⚠️  HTML looks client-rendered; trying rendered fallback…")
                     rendered = fetch_rendered_html(url)
                     if rendered:
-                        rendered_file = output_path / f"{date_str}-{prov}-{doc_type}.rendered.html"
+                        rendered_file = provider_dir / f"{date_str}-{prov}-{doc_type}.rendered.html"
                         with open(rendered_file, "w", encoding="utf-8") as rf:
                             rf.write(rendered)
                         click.echo(f"     ✓ Saved rendered HTML to {rendered_file}")

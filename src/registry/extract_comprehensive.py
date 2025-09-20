@@ -135,8 +135,14 @@ def extract_comprehensive(provider: str, html_dir: str, pdf_dir: str, drafts_dir
             click.echo(f"\n🧪 Comprehensive extraction for {prov}...")
 
             # HTML extraction
-            # Prefer rendered files when present
-            html_files = sorted(html_path.glob(f"*{prov}*.rendered.html")) or sorted(html_path.glob(f"*{prov}*.html"))
+            # Look in provider subdirectory first, then fallback to root
+            provider_html_dir = html_path / prov
+            if provider_html_dir.exists():
+                # Prefer rendered files when present
+                html_files = sorted(provider_html_dir.glob(f"*{prov}*.rendered.html")) or sorted(provider_html_dir.glob(f"*{prov}*.html"))
+            else:
+                # Fallback to old structure
+                html_files = sorted(html_path.glob(f"*{prov}*.rendered.html")) or sorted(html_path.glob(f"*{prov}*.html"))
             html_models: List[Dict[str, Any]] = []
             for html_file in html_files:
                 click.echo(f"  🌐 HTML: {html_file.name}")
@@ -151,7 +157,12 @@ def extract_comprehensive(provider: str, html_dir: str, pdf_dir: str, drafts_dir
             html_keyed = _html_models_to_keyed(prov, html_models)
 
             # PDF extraction
-            pdf_files = list(pdf_path.glob(f"*{prov}*.pdf"))
+            provider_pdf_dir = pdf_path / prov
+            if provider_pdf_dir.exists():
+                pdf_files = list(provider_pdf_dir.glob(f"*{prov}*.pdf"))
+            else:
+                # Fallback to old structure
+                pdf_files = list(pdf_path.glob(f"*{prov}*.pdf"))
             click.echo(f"  📚 PDFs found: {len(pdf_files)}")
             parser = PDFParser()
             click.echo("  ⏳ Parsing PDFs (with timeouts)...")
