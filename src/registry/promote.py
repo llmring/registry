@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
@@ -75,6 +76,37 @@ def _find_latest_reviewed(drafts_dir: Path, provider: str) -> Path | None:
     return candidates[0]
 
 
+def _archive_sources(provider: str, version: int, sources_dir: Path, archive_dir: Path) -> None:
+    """Archive source documents (HTML/PDF) for this provider and version."""
+    html_dir = sources_dir / "html"
+    pdf_dir = sources_dir / "pdfs"
+
+    # Find relevant source files for this provider
+    html_files = list(html_dir.glob(f"*{provider}*.html")) if html_dir.exists() else []
+    pdf_files = list(pdf_dir.glob(f"*{provider}*.pdf")) if pdf_dir.exists() else []
+
+    if not html_files and not pdf_files:
+        return
+
+    # Create archive sources directory
+    archive_sources = archive_dir / "sources"
+    archive_sources.mkdir(parents=True, exist_ok=True)
+
+    # Archive HTML files
+    if html_files:
+        html_archive = archive_sources / "html"
+        html_archive.mkdir(exist_ok=True)
+        for html_file in html_files:
+            shutil.copy2(html_file, html_archive / html_file.name)
+
+    # Archive PDF files
+    if pdf_files:
+        pdf_archive = archive_sources / "pdfs"
+        pdf_archive.mkdir(exist_ok=True)
+        for pdf_file in pdf_files:
+            shutil.copy2(pdf_file, pdf_archive / pdf_file.name)
+
+
 @click.command(name="promote")
 @click.option("--provider", required=True)
 @click.option("--reviewed", required=False, type=click.Path(exists=True))
@@ -82,10 +114,12 @@ def _find_latest_reviewed(drafts_dir: Path, provider: str) -> Path | None:
 @click.option("--models-dir", default="models", type=click.Path())
 @click.option("--pages-dir", default="pages", type=click.Path())
 @click.option("--manifest", default="manifest.json", type=click.Path())
-def promote(provider: str, reviewed: str | None, drafts_dir: str, models_dir: str, pages_dir: str, manifest: str):
+@click.option("--sources-dir", default="sources", type=click.Path(), help="Directory containing source documents")
+def promote(provider: str, reviewed: str | None, drafts_dir: str, models_dir: str, pages_dir: str, manifest: str, sources_dir: str):
     """Promote reviewed models to production and archive previous version.
 
     If --reviewed is not provided, the latest reviewed file in --drafts-dir is used.
+    Source documents (HTML/PDF) are archived alongside the models for audit trail.
     """
     reviewed_path = Path(reviewed) if reviewed else _find_latest_reviewed(Path(drafts_dir), provider)
     if not reviewed_path or not reviewed_path.exists():
@@ -129,9 +163,13 @@ def promote(provider: str, reviewed: str | None, drafts_dir: str, models_dir: st
     published_file.write_text(json.dumps(reviewed_data, indent=2))
 
     # Archive snapshot under pages/<provider>/v/<new_version>/models.json
-    archive_file = pages_path / str(new_version) / "models.json"
-    archive_file.parent.mkdir(parents=True, exist_ok=True)
+    archive_dir = pages_path / str(new_version)
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    archive_file = archive_dir / "models.json"
     archive_file.write_text(json.dumps(reviewed_data, indent=2))
+
+    # Archive source documents for this version
+    _archive_sources(provider, new_version, Path(sources_dir), archive_dir)
 
     # Update manifest
     _update_manifest(manifest_path, provider, new_version)

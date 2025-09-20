@@ -14,12 +14,8 @@ import click
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
-    # Try to find .env in current directory or parent directories
-    for path in [Path.cwd(), Path.cwd().parent, Path("/Users/juanre/prj/llmring-all/llmring")]:
-        env_file = path / ".env"
-        if env_file.exists():
-            load_dotenv(env_file)
-            break
+    # Load .env from the current working directory
+    load_dotenv()
 except ImportError:
     pass
 
@@ -50,9 +46,8 @@ async def extract_models_from_html(provider: str, html_content: str, quiet: bool
         
         service = LLMRing()
 
-        # Use single-source configured model
-        from .config import DEFAULT_EXTRACTION_MODEL
-        model = DEFAULT_EXTRACTION_MODEL
+        # Use extraction alias from lockfile
+        model = "extractor"
         
         # Create extraction prompt
         prompt = f"""Extract all AI model pricing information from this {provider} pricing page HTML.
@@ -175,11 +170,9 @@ async def validate_extracted_models(models: List[Dict[str, Any]], provider: str)
             return models  # Skip validation if no API keys
         
         service = LLMRing()
-        
-        # Get best available model
-        # Use single-source configured model
-        from .config import DEFAULT_EXTRACTION_MODEL
-        model = DEFAULT_EXTRACTION_MODEL
+
+        # Use validator alias from lockfile for validation
+        model = "validator"
         
         # Create validation prompt
         prompt = f"""Validate and correct this extracted model data for {provider}.
@@ -265,7 +258,7 @@ Return the corrected JSON array of models."""
 )
 @click.option(
     "--html-dir",
-    default="cache/html",
+    default="sources/html",
     type=click.Path(exists=True),
     help="Directory containing HTML files"
 )

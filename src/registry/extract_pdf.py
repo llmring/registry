@@ -61,14 +61,16 @@ def _pdf_models_to_keyed(provider: str, models: List[ModelInfo]) -> Dict[str, Di
 
 @click.command(name="extract-pdf")
 @click.option("--provider", type=click.Choice(["openai", "anthropic", "google", "all"]), default="all")
-@click.option("--pdf-dir", default="cache/pdfs", type=click.Path())
+@click.option("--pdf-dir", default="sources/pdfs", type=click.Path())
 @click.option("--drafts-dir", default="drafts", type=click.Path())
 @click.option("--timeout", default=60, help="Per-PDF extraction timeout in seconds")
 def extract_pdf(provider: str, pdf_dir: str, drafts_dir: str, timeout: int):
     """Extract models from PDFs only and write a draft file per provider."""
     providers = [provider] if provider != "all" else ["openai", "anthropic", "google"]
-    pdf_path = Path(pdf_dir); pdf_path.mkdir(exist_ok=True)
-    drafts_path = Path(drafts_dir); drafts_path.mkdir(exist_ok=True)
+    pdf_path = Path(pdf_dir)
+    pdf_path.mkdir(exist_ok=True)
+    drafts_path = Path(drafts_dir)
+    drafts_path.mkdir(exist_ok=True)
 
     parser = PDFParser()
     date_str = datetime.now().strftime("%Y-%m-%d")

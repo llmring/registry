@@ -95,13 +95,13 @@ def _pdf_models_to_keyed(provider: str, models: List[ModelInfo]) -> Dict[str, Di
 )
 @click.option(
     "--html-dir",
-    default="cache/html",
+    default="sources/html",
     type=click.Path(),
     help="Directory containing HTML files",
 )
 @click.option(
     "--pdf-dir",
-    default="cache/pdfs",
+    default="sources/pdfs",
     type=click.Path(),
     help="Directory containing PDF files",
 )

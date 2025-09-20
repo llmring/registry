@@ -12,6 +12,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 logger = logging.getLogger(__name__)
 
 
@@ -291,12 +298,9 @@ class PDFParser:
         )
 
     def _get_best_model(self) -> str:
-        """Return configured model for PDF extraction (no async calls)."""
-        try:
-            from ..config import DEFAULT_EXTRACTION_MODEL
-            return DEFAULT_EXTRACTION_MODEL
-        except Exception:
-            return "anthropic:claude-opus-4-1-20250805"
+        """Return model alias for PDF extraction from lockfile."""
+        # Use extractor alias defined in lockfile
+        return "extractor"
 
     def _supports_json_mode(self) -> bool:
         """Check if the selected model supports JSON response format."""

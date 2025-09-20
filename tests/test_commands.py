@@ -7,8 +7,8 @@ def test_extract_smoke(tmp_path: Path):
 	r = CliRunner()
 	with r.isolated_filesystem():
 		# Create empty dirs to ensure auto-create works too
-		Path('cache/html').mkdir(parents=True, exist_ok=True)
-		Path('cache/pdfs').mkdir(parents=True, exist_ok=True)
+		Path('sources/html').mkdir(parents=True, exist_ok=True)
+		Path('sources/pdfs').mkdir(parents=True, exist_ok=True)
 		res = r.invoke(cli, ['extract', '--provider', 'openai', '--timeout', '1'])
 		# Should not crash; may produce an empty draft
 		assert res.exit_code == 0

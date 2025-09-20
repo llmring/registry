@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 
 def _priority_value(html_value: Any, pdf_value: Any, field_name: str) -> Tuple[Any, bool, bool]:

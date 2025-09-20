@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Fetch pricing pages as HTML (lightweight alternative to PDF)."""
 
-import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 import click
 
@@ -84,36 +83,6 @@ def fetch_rendered_html(url: str) -> Optional[str]:
         return None
 
 
-def extract_pricing_info(html: str, provider: str) -> Dict:
-    """
-    Extract basic pricing information from HTML.
-
-    This is a simple extraction - for full extraction use the LLM-based extractors.
-    """
-    from bs4 import BeautifulSoup
-
-    soup = BeautifulSoup(html, "html.parser")
-
-    # Extract title and basic text
-    title = soup.title.string if soup.title else "Unknown"
-
-    # Find pricing-related text (very basic)
-    pricing_keywords = ["price", "pricing", "cost", "per", "token", "million", "$"]
-    relevant_text = []
-
-    for element in soup.find_all(["p", "li", "td", "div", "span"]):
-        text = element.get_text(strip=True)
-        if text and any(keyword in text.lower() for keyword in pricing_keywords):
-            if len(text) < 500:  # Skip very long blocks
-                relevant_text.append(text)
-
-    return {
-        "provider": provider,
-        "title": title,
-        "extracted_at": datetime.now().isoformat(),
-        "pricing_mentions": relevant_text[:50],  # Limit to 50 items
-        "note": "This is raw HTML extraction. Use 'llmring-registry extract' for proper model extraction.",
-    }
 
 
 @click.command()
@@ -125,16 +94,10 @@ def extract_pricing_info(html: str, provider: str) -> Dict:
 )
 @click.option(
     "--output-dir",
-    default="cache/html",
+    default="sources/html",
     help="Directory to save HTML and extracted data",
 )
-@click.option(
-    "--format",
-    type=click.Choice(["html", "json", "both"]),
-    default="both",
-    help="Output format",
-)
-def fetch_html_pages(provider, output_dir, format):
+def fetch_html_pages(provider, output_dir):
     """
     Fetch pricing pages as HTML (lightweight, no browser needed).
 
@@ -159,7 +122,6 @@ def fetch_html_pages(provider, output_dir, format):
             continue
 
         urls = PROVIDER_URLS[prov]
-        extracted_data = {}
 
         for doc_type, url in urls.items():
             if doc_type == "api_pricing":
@@ -172,44 +134,28 @@ def fetch_html_pages(provider, output_dir, format):
             if html:
                 success_count += 1
 
-                # Save HTML if requested
-                if format in ["html", "both"]:
-                    html_file = output_path / f"{date_str}-{prov}-{doc_type}.html"
-                    with open(html_file, "w", encoding="utf-8") as f:
-                        f.write(html)
-                    click.echo(f"  ✓ Saved HTML to {html_file}")
+                # Save HTML
+                html_file = output_path / f"{date_str}-{prov}-{doc_type}.html"
+                with open(html_file, "w", encoding="utf-8") as f:
+                    f.write(html)
+                click.echo(f"  ✓ Saved HTML to {html_file}")
 
-                    # If the HTML looks minimal (SPA shell), try rendered fallback
-                    if is_minimal_html(html):
-                        click.echo("  ⚠️  HTML looks client-rendered; trying rendered fallback…")
-                        rendered = fetch_rendered_html(url)
-                        if rendered:
-                            rendered_file = output_path / f"{date_str}-{prov}-{doc_type}.rendered.html"
-                            with open(rendered_file, "w", encoding="utf-8") as rf:
-                                rf.write(rendered)
-                            click.echo(f"     ✓ Saved rendered HTML to {rendered_file}")
-                        else:
-                            click.echo("     ✗ Rendered fallback failed")
-
-                # Extract basic info
-                if format in ["json", "both"]:
-                    extracted_data[doc_type] = extract_pricing_info(html, prov)
+                # If the HTML looks minimal (SPA shell), try rendered fallback
+                if is_minimal_html(html):
+                    click.echo("  ⚠️  HTML looks client-rendered; trying rendered fallback…")
+                    rendered = fetch_rendered_html(url)
+                    if rendered:
+                        rendered_file = output_path / f"{date_str}-{prov}-{doc_type}.rendered.html"
+                        with open(rendered_file, "w", encoding="utf-8") as rf:
+                            rf.write(rendered)
+                        click.echo(f"     ✓ Saved rendered HTML to {rendered_file}")
+                    else:
+                        click.echo("     ✗ Rendered fallback failed")
             else:
                 click.echo("  ✗ Failed to fetch")
 
-        # Save extracted data as JSON
-        if format in ["json", "both"] and extracted_data:
-            json_file = output_path / f"{date_str}-{prov}-extracted.json"
-            with open(json_file, "w") as f:
-                json.dump(extracted_data, f, indent=2)
-            click.echo(f"  ✓ Saved extracted data to {json_file}")
-
     click.echo(f"\n📊 Fetched {success_count}/{total_count} pages successfully")
-
-    if format in ["json", "both"]:
-        click.echo(
-            "\n💡 Tip: Use 'llmring-registry extract' to properly extract model information from these files"
-        )
+    click.echo("\n💡 Tip: Use 'llmring-registry extract' to properly extract model information from these files")
 
 
 if __name__ == "__main__":

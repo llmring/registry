@@ -8,7 +8,7 @@ from pathlib import Path
 
 import click
 
-from .config import HTML_CACHE_DIR, PDF_CACHE_DIR, DRAFTS_DIR, MODELS_DIR
+from .config import HTML_SOURCES_DIR, PDF_SOURCES_DIR
 from .extract_with_llm import extract_with_llm
 from .extract_comprehensive import extract_comprehensive
 from .review import review_draft
@@ -42,7 +42,7 @@ def cli(ctx, verbose):
     default="all",
     help="Provider to fetch",
 )
-@click.option("--output-dir", default="cache/pdfs", help="Directory to save PDFs")
+@click.option("--output-dir", default="sources/pdfs", help="Directory to save PDFs")
 @click.option("--timeout", default=60, help="Per-page fetch timeout (seconds)")
 @click.option("--print-endpoints", is_flag=True, default=False, help="Print PDF endpoints and exit (no fetching)")
 def fetch_pdf_cmd(provider, output_dir, timeout, print_endpoints):
@@ -95,7 +95,7 @@ def fetch_pdf_cmd(provider, output_dir, timeout, print_endpoints):
     default="all",
     help="Provider to fetch",
 )
-@click.option("--output-dir", default="cache/html", help="Directory to save HTML")
+@click.option("--output-dir", default="sources/html", help="Directory to save HTML")
 def fetch_html(provider, output_dir):
     """
     Fetch pricing and model pages as HTML.
@@ -105,7 +105,7 @@ def fetch_html(provider, output_dir):
     from .fetch_html import fetch_html_pages
 
     ctx = click.get_current_context()
-    ctx.invoke(fetch_html_pages, provider=provider, output_dir=output_dir, format="both")
+    ctx.invoke(fetch_html_pages, provider=provider, output_dir=output_dir)
 
 
 @cli.command()
@@ -153,7 +153,7 @@ def sources(provider):
 )
 @click.option(
     "--html-dir",
-    default="cache/html",
+    default="sources/html",
     type=click.Path(exists=True),
     help="Directory containing HTML files",
 )
@@ -208,9 +208,9 @@ cli.add_command(export_cmd, name="export")
 def fetch_both(provider, timeout, cleanup):
     """Fetch both HTML and PDFs into standard directories."""
     ctx = click.get_current_context()
-    ctx.invoke(fetch_html, provider=provider, output_dir=str(HTML_CACHE_DIR))
+    ctx.invoke(fetch_html, provider=provider, output_dir=str(HTML_SOURCES_DIR))
     try:
-        ctx.invoke(fetch_pdf_cmd, provider=provider, output_dir=str(PDF_CACHE_DIR), timeout=timeout)
+        ctx.invoke(fetch_pdf_cmd, provider=provider, output_dir=str(PDF_SOURCES_DIR), timeout=timeout)
     except click.Abort:
         click.echo("⚠️  PDF fetching skipped (Playwright not available)")
 
@@ -226,8 +226,8 @@ def fetch_both(provider, timeout, cleanup):
         PDFParser = None
 
     providers = [provider] if provider != "all" else ["openai", "anthropic", "google"]
-    html_dir = HTML_CACHE_DIR
-    pdf_dir = PDF_CACHE_DIR
+    html_dir = HTML_SOURCES_DIR
+    pdf_dir = PDF_SOURCES_DIR
 
     for prov in providers:
         # Validate HTML files
