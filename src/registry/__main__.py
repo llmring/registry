@@ -8,7 +8,10 @@ from pathlib import Path
 
 import click
 
-from .extract_with_llm import extract_with_llm
+from .review import review_draft
+from .promote import promote
+from .export_cmd import export_cmd
+from .extract import extract_from_documents
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
@@ -29,62 +32,13 @@ def cli(ctx, verbose):
     ctx.ensure_object(dict)
 
 
-@cli.command()
-@click.option(
-    "--provider",
-    type=click.Choice(["openai", "anthropic", "google", "all"]),
-    default="all",
-    help="Provider to fetch",
-)
-@click.option("--output-dir", default="pdfs", help="Directory to save PDFs")
-def fetch(provider, output_dir):
-    """
-    Fetch pricing and model pages as PDFs (requires Playwright).
-
-    Install browsers for Playwright first:
-      uv run playwright install chromium
-    """
-    try:
-        import asyncio
-
-        from .fetch_pdfs import fetch_all_pdfs
-
-        providers = [provider] if provider != "all" else ["openai", "anthropic", "google"]
-        output_path = Path(output_dir)
-
-        click.echo(f"🌐 Fetching PDFs for: {', '.join(providers)}")
-        click.echo(f"📁 Output directory: {output_path}")
-
-        asyncio.run(fetch_all_pdfs(providers, output_path, "chromium"))
-    except ImportError:
-        click.echo(
-            "❌ Playwright not installed. Install with: uv add playwright",
-            err=True,
-        )
-        raise click.Abort()
-    except Exception as e:
-        click.echo(f"❌ Failed to fetch PDFs: {e}", err=True)
-        raise click.Abort()
-
-
-@cli.command(name="fetch-html")
-@click.option(
-    "--provider",
-    type=click.Choice(["openai", "anthropic", "google", "all"]),
-    default="all",
-    help="Provider to fetch",
-)
-@click.option("--output-dir", default="html_cache", help="Directory to save HTML")
-def fetch_html(provider, output_dir):
-    """
-    Fetch pricing and model pages as HTML.
-
-    Saves raw HTML for extraction.
-    """
-    from .fetch_html import fetch_html_pages
-
-    ctx = click.get_current_context()
-    ctx.invoke(fetch_html_pages, provider=provider, output_dir=output_dir, format="both")
+# Add commands
+cli.add_command(extract_from_documents, name="extract-from-documents")
+cli.add_command(extract_from_documents, name="extract-from-screenshot")  # Backward compatibility
+cli.add_command(extract_from_documents, name="extract")  # Simplified alias
+cli.add_command(review_draft, name="review-draft")
+cli.add_command(promote, name="promote")
+cli.add_command(export_cmd, name="export")
 
 
 @cli.command()
@@ -92,347 +46,70 @@ def fetch_html(provider, output_dir):
     "--provider",
     type=click.Choice(["openai", "anthropic", "google", "all"]),
     default="all",
-    help="Provider to show",
+    help="Provider to show stats for",
 )
-def sources(provider):
-    """Show where to find pricing info for each provider."""
-    urls = {
-        "openai": [
-            "https://openai.com/api/pricing/",
-            "https://platform.openai.com/docs/models",
-        ],
-        "anthropic": [
-            "https://www.anthropic.com/pricing",
-            "https://docs.anthropic.com/en/docs/about-claude/models",
-        ],
-        "google": [
-            "https://ai.google.dev/pricing",
-            "https://cloud.google.com/vertex-ai/generative-ai/pricing",
-        ],
-    }
+def stats(provider):
+    """Show model statistics from registry."""
+    models_dir = Path("models")
 
-    providers = [provider] if provider != "all" else list(urls.keys())
+    providers = [provider] if provider != "all" else ["openai", "anthropic", "google"]
 
     for prov in providers:
-        click.echo(f"\n📚 {prov.upper()} Sources:")
-        for url in urls[prov]:
-            click.echo(f"   • {url}")
-
-    click.echo(
-        "\n💡 Tip: Use 'llmring-registry fetch' to automatically download these as PDFs"
-    )
-
-
-@cli.command()
-@click.option(
-    "--provider",
-    type=click.Choice(["openai", "anthropic", "google", "all"]),
-    default="all",
-    help="Provider to extract",
-)
-@click.option(
-    "--html-dir",
-    default="html_cache",
-    type=click.Path(exists=True),
-    help="Directory containing HTML files",
-)
-@click.option(
-    "--models-dir",
-    default="models",
-    type=click.Path(),
-    help="Directory to save extracted models",
-)
-@click.option(
-    "--validate/--no-validate",
-    default=True,
-    help="Run validation pass on extracted models",
-)
-def extract(provider, html_dir, models_dir, validate):
-    """Extract model information from HTML using LLM-based extraction.
-    
-    Uses adaptive LLM extraction that handles website structure changes.
-    """
-    ctx = click.get_current_context()
-    ctx.invoke(
-        extract_with_llm,
-        provider=provider,
-        html_dir=html_dir,
-        models_dir=models_dir,
-        validate=validate,
-    )
-
-
-# Add the extract-llm alias for backward compatibility
-cli.add_command(extract, name="extract-llm")
-
-
-@cli.command(name="list")
-@click.option("--models-dir", default="models", help="Directory containing model JSONs")
-@click.option(
-    "--provider",
-    type=click.Choice(["openai", "anthropic", "google", "all"]),
-    default="all",
-    help="Filter by provider",
-)
-@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
-def list_models(models_dir, provider, output_json):
-    """List all available models and their pricing."""
-    models_path = Path(models_dir)
-
-    if not models_path.exists():
-        click.echo(
-            "No models directory found. Run 'llmring-registry extract' to create model files.",
-            err=True,
-        )
-        return
-
-    providers = (
-        [provider] if provider != "all" else ["openai", "anthropic", "google"]
-    )
-
-    all_models = {}
-    total_count = 0
-
-    for provider in providers:
-        json_file = models_path / f"{provider}.json"
-        if not json_file.exists():
+        model_file = models_dir / f"{prov}.json"
+        if not model_file.exists():
+            click.echo(f"\n{prov}: No models found")
             continue
 
-        with open(json_file) as f:
+        with open(model_file) as f:
             data = json.load(f)
-            
-            # Handle both dict format (new) and list format (old)
-            models = data.get("models", {})
-            if isinstance(models, dict):
-                model_list = list(models.values())
-            else:
-                model_list = models
-            
-            if output_json:
-                all_models[provider] = model_list
-            else:
-                if not model_list:
-                    continue
-                
-                click.echo(f"\n📦 {provider.upper()} ({len(model_list)} models)")
-                click.echo(f"   Last updated: {data.get('last_updated', 'Unknown')}")
 
-                for model in model_list:
-                    mid = model.get("model_id") or model.get("model_name", "unknown")
-                    inp = model.get("dollars_per_million_tokens_input")
-                    outp = model.get("dollars_per_million_tokens_output")
-                    
-                    if inp is not None and outp is not None:
-                        click.echo(
-                            f"   • {mid}: ${inp:.2f}/$M input, ${outp:.2f}/$M output"
-                        )
-                    else:
-                        click.echo(f"   • {mid}: pricing not available")
+        models = data.get("models", {})
+        click.echo(f"\n{prov}: {len(models)} models")
 
-                total_count += len(model_list)
+        # Count by capabilities
+        vision_count = sum(1 for m in models.values() if m.get("supports_vision"))
+        function_count = sum(1 for m in models.values() if m.get("supports_function_calling"))
+        json_count = sum(1 for m in models.values() if m.get("supports_json_mode"))
 
-    if total_count > 0:
-        click.echo(f"\n📊 Total: {total_count} models")
-    else:
-        click.echo("No models found. Run 'registry extract' to create model files.")
+        click.echo(f"  - Vision support: {vision_count}")
+        click.echo(f"  - Function calling: {function_count}")
+        click.echo(f"  - JSON mode: {json_count}")
 
 
 @cli.command()
-@click.option("--models-dir", default="models", help="Directory containing model JSONs")
-@click.option(
-    "--provider",
-    type=click.Choice(["openai", "anthropic", "google", "all"]),
-    default="all",
-    help="Provider to validate",
-)
-@click.option("--verbose", "-v", is_flag=True, help="Show validation details")
-def validate(models_dir, provider, verbose):
-    """Validate model JSON files for consistency and completeness."""
-    models_path = Path(models_dir)
-
-    if not models_path.exists():
-        click.echo("No models directory found.", err=True)
+def list_drafts():
+    """List available draft files."""
+    drafts_dir = Path("drafts")
+    if not drafts_dir.exists():
+        click.echo("No drafts directory found")
         return
 
-    providers = (
-        [provider] if provider != "all" else ["openai", "anthropic", "google"]
-    )
-
-    has_errors = False
-
-    for prov in providers:
-        json_file = models_path / f"{prov}.json"
-        if not json_file.exists():
-            if verbose:
-                click.echo(f"⚠️  No file for {prov}")
-            continue
-
-        with open(json_file) as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError as e:
-                click.echo(f"❌ {prov}: Invalid JSON - {e}", err=True)
-                has_errors = True
-                continue
-
-        # Check structure
-        if "models" not in data:
-            click.echo(f"❌ {prov}: Missing 'models' field", err=True)
-            has_errors = True
-            continue
-
-        models = data["models"]
-        
-        # Handle both dict and list formats
-        if isinstance(models, dict):
-            model_list = list(models.values())
-        else:
-            model_list = models
-
-        # Validate each model
-        errors = []
-        for i, model in enumerate(model_list):
-            model_errors = []
-
-            # Required fields
-            required = ["model_name", "provider"]
-            for field in required:
-                if field not in model:
-                    model_errors.append(f"Missing '{field}'")
-
-            # Numeric fields
-            numeric_fields = [
-                "dollars_per_million_tokens_input",
-                "dollars_per_million_tokens_output",
-                "max_input_tokens",
-                "max_output_tokens",
-                "context_window_tokens",
-                "requires_tier",
-            ]
-            for field in numeric_fields:
-                if field in model:
-                    val = model[field]
-                    if val is not None and not isinstance(val, (int, float)):
-                        model_errors.append(f"'{field}' must be numeric, got {type(val).__name__}")
-                    elif val is not None and val < 0:
-                        model_errors.append(f"'{field}' cannot be negative")
-
-            # Boolean fields
-            bool_fields = [
-                "supports_vision",
-                "supports_function_calling",
-                "supports_json_mode",
-                "supports_parallel_tool_calls",
-                "supports_streaming",
-                "supports_audio",
-                "supports_documents",
-                "supports_json_schema",
-                "supports_logprobs",
-                "supports_multiple_responses",
-                "supports_caching",
-                "is_reasoning_model",
-                "requires_waitlist",
-                "is_active",
-            ]
-            for field in bool_fields:
-                if field in model and not isinstance(model.get(field), bool):
-                    model_errors.append(f"'{field}' must be boolean")
-
-            # Enum string fields
-            enum_fields = {
-                "speed_tier": ["fast", "standard", "slow"],
-                "intelligence_tier": ["basic", "standard", "advanced"],
-            }
-            for field, allowed_values in enum_fields.items():
-                if field in model:
-                    val = model[field]
-                    if val is not None and val not in allowed_values:
-                        model_errors.append(f"'{field}' must be one of {allowed_values}, got '{val}'")
-
-            # Array fields
-            array_fields = ["recommended_use_cases"]
-            for field in array_fields:
-                if field in model:
-                    val = model[field]
-                    if val is not None and not isinstance(val, list):
-                        model_errors.append(f"'{field}' must be an array")
-
-            # Date fields (basic format validation)
-            date_fields = ["release_date", "added_date", "deprecated_date"]
-            for field in date_fields:
-                if field in model:
-                    val = model[field]
-                    if val is not None and not isinstance(val, str):
-                        model_errors.append(f"'{field}' must be a string")
-                    elif val and not val.count("-") >= 2:  # Basic YYYY-MM-DD check
-                        model_errors.append(f"'{field}' should be in YYYY-MM-DD format")
-
-            if model_errors:
-                model_name = model.get("model_name", f"index_{i}")
-                errors.append(f"  Model '{model_name}': {', '.join(model_errors)}")
-
-        if errors:
-            click.echo(f"❌ {prov}: Validation errors", err=True)
-            if verbose:
-                for error in errors:
-                    click.echo(error, err=True)
-            has_errors = True
-        elif verbose:
-            click.echo(f"✅ {prov}: Valid ({len(model_list)} models)")
-
-    if not has_errors:
-        click.echo("✅ All model files are valid")
-    else:
-        raise click.Abort()
-
-
-@cli.command()
-@click.option("--models-dir", default="models", help="Directory containing model JSONs")
-@click.option(
-    "--output", default="manifest.json", help="Output manifest filename"
-)
-def manifest(models_dir, output):
-    """Generate a manifest file listing all available models."""
-    models_path = Path(models_dir)
-
-    if not models_path.exists():
-        click.echo("No models directory found.", err=True)
+    draft_files = sorted(drafts_dir.glob("*.draft.json"))
+    if not draft_files:
+        click.echo("No draft files found")
         return
 
-    manifest_data = {
-        "version": datetime.now().strftime("%Y-%m-%d"),
-        "updated_at": datetime.now().isoformat() + "Z",
-        "providers": {},
-        "schema_version": "3.0",
-        "registry_url": "https://llmring.github.io/registry/",
-        "extraction_methods": {
-            "llm": "LLM-based extraction via LLMRing unified interface"
-        }
-    }
+    click.echo("Available drafts:")
+    for f in draft_files:
+        # Get file stats
+        stat = f.stat()
+        size_kb = stat.st_size / 1024
+        modified = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
 
-    for provider in ["openai", "anthropic", "google"]:
-        json_file = models_path / f"{provider}.json"
-        if json_file.exists():
-            with open(json_file) as f:
-                data = json.load(f)
-                models = data.get("models", {})
-                model_count = len(models) if isinstance(models, dict) else len(models)
-                manifest_data["providers"][provider] = {
-                    "file": f"models/{provider}.json",
-                    "model_count": model_count,
-                    "last_updated": data.get("last_updated", datetime.now().strftime("%Y-%m-%d"))
-                }
-
-    with open(output, "w") as f:
-        json.dump(manifest_data, f, indent=2)
-
-    total_models = sum(p["model_count"] for p in manifest_data["providers"].values())
-    click.echo(f"✅ Generated manifest with {total_models} models from {len(manifest_data['providers'])} providers")
+        # Try to read model count
+        try:
+            with open(f) as file:
+                data = json.load(file)
+                model_count = len(data.get("models", {}))
+                click.echo(f"  - {f.name}: {model_count} models, {size_kb:.1f}KB, modified {modified}")
+        except Exception:
+            click.echo(f"  - {f.name}: {size_kb:.1f}KB, modified {modified}")
 
 
 def main():
     """Main entry point."""
-    cli()
+    # Allow exceptions to propagate for full tracebacks during debugging
+    cli(standalone_mode=False)
 
 
 if __name__ == "__main__":

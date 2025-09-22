@@ -1,400 +1,1488 @@
 {
   "provider": "anthropic",
-  "last_updated": "2025-08-18",
-  "extraction_method": "comprehensive",
-  "extraction_sources": {
-    "html_files": [
-      "2025-08-18-anthropic-pricing.html",
-      "2025-08-18-anthropic-models.html"
-    ],
-    "pdf_files": [
-      "2025-06-16-anthropic-models.pdf",
-      "2025-06-16-anthropic-pricing-context.pdf"
-    ]
-  },
-  "extraction_date": "2025-08-18T20:42:40.423602",
-  "extraction_confidence": {
-    "certain_fields": 0,
-    "total_fields": 148,
-    "conflicts": 0
-  },
-  "models": [
-    {
-      "model_id": "claude-opus-4-20250514",
-      "display_name": "Claude Opus 4",
-      "description": "Most capable and intelligent model yet, setting new standards in complex reasoning and advanced coding. Offers superior reasoning capabilities and top-tier results in multilingual tasks, long-context handling, honesty, and image processing.",
-      "max_context": 200000,
+  "last_updated": "2025-09-14",
+  "source": "bootstrap",
+  "extraction_date": "2025-09-14T12:26:55.305878",
+  "models": {
+    "anthropic:claude-opus-4-1-20250805": {
+      "provider": "anthropic",
+      "model_name": "claude-opus-4-1-20250805",
+      "display_name": "Claude Opus 4.1",
+      "description": "Our most capable and intelligent model yet. Claude Opus 4.1 sets new standards in complex reasoning and advanced coding. Highest level of intelligence and capability with superior reasoning capabilities.",
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "max_input_tokens": null,
       "max_output_tokens": 32000,
+      "context_window_tokens": 200000,
       "supports_vision": true,
-      "dollars_per_million_tokens_input": 15.0,
-      "dollars_per_million_tokens_output": 75.0,
-      "use_cases": [
-        "Complex reasoning tasks",
-        "Advanced coding",
-        "Long-context analysis",
-        "Image understanding",
-        "Rich interactive applications"
-      ],
-      "release_date": "2025-05-14",
-      "notes": "Priority tier access available",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "max_output_tokens",
-        "supports_vision",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "release_date",
-        "notes"
-      ]
+      "supports_function_calling": false,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": true
     },
-    {
-      "model_id": "claude-sonnet-4-20250514",
-      "display_name": "Claude Sonnet 4",
-      "description": "High-performance model with exceptional reasoning capabilities, offering balanced performance and efficiency. Supports both text and image inputs with strong multilingual capabilities.",
-      "max_context": 200000,
-      "max_output_tokens": 64000,
-      "supports_vision": true,
-      "dollars_per_million_tokens_input": 3.0,
-      "dollars_per_million_tokens_output": 15.0,
-      "use_cases": [
-        "General purpose tasks",
-        "Reasoning applications",
-        "Image analysis",
-        "Multilingual processing",
-        "Long-context tasks"
-      ],
-      "release_date": "2025-05-14",
-      "notes": "Priority tier access available",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "max_output_tokens",
-        "supports_vision",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "release_date",
-        "notes"
-      ]
-    },
-    {
-      "model_id": "claude-3-7-sonnet-20250219",
-      "display_name": "Claude Sonnet 3.7",
-      "description": "High-performance model with early extended thinking capabilities. Strong multilingual support and comprehensive knowledge base through October 2024.",
-      "max_context": 200000,
-      "max_output_tokens": 64000,
-      "supports_vision": true,
-      "dollars_per_million_tokens_input": 3.0,
-      "dollars_per_million_tokens_output": 15.0,
-      "use_cases": [
-        "Extended thinking tasks",
-        "General reasoning",
-        "Multilingual applications",
-        "Image processing"
-      ],
-      "release_date": "2025-02-19",
-      "notes": "Can enable 128k token output with beta header output-128k-2025-02-19",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "max_output_tokens",
-        "supports_vision",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "release_date",
-        "notes"
-      ]
-    },
-    {
-      "model_id": "claude-3-5-haiku-20241022",
-      "display_name": "Claude Haiku 3.5",
-      "description": "Fastest model in the Claude family, optimized for speed while maintaining strong intelligence capabilities.",
-      "max_context": 200000,
-      "max_output_tokens": 8192,
-      "supports_vision": true,
-      "dollars_per_million_tokens_input": 0.8,
-      "dollars_per_million_tokens_output": 4.0,
-      "use_cases": [
-        "Speed-critical applications",
-        "Quick responses",
-        "Real-time processing",
-        "Image analysis"
-      ],
-      "release_date": "2024-10-22",
-      "notes": "Priority tier access available",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "max_output_tokens",
-        "supports_vision",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "release_date",
-        "notes"
-      ]
-    },
-    {
-      "model_id": "claude-3-opus-20240229",
-      "display_name": "Claude Opus 3",
-      "description": "Powerful model for complex tasks with top-level intelligence, fluency, and understanding.",
-      "max_context": 200000,
-      "max_output_tokens": 4096,
-      "supports_vision": true,
-      "dollars_per_million_tokens_input": 15.0,
-      "dollars_per_million_tokens_output": 75.0,
-      "use_cases": [
-        "Complex reasoning",
-        "Detailed analysis",
-        "Advanced comprehension",
-        "Image processing"
-      ],
-      "release_date": "2024-02-29",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "max_output_tokens",
-        "supports_vision",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "release_date"
-      ]
-    },
-    {
-      "model_id": "claude-3-haiku-20240307",
-      "display_name": "Claude Haiku 3",
-      "description": "Fast and efficient model for basic tasks",
-      "max_context": 200000,
-      "supports_vision": true,
-      "dollars_per_million_tokens_input": 0.25,
-      "dollars_per_million_tokens_output": 1.25,
-      "use_cases": [
-        "Quick processing",
-        "Simple queries",
-        "Basic tasks",
-        "Image analysis"
-      ],
-      "release_date": "2024-03-07",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "supports_vision",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "release_date"
-      ]
-    },
-    {
-      "model_id": "claude-opus-4",
+    "anthropic:claude-opus-4-20250514": {
+      "provider": "anthropic",
+      "model_name": "claude-opus-4-20250514",
       "display_name": "Claude Opus 4",
-      "description": "Most intelligent model for complex tasks, offering the highest level of reasoning and analytical capabilities",
-      "max_context": 200000,
-      "supports_vision": true,
-      "supports_function_calling": true,
-      "supports_json_mode": true,
-      "supports_parallel_tool_calls": true,
+      "description": "Our previous flagship model with very high intelligence and capability. Excels in reasoning, coding, multilingual tasks, long-context handling, honesty, and image processing.",
       "dollars_per_million_tokens_input": 15.0,
       "dollars_per_million_tokens_output": 75.0,
-      "use_cases": [
-        "Complex analysis",
-        "Advanced reasoning",
-        "Research",
-        "Long-form content generation"
-      ],
-      "notes": "50% discount available with batch processing",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "supports_vision",
-        "supports_function_calling",
-        "supports_json_mode",
-        "supports_parallel_tool_calls",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "notes"
-      ]
+      "max_input_tokens": null,
+      "max_output_tokens": 32000,
+      "context_window_tokens": 200000,
+      "supports_vision": true,
+      "supports_function_calling": false,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": true
     },
-    {
-      "model_id": "claude-sonnet-4",
+    "anthropic:claude-sonnet-4-20250514": {
+      "provider": "anthropic",
+      "model_name": "claude-sonnet-4-20250514",
       "display_name": "Claude Sonnet 4",
-      "description": "Balanced model optimizing for intelligence, cost, and speed",
-      "max_context": 200000,
-      "supports_vision": true,
-      "supports_function_calling": true,
-      "supports_json_mode": true,
-      "supports_parallel_tool_calls": true,
+      "description": "High-performance model with exceptional reasoning and efficiency. High intelligence and balanced performance. Supports 200K context window with 1M context beta available.",
       "dollars_per_million_tokens_input": 3.0,
       "dollars_per_million_tokens_output": 15.0,
-      "use_cases": [
-        "General purpose tasks",
-        "Business applications",
-        "Content generation",
-        "Analysis"
-      ],
-      "notes": "50% discount available with batch processing",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "supports_vision",
-        "supports_function_calling",
-        "supports_json_mode",
-        "supports_parallel_tool_calls",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "notes"
-      ]
-    },
-    {
-      "model_id": "claude-haiku-3.5",
-      "display_name": "Claude Haiku 3.5",
-      "description": "Fastest and most cost-effective model, optimized for speed and efficiency",
-      "max_context": 200000,
+      "max_input_tokens": null,
+      "max_output_tokens": 64000,
+      "context_window_tokens": 200000,
       "supports_vision": true,
-      "supports_function_calling": true,
-      "supports_json_mode": true,
-      "supports_parallel_tool_calls": true,
-      "dollars_per_million_tokens_input": 0.8,
-      "dollars_per_million_tokens_output": 4.0,
-      "use_cases": [
-        "High-throughput applications",
-        "Real-time interactions",
-        "Cost-sensitive applications",
-        "Simple tasks"
-      ],
-      "notes": "60% faster inference speed in Amazon Bedrock. 50% discount available with batch processing",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "supports_vision",
-        "supports_function_calling",
-        "supports_json_mode",
-        "supports_parallel_tool_calls",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "notes"
-      ]
+      "supports_function_calling": false,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": true
     },
-    {
-      "model_id": "claude-opus-3",
-      "display_name": "Claude Opus 3",
-      "description": "Legacy version of the Opus model line",
-      "max_context": 200000,
-      "supports_vision": false,
-      "supports_function_calling": true,
-      "supports_json_mode": true,
-      "supports_parallel_tool_calls": true,
-      "dollars_per_million_tokens_input": 15.0,
-      "dollars_per_million_tokens_output": 75.0,
-      "use_cases": [
-        "Complex analysis",
-        "Advanced reasoning",
-        "Research"
-      ],
-      "notes": "Legacy model. 50% discount available with batch processing",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "supports_vision",
-        "supports_function_calling",
-        "supports_json_mode",
-        "supports_parallel_tool_calls",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "notes"
-      ]
-    },
-    {
-      "model_id": "claude-sonnet-3.7",
+    "anthropic:claude-3-7-sonnet-20250219": {
+      "provider": "anthropic",
+      "model_name": "claude-3-7-sonnet-20250219",
       "display_name": "Claude Sonnet 3.7",
-      "description": "Legacy version of the Sonnet model line",
-      "max_context": 200000,
-      "supports_vision": false,
-      "supports_function_calling": true,
-      "supports_json_mode": true,
-      "supports_parallel_tool_calls": true,
+      "description": "High-performance model with early extended thinking capabilities. High intelligence with toggleable extended thinking for complex reasoning tasks.",
       "dollars_per_million_tokens_input": 3.0,
       "dollars_per_million_tokens_output": 15.0,
-      "use_cases": [
-        "General purpose tasks",
-        "Business applications",
-        "Content generation"
-      ],
-      "notes": "Legacy model. 50% discount available with batch processing",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "supports_vision",
-        "supports_function_calling",
-        "supports_json_mode",
-        "supports_parallel_tool_calls",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "notes"
-      ]
+      "max_input_tokens": null,
+      "max_output_tokens": 64000,
+      "context_window_tokens": 200000,
+      "supports_vision": true,
+      "supports_function_calling": false,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": true
     },
-    {
-      "model_id": "claude-haiku-3",
-      "display_name": "Claude Haiku 3",
-      "description": "Legacy version of the Haiku model line",
-      "max_context": 200000,
-      "supports_vision": false,
+    "anthropic:claude-3-5-haiku-20241022": {
+      "provider": "anthropic",
+      "model_name": "claude-3-5-haiku-20241022",
+      "display_name": "Claude 3.5 Haiku",
+      "description": "Fastest and most cost-effective model, ideal for high-volume tasks",
+      "dollars_per_million_tokens_input": 1.0,
+      "dollars_per_million_tokens_output": 5.0,
+      "max_input_tokens": 200000,
+      "max_output_tokens": 8192,
+      "context_window_tokens": 200000,
+      "supports_vision": true,
       "supports_function_calling": true,
       "supports_json_mode": true,
       "supports_parallel_tool_calls": true,
+      "supports_streaming": true,
+      "supports_audio": false,
+      "supports_documents": true,
+      "supports_json_schema": true,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": true,
+      "is_reasoning_model": false,
+      "speed_tier": "fast",
+      "intelligence_tier": "standard",
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": "claude-3",
+      "recommended_use_cases": [
+        "chat",
+        "code",
+        "high-volume"
+      ],
+      "is_active": true,
+      "release_date": "2024-10-22"
+    },
+    "anthropic:claude-3-haiku-20240307": {
+      "provider": "anthropic",
+      "model_name": "claude-3-haiku-20240307",
+      "display_name": "Claude 3 Haiku",
+      "description": "Fast and cost-effective model",
       "dollars_per_million_tokens_input": 0.25,
       "dollars_per_million_tokens_output": 1.25,
-      "use_cases": [
-        "High-throughput applications",
-        "Simple tasks",
-        "Cost-sensitive applications"
+      "max_input_tokens": 200000,
+      "max_output_tokens": 4096,
+      "context_window_tokens": 200000,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "supports_streaming": true,
+      "supports_audio": false,
+      "supports_documents": true,
+      "supports_json_schema": true,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": true,
+      "is_reasoning_model": false,
+      "speed_tier": "fast",
+      "intelligence_tier": "basic",
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": "claude-3",
+      "recommended_use_cases": [
+        "chat",
+        "code",
+        "vision",
+        "high-volume"
       ],
-      "notes": "Legacy model. 50% discount available with batch processing",
-      "_uncertain_fields": [
-        "model_id",
-        "display_name",
-        "description",
-        "max_context",
-        "supports_vision",
-        "supports_function_calling",
-        "supports_json_mode",
-        "supports_parallel_tool_calls",
-        "dollars_per_million_tokens_input",
-        "dollars_per_million_tokens_output",
-        "use_cases",
-        "notes"
-      ]
+      "is_active": true,
+      "release_date": "2024-03-07"
+    },
+    "anthropic:claude-3-5-sonnet-20241022": {
+      "deprecated_date": null,
+      "supports_json_mode": true,
+      "requires_waitlist": false,
+      "max_output_tokens": 8192,
+      "supports_documents": true,
+      "supports_caching": true,
+      "model_family": "claude-3",
+      "speed_tier": "standard",
+      "provider": "anthropic",
+      "dollars_per_million_tokens_input": 3.0,
+      "intelligence_tier": "advanced",
+      "supports_logprobs": false,
+      "dollars_per_million_tokens_output": 15.0,
+      "context_window_tokens": 200000,
+      "description": "Most intelligent model, combining top-tier performance with improved speed",
+      "recommended_use_cases": [
+        "chat",
+        "code",
+        "vision",
+        "analysis"
+      ],
+      "is_reasoning_model": false,
+      "supports_parallel_tool_calls": true,
+      "supports_multiple_responses": false,
+      "is_active": true,
+      "supports_audio": false,
+      "max_input_tokens": 200000,
+      "supports_json_schema": true,
+      "requires_tier": null,
+      "supports_function_calling": true,
+      "supports_streaming": true,
+      "added_date": null,
+      "model_name": "claude-3-5-sonnet-20241022",
+      "display_name": "Claude 3.5 Sonnet",
+      "supports_vision": true,
+      "release_date": "2024-10-22",
+      "_confidence": {
+        "deprecated_date": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_json_mode": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "requires_waitlist": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "max_output_tokens": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_documents": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "supports_caching": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "model_family": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "speed_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "provider": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_input": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "intelligence_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_logprobs": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_output": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "context_window_tokens": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "description": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "recommended_use_cases": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_reasoning_model": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_parallel_tool_calls": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_multiple_responses": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "is_active": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "supports_audio": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "max_input_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_schema": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "requires_tier": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_function_calling": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_streaming": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "added_date": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "model_name": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "display_name": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "supports_vision": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "release_date": {
+          "confidence": "probable",
+          "conflict": false
+        }
+      }
+    },
+    "anthropic:claude-3-opus-20240229": {
+      "deprecated_date": null,
+      "supports_json_mode": true,
+      "requires_waitlist": false,
+      "max_output_tokens": 4096,
+      "supports_documents": true,
+      "supports_caching": true,
+      "model_family": "claude-3",
+      "speed_tier": "slow",
+      "provider": "anthropic",
+      "dollars_per_million_tokens_input": 15.0,
+      "intelligence_tier": "advanced",
+      "supports_logprobs": false,
+      "dollars_per_million_tokens_output": 75.0,
+      "context_window_tokens": 200000,
+      "description": "Powerful model for highly complex tasks",
+      "recommended_use_cases": [
+        "chat",
+        "code",
+        "vision",
+        "complex-analysis"
+      ],
+      "is_reasoning_model": false,
+      "supports_parallel_tool_calls": true,
+      "supports_multiple_responses": false,
+      "is_active": true,
+      "supports_audio": false,
+      "max_input_tokens": 200000,
+      "supports_json_schema": true,
+      "requires_tier": null,
+      "supports_function_calling": true,
+      "supports_streaming": true,
+      "added_date": null,
+      "model_name": "claude-3-opus-20240229",
+      "display_name": "Claude 3 Opus",
+      "supports_vision": true,
+      "release_date": "2024-02-29",
+      "_confidence": {
+        "deprecated_date": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_json_mode": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "requires_waitlist": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "max_output_tokens": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_documents": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "supports_caching": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "model_family": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "speed_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "provider": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_input": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "intelligence_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_logprobs": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_output": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "context_window_tokens": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "description": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "recommended_use_cases": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_reasoning_model": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_parallel_tool_calls": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_multiple_responses": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "is_active": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "supports_audio": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "max_input_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_schema": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "requires_tier": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_function_calling": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_streaming": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "added_date": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "model_name": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "display_name": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "supports_vision": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "release_date": {
+          "confidence": "probable",
+          "conflict": false
+        }
+      }
+    },
+    "anthropic:claude-3-sonnet-20240229": {
+      "deprecated_date": null,
+      "supports_json_mode": true,
+      "requires_waitlist": false,
+      "max_output_tokens": 4096,
+      "supports_documents": true,
+      "supports_caching": true,
+      "model_family": "claude-3",
+      "speed_tier": "standard",
+      "provider": "anthropic",
+      "dollars_per_million_tokens_input": 3.0,
+      "intelligence_tier": "standard",
+      "supports_logprobs": false,
+      "dollars_per_million_tokens_output": 15.0,
+      "context_window_tokens": 200000,
+      "description": "Balance of intelligence and speed",
+      "recommended_use_cases": [
+        "chat",
+        "code",
+        "vision"
+      ],
+      "is_reasoning_model": false,
+      "supports_parallel_tool_calls": true,
+      "supports_multiple_responses": false,
+      "is_active": true,
+      "supports_audio": false,
+      "max_input_tokens": 200000,
+      "supports_json_schema": true,
+      "requires_tier": null,
+      "supports_function_calling": true,
+      "supports_streaming": true,
+      "added_date": null,
+      "model_name": "claude-3-sonnet-20240229",
+      "display_name": "Claude 3 Sonnet",
+      "supports_vision": false,
+      "release_date": "2024-02-29",
+      "_confidence": {
+        "deprecated_date": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_json_mode": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "requires_waitlist": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "max_output_tokens": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_documents": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_caching": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "model_family": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "speed_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "provider": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_input": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "intelligence_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_logprobs": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_output": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "context_window_tokens": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "description": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "recommended_use_cases": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_reasoning_model": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_parallel_tool_calls": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_multiple_responses": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "is_active": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_audio": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "max_input_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_schema": {
+          "confidence": "uncertain",
+          "conflict": true
+        },
+        "requires_tier": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_function_calling": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_streaming": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "added_date": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "model_name": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "display_name": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "supports_vision": {
+          "confidence": "certain",
+          "conflict": false
+        },
+        "release_date": {
+          "confidence": "probable",
+          "conflict": false
+        }
+      }
+    },
+    "anthropic:claude-3-5-sonnet-20240620": {
+      "provider": "anthropic",
+      "model_name": "claude-3-5-sonnet-20240620",
+      "display_name": "Claude Sonnet 3.5 (June)",
+      "description": "Previous version of Claude Sonnet 3.5, deprecated in favor of the October 2024 release. Balanced model offering strong performance across various tasks.",
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "max_input_tokens": null,
+      "max_output_tokens": null,
+      "context_window_tokens": null,
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": false,
+      "release_date": null,
+      "deprecated_date": null,
+      "added_date": null,
+      "_confidence": {
+        "provider": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "display_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "description": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_input": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_output": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_input_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_output_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "context_window_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_vision": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_function_calling": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_mode": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_parallel_tool_calls": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_streaming": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_audio": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_documents": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_schema": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_logprobs": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_multiple_responses": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_caching": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_reasoning_model": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "speed_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "intelligence_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_waitlist": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_family": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "recommended_use_cases": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_active": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "release_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "deprecated_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "added_date": {
+          "confidence": "probable",
+          "conflict": false
+        }
+      }
+    },
+    "anthropic:claude-3-7-sonnet-20241205": {
+      "provider": "anthropic",
+      "model_name": "claude-3-7-sonnet-20241205",
+      "display_name": "Claude Sonnet 3.7",
+      "description": "Intermediate update to the Sonnet line with performance improvements. Balanced model suitable for complex reasoning, content generation, and analysis tasks.",
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "max_input_tokens": null,
+      "max_output_tokens": null,
+      "context_window_tokens": null,
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": true,
+      "release_date": null,
+      "deprecated_date": null,
+      "added_date": null,
+      "_confidence": {
+        "provider": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "display_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "description": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_input": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_output": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_input_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_output_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "context_window_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_vision": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_function_calling": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_mode": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_parallel_tool_calls": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_streaming": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_audio": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_documents": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_schema": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_logprobs": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_multiple_responses": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_caching": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_reasoning_model": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "speed_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "intelligence_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_waitlist": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_family": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "recommended_use_cases": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_active": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "release_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "deprecated_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "added_date": {
+          "confidence": "probable",
+          "conflict": false
+        }
+      }
+    },
+    "anthropic:claude-4-1-opus-20241210": {
+      "provider": "anthropic",
+      "model_name": "claude-4-1-opus-20241210",
+      "display_name": "Claude Opus 4.1",
+      "description": "Latest iteration of the flagship Opus model with incremental improvements. Offers the highest level of intelligence and capability for the most demanding tasks including complex reasoning, research, and creative work.",
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "max_input_tokens": null,
+      "max_output_tokens": null,
+      "context_window_tokens": null,
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": true,
+      "release_date": null,
+      "deprecated_date": null,
+      "added_date": null,
+      "_confidence": {
+        "provider": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "display_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "description": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_input": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_output": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_input_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_output_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "context_window_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_vision": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_function_calling": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_mode": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_parallel_tool_calls": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_streaming": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_audio": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_documents": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_schema": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_logprobs": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_multiple_responses": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_caching": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_reasoning_model": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "speed_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "intelligence_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_waitlist": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_family": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "recommended_use_cases": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_active": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "release_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "deprecated_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "added_date": {
+          "confidence": "probable",
+          "conflict": false
+        }
+      }
+    },
+    "anthropic:claude-4-opus-20241210": {
+      "provider": "anthropic",
+      "model_name": "claude-4-opus-20241210",
+      "display_name": "Claude Opus 4",
+      "description": "Current flagship model with maximum intelligence and capabilities. Best for the most complex tasks requiring deep reasoning, nuanced understanding, and sophisticated analysis. Premium pricing reflects superior performance.",
+      "dollars_per_million_tokens_input": 15.0,
+      "dollars_per_million_tokens_output": 75.0,
+      "max_input_tokens": null,
+      "max_output_tokens": null,
+      "context_window_tokens": null,
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": true,
+      "release_date": null,
+      "deprecated_date": null,
+      "added_date": null,
+      "_confidence": {
+        "provider": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "display_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "description": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_input": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_output": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_input_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_output_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "context_window_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_vision": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_function_calling": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_mode": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_parallel_tool_calls": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_streaming": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_audio": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_documents": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_schema": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_logprobs": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_multiple_responses": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_caching": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_reasoning_model": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "speed_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "intelligence_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_waitlist": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_family": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "recommended_use_cases": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_active": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "release_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "deprecated_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "added_date": {
+          "confidence": "probable",
+          "conflict": false
+        }
+      }
+    },
+    "anthropic:claude-4-sonnet-20241210": {
+      "provider": "anthropic",
+      "model_name": "claude-4-sonnet-20241210",
+      "display_name": "Claude Sonnet 4",
+      "description": "Latest generation balanced model with excellent performance across diverse tasks. Features 1M token context window capability (beta) for processing extremely long documents. Ideal for complex reasoning, analysis, creative writing, and coding tasks.",
+      "dollars_per_million_tokens_input": 3.0,
+      "dollars_per_million_tokens_output": 15.0,
+      "max_input_tokens": null,
+      "max_output_tokens": null,
+      "context_window_tokens": 1000000,
+      "supports_vision": false,
+      "supports_function_calling": true,
+      "supports_json_mode": false,
+      "supports_parallel_tool_calls": false,
+      "supports_streaming": false,
+      "supports_audio": false,
+      "supports_documents": false,
+      "supports_json_schema": false,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": false,
+      "is_reasoning_model": false,
+      "speed_tier": null,
+      "intelligence_tier": null,
+      "requires_tier": null,
+      "requires_waitlist": false,
+      "model_family": null,
+      "recommended_use_cases": null,
+      "is_active": true,
+      "release_date": null,
+      "deprecated_date": null,
+      "added_date": null,
+      "_confidence": {
+        "provider": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "display_name": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "description": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_input": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "dollars_per_million_tokens_output": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_input_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "max_output_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "context_window_tokens": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_vision": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_function_calling": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_mode": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_parallel_tool_calls": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_streaming": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_audio": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_documents": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_json_schema": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_logprobs": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_multiple_responses": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "supports_caching": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_reasoning_model": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "speed_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "intelligence_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_tier": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "requires_waitlist": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "model_family": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "recommended_use_cases": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "is_active": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "release_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "deprecated_date": {
+          "confidence": "probable",
+          "conflict": false
+        },
+        "added_date": {
+          "confidence": "probable",
+          "conflict": false
+        }
+      }
     }
-  ]
+  },
+  "version": 1,
+  "updated_at": "2025-09-14T22:09:57.849796",
+  "content_sha256_jcs": "a6ad3c7b214a65c97a56809e0f055907ac30612622590d33e9095405d7d39ca9"
 }

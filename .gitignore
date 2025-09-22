@@ -173,3 +173,6 @@ fresh_html/
 # Keep the models directory for output
 !/models/
 !/models/*.json
+
+# Cached source documents (can be regenerated)
+cache/
