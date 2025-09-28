@@ -1302,7 +1302,7 @@
       "tool_call_format": null
     }
   },
-  "version": 1,
-  "updated_at": "2025-09-21T20:12:56.754311",
-  "content_sha256_jcs": "94b53ee8843af70cead8b518b5e285c16881eabf72603be8dcb280621775c96f"
+  "version": 2,
+  "updated_at": "2025-09-28T18:25:49.141097",
+  "content_sha256_jcs": "243140a3c6653fcc91724e01d7772ce5198ba37bdc4217952f4fc16aea4b7223"
 }

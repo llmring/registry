@@ -801,7 +801,7 @@
       "tool_call_format": "google"
     }
   },
-  "version": 1,
-  "updated_at": "2025-09-21T20:12:56.750088",
-  "content_sha256_jcs": "263777eff051b0b91a5a309de324e4d391389cd4c47d4d141fa77ec44e368964"
+  "version": 2,
+  "updated_at": "2025-09-28T18:25:49.131927",
+  "content_sha256_jcs": "4a1b05d27282246da42ed11a6fc435dedf5ff8e246634b96a64e68d436523288"
 }

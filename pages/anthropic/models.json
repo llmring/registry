@@ -39,7 +39,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": false,
+      "api_endpoint": "chat",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 1.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "anthropic"
     },
     "anthropic:claude-opus-4-20250514": {
       "provider": "anthropic",
@@ -74,7 +85,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": false,
+      "api_endpoint": "chat",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 1.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "anthropic"
     },
     "anthropic:claude-sonnet-4-20250514": {
       "provider": "anthropic",
@@ -109,7 +131,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": false,
+      "api_endpoint": "chat",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 1.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "anthropic"
     },
     "anthropic:claude-3-7-sonnet-20250219": {
       "provider": "anthropic",
@@ -144,7 +177,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "chat",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 1.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "anthropic"
     },
     "anthropic:claude-3-5-haiku-20241022": {
       "provider": "anthropic",
@@ -179,7 +223,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "chat",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 1.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "anthropic"
     },
     "anthropic:claude-3-haiku-20240307": {
       "provider": "anthropic",
@@ -212,10 +267,21 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "chat",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 1.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "anthropic"
     }
   },
-  "version": 2,
-  "updated_at": "2025-09-21T20:12:56.747397",
-  "content_sha256_jcs": "2d566b54dbf2fa7e7e6a0092394358267f77d584b04cc549745b80c43fb61855"
+  "version": 3,
+  "updated_at": "2025-09-28T18:25:49.129813",
+  "content_sha256_jcs": "1785c92e4816845eef266704e4f578ffc715c16b36b2c5990f1d0ee14ec189b8"
 }
