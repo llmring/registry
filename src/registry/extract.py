@@ -36,6 +36,22 @@ def _screenshot_model_to_registry_dict(provider: str, m: ModelInfo) -> Dict[str,
         "supports_multiple_responses": m.supports_multiple_responses,
         "supports_caching": m.supports_caching,
         "is_reasoning_model": m.is_reasoning_model,
+        # New capability flags
+        "supports_temperature": m.supports_temperature,
+        "supports_system_message": m.supports_system_message,
+        "supports_pdf_input": m.supports_pdf_input,
+        # Routing and API hints
+        "api_endpoint": m.api_endpoint,
+        "requires_flat_input": m.requires_flat_input,
+        # Parameter constraints
+        "temperature_values": m.temperature_values,
+        "max_temperature": m.max_temperature,
+        "min_temperature": m.min_temperature,
+        # Tool constraints
+        "max_tools": m.max_tools,
+        "supports_tool_choice": m.supports_tool_choice,
+        "tool_call_format": m.tool_call_format,
+        # Model characteristics & metadata
         "speed_tier": m.speed_tier,
         "intelligence_tier": m.intelligence_tier,
         "requires_tier": m.requires_tier,
