@@ -11,6 +11,7 @@ from typing import Any, Dict, List
 import click
 
 from .document_parser import DocumentParser, ModelInfo
+from .schema_utils import normalize_draft_file
 
 
 def _screenshot_model_to_registry_dict(provider: str, m: ModelInfo) -> Dict[str, Any]:
@@ -124,12 +125,27 @@ def extract_from_documents(provider: str, sources_dir: str, drafts_dir: str, tim
 
         # Only write draft if we actually extracted something
         if keyed:
+            # Count document types
+            png_count = len([f for f in document_files if f.suffix.lower() == '.png'])
+            pdf_count = len([f for f in document_files if f.suffix.lower() == '.pdf'])
+            md_count = len([f for f in document_files if f.suffix.lower() == '.md'])
+
             draft = {
                 "provider": prov,
                 "extraction_date": datetime.now().isoformat(),
-                "sources": {"documents": len(document_files), "models_extracted": len(keyed)},
+                "sources": {
+                    "documents": len(document_files),
+                    "png_files": png_count,
+                    "pdf_files": pdf_count,
+                    "md_files": md_count,
+                    "models_extracted": len(keyed)
+                },
                 "models": keyed,
             }
+
+            # Normalize the draft before writing
+            draft = normalize_draft_file(draft)
+
             out = drafts_path / f"{prov}.{date_str}.draft.json"
             out.write_text(json.dumps(draft, indent=2))
             click.echo(f"  ✅ Draft written: {out} ({len(keyed)} models)")

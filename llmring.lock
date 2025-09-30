@@ -12,6 +12,12 @@ provider = "google"
 model = "gemini-2.5-pro"
 rationale = "Best extraction accuracy with strong JSON schema compliance for registry model extraction"
 
+[[profiles.default.bindings]]
+alias = "validator"
+provider = "anthropic"
+model = "claude-3-7-sonnet-20250219"
+rationale = "Best reasoning and analysis for validating extracted data against source documents"
+
 [profiles.default.registry_versions]
 openai = 1
 anthropic = 2

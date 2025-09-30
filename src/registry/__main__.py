@@ -12,6 +12,9 @@ from .review import review_draft
 from .promote import promote
 from .export_cmd import export_cmd
 from .extract import extract_from_documents
+from .validate import validate_command
+from .normalize import normalize_command
+from .sources_cmd import sources_command
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
@@ -33,9 +36,12 @@ def cli(ctx, verbose):
 
 
 # Add commands
+cli.add_command(sources_command, name="sources")
 cli.add_command(extract_from_documents, name="extract-from-documents")
 cli.add_command(extract_from_documents, name="extract-from-screenshot")  # Backward compatibility
 cli.add_command(extract_from_documents, name="extract")  # Simplified alias
+cli.add_command(validate_command, name="validate")
+cli.add_command(normalize_command, name="normalize")
 cli.add_command(review_draft, name="review-draft")
 cli.add_command(promote, name="promote")
 cli.add_command(export_cmd, name="export")
@@ -108,8 +114,14 @@ def list_drafts():
 
 def main():
     """Main entry point."""
-    # Allow exceptions to propagate for full tracebacks during debugging
-    cli(standalone_mode=False)
+    try:
+        cli(standalone_mode=False)
+    except click.exceptions.NoArgsIsHelpError:
+        # Show help when no arguments provided
+        cli(["--help"])
+    except Exception:
+        # Allow other exceptions to propagate for debugging
+        raise
 
 
 if __name__ == "__main__":
