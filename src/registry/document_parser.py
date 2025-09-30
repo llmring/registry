@@ -62,6 +62,25 @@ class ModelInfo:
     supports_caching: bool = False
     is_reasoning_model: bool = False
 
+    # New capability flags for enhanced model constraints
+    supports_temperature: bool = True  # False = can only use default temperature (e.g., o1, gpt-5)
+    supports_system_message: bool = True  # Some models don't support system role
+    supports_pdf_input: bool = False  # Whether PDFs can be processed directly
+
+    # Routing and API endpoint hints
+    api_endpoint: Optional[str] = None  # "chat", "responses", "assistants"
+    requires_flat_input: bool = False  # Needs conversation flattened to single string
+
+    # Parameter constraints
+    temperature_values: Optional[List[float]] = None  # Allowed temperature values (None = all)
+    max_temperature: Optional[float] = None  # Max temperature if supported
+    min_temperature: Optional[float] = None  # Min temperature if supported
+
+    # Tool constraints
+    max_tools: Optional[int] = None  # Maximum number of tools (0 = none, None = unlimited)
+    supports_tool_choice: bool = True  # Whether tool_choice parameter works
+    tool_call_format: Optional[str] = None  # Format for tool calls if non-standard
+
     # Model characteristics & metadata
     speed_tier: Optional[str] = None  # "fast" | "standard" | "slow"
     intelligence_tier: Optional[str] = None  # "basic" | "standard" | "advanced"

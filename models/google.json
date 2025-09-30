@@ -37,7 +37,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.0-flash-lite-001": {
       "provider": "google",
@@ -70,7 +81,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.0-flash-live-001": {
       "provider": "google",
@@ -103,7 +125,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.0-flash": {
       "provider": "google",
@@ -136,7 +169,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.0-flash-001": {
       "provider": "google",
@@ -169,7 +213,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.0-flash-exp": {
       "provider": "google",
@@ -202,7 +257,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-flash-lite": {
       "provider": "google",
@@ -235,7 +301,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-flash-lite-06-17": {
       "provider": "google",
@@ -270,7 +347,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-flash": {
       "provider": "google",
@@ -303,7 +391,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-flash-preview-05-20": {
       "provider": "google",
@@ -336,7 +435,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-pro": {
       "provider": "google",
@@ -369,7 +479,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-live-2.5-flash-preview": {
       "provider": "google",
@@ -402,7 +523,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": false,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-flash-preview-native-audio-dialog": {
       "provider": "google",
@@ -435,7 +567,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-flash-exp-native-audio-thinking-dialog": {
       "provider": "google",
@@ -468,7 +611,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-flash-image-preview": {
       "provider": "google",
@@ -501,7 +655,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-flash-preview-tts": {
       "provider": "google",
@@ -534,7 +699,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.5-pro-preview-tts": {
       "provider": "google",
@@ -567,7 +743,18 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     },
     "google:gemini-2.0-flash-preview-image-generation": {
       "provider": "google",
@@ -600,10 +787,21 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": true,
+      "api_endpoint": "generateContent",
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": 2.0,
+      "min_temperature": 0.0,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": "google"
     }
   },
-  "version": 1,
-  "updated_at": "2025-09-21T20:12:56.750088",
-  "content_sha256_jcs": "263777eff051b0b91a5a309de324e4d391389cd4c47d4d141fa77ec44e368964"
+  "version": 2,
+  "updated_at": "2025-09-28T18:25:49.131927",
+  "content_sha256_jcs": "4a1b05d27282246da42ed11a6fc435dedf5ff8e246634b96a64e68d436523288"
 }
