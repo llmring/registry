@@ -25,11 +25,12 @@ def normalize_model_data(model: Dict[str, Any]) -> Dict[str, Any]:
     array_fields = [
         "model_aliases",
         "recommended_use_cases",
+        "temperature_values",  # New: List[float] for allowed temperature values
     ]
     for field in array_fields:
         value = normalized.get(field)
         if value is None:
-            normalized[field] = []
+            normalized[field] = [] if field != "temperature_values" else None  # temperature_values can be null (unrestricted)
         elif not isinstance(value, list):
             # Convert single value to list
             normalized[field] = [value] if value else []
@@ -44,6 +45,8 @@ def normalize_model_data(model: Dict[str, Any]) -> Dict[str, Any]:
         "added_date",
         "description",
         "notes",
+        "api_endpoint",  # New: "chat", "responses", "assistants", etc.
+        "tool_call_format",  # New: format specification for tool calls
     ]
     for field in optional_string_fields:
         value = normalized.get(field)
@@ -69,6 +72,11 @@ def normalize_model_data(model: Dict[str, Any]) -> Dict[str, Any]:
         "is_reasoning_model",
         "requires_waitlist",
         "is_active",
+        "supports_temperature",  # New: False if model only uses default temperature
+        "supports_system_message",  # New: Some models don't support system role
+        "supports_pdf_input",  # New: Whether PDFs can be processed directly
+        "requires_flat_input",  # New: Some models require flattened message structures
+        "supports_tool_choice",  # New: Whether model supports tool_choice parameter
     ]
     for field in boolean_fields:
         if field not in normalized:
@@ -77,13 +85,17 @@ def normalize_model_data(model: Dict[str, Any]) -> Dict[str, Any]:
                 normalized[field] = True  # Most models support streaming
             elif field == "is_active":
                 normalized[field] = True  # Assume active unless stated otherwise
+            elif field in ["supports_temperature", "supports_system_message", "supports_tool_choice"]:
+                normalized[field] = True  # Most models support these
+            elif field in ["supports_pdf_input", "requires_flat_input"]:
+                normalized[field] = False  # These are special capabilities
             else:
                 normalized[field] = False
         else:
             # Ensure it's actually boolean
             normalized[field] = bool(normalized[field])
 
-    # Numeric fields - ensure not null
+    # Numeric fields - ensure not null (except truly optional constraint fields)
     numeric_fields = [
         "max_input_tokens",
         "max_output_tokens",
@@ -98,6 +110,19 @@ def normalize_model_data(model: Dict[str, Any]) -> Dict[str, Any]:
                 normalized[field] = 0.0
             else:
                 normalized[field] = 0
+
+    # Optional numeric constraint fields - can be null (meaning no constraint/default behavior)
+    optional_numeric_fields = [
+        "max_temperature",  # New: Maximum allowed temperature value
+        "min_temperature",  # New: Minimum allowed temperature value
+        "max_tools",  # New: Maximum number of tools that can be provided
+    ]
+    # These fields should remain null if not specified - null means "no explicit constraint"
+    # No normalization needed, just ensure they're numeric if present
+    for field in optional_numeric_fields:
+        if field in normalized and normalized[field] is not None:
+            # Ensure it's numeric
+            normalized[field] = float(normalized[field]) if "temperature" in field else int(normalized[field])
 
     return normalized
 

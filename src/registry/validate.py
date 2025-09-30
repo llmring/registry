@@ -133,9 +133,21 @@ VALIDATION CHECKLIST:
    - supports_function_calling: check for tool/function support
    - supports_json_mode: check for structured output
    - supports_streaming: most models support this
+   - supports_temperature: check if model allows temperature control
+   - supports_system_message: check if system role is supported
+   - supports_pdf_input: check if PDFs can be directly processed
    - Other capability flags match documentation
 
-5. **Description & Metadata**
+5. **Constraints & Parameters**
+   - api_endpoint: correct API route if specified
+   - requires_flat_input: check if message flattening required
+   - temperature_values: verify allowed temperature values (if constrained)
+   - max_temperature/min_temperature: verify temperature bounds
+   - max_tools: verify tool count limits
+   - supports_tool_choice: check if tool_choice parameter supported
+   - tool_call_format: verify tool call format specification
+
+6. **Description & Metadata**
    - Description captures key capabilities
    - Use cases appropriate (if provided)
 
