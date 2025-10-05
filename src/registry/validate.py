@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """Automated validation of extracted models against source documentation.
 
-This tool performs per-model validation by having an LLM:
-1. Review each model's extracted data
-2. Check it against the source documents
-3. Flag any inconsistencies or missing data
-4. Suggest corrections
+This validator compares the generated draft JSON with the per-source
+`.extracted.json` snapshots that were produced during extraction.
 
 Usage:
     uv run llmring-registry validate --provider openai --draft drafts/openai.2025-09-21.draft.json
@@ -13,7 +10,6 @@ Usage:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from dataclasses import dataclass
@@ -22,9 +18,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import click
-from llmring import LLMRing
-from llmring.file_utils import create_file_content
-from llmring.schemas import LLMRequest, Message
+
+from .schema_utils import normalize_model_data
 
 logger = logging.getLogger(__name__)
 
@@ -49,312 +44,342 @@ class ModelValidationResult:
 
 
 class ModelValidator:
-    """Validates extracted models against source documentation using LLM."""
+    """Validates extracted models against source documentation using local snapshots."""
 
     def __init__(self, debug: bool = False):
-        """Initialize validator with LLMRing."""
-        self.service = LLMRing()
         self.debug = debug
         if debug:
             logging.basicConfig(level=logging.DEBUG)
 
-    def _validation_response_schema(self) -> dict:
-        """Schema for validation response."""
-        return {
-            "type": "object",
-            "properties": {
-                "is_valid": {
-                    "type": "boolean",
-                    "description": "Whether the model data appears correct overall"
-                },
-                "confidence_score": {
-                    "type": "number",
-                    "description": "Confidence in validation (0.0 to 1.0)"
-                },
-                "issues": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "severity": {
-                                "type": "string",
-                                "enum": ["error", "warning", "info"],
-                                "description": "Severity level"
-                            },
-                            "field": {
-                                "type": "string",
-                                "description": "Field with issue (or 'general')"
-                            },
-                            "issue": {
-                                "type": "string",
-                                "description": "Description of the issue"
-                            },
-                            "suggested_fix": {
-                                "type": "string",
-                                "description": "Suggested correction (if applicable)"
-                            }
-                        },
-                        "required": ["severity", "field", "issue"]
-                    }
-                }
-            },
-            "required": ["is_valid", "confidence_score", "issues"]
+    @staticmethod
+    def _is_paid_model(model: Dict[str, Any]) -> bool:
+        try:
+            input_price = float(model.get("dollars_per_million_tokens_input", 0))
+            output_price = float(model.get("dollars_per_million_tokens_output", 0))
+        except (TypeError, ValueError):
+            return False
+        return input_price > 0 and output_price > 0
+
+    def _merge_model_record(self, existing: Dict[str, Any], new: Dict[str, Any]) -> Dict[str, Any]:
+        merged = existing.copy()
+
+        pricing_fields = {
+            "dollars_per_million_tokens_input",
+            "dollars_per_million_tokens_output",
+            "dollars_per_million_tokens_cached_input",
+            "dollars_per_million_tokens_cache_write_5m",
+            "dollars_per_million_tokens_cache_write_1h",
+            "dollars_per_million_tokens_cache_read",
+            "dollars_per_million_tokens_input_long_context",
+            "dollars_per_million_tokens_output_long_context",
+            "dollars_per_million_tokens_output_thinking",
+            "cache_storage_cost_per_million_tokens_per_hour",
         }
 
-    def _create_validation_prompt(self, provider: str, model_data: dict) -> str:
-        """Create validation prompt for a single model."""
-        model_json = json.dumps(model_data, indent=2)
+        for field in pricing_fields:
+            if field not in new:
+                continue
+            try:
+                value = float(new[field])
+            except (TypeError, ValueError):
+                continue
+            if value > 0:
+                merged[field] = value
 
-        return f"""You are validating extracted model data against {provider} documentation.
+        int_fields = {"max_input_tokens", "max_output_tokens", "requires_tier", "long_context_threshold_tokens"}
+        for field in int_fields:
+            if field in new and new[field] is not None:
+                try:
+                    merged[field] = int(new[field])
+                except (TypeError, ValueError):
+                    continue
 
-EXTRACTED MODEL DATA:
-{model_json}
+        list_fields = {"model_aliases", "recommended_use_cases"}
+        for field in list_fields:
+            if field in new and new[field] is not None:
+                merged[field] = list(new[field])
 
-VALIDATION CHECKLIST:
+        bool_fields = [key for key in new.keys() if key.startswith("supports_") or key in {"is_active", "requires_waitlist"}]
+        for field in bool_fields:
+            merged[field] = bool(new.get(field))
 
-1. **Model Name & Identification**
-   - Is model_name the correct API identifier?
-   - Are model_aliases appropriate (if any)?
-   - Does display_name match official naming?
+        for field, value in new.items():
+            if field in pricing_fields or field in int_fields or field in list_fields or field in bool_fields:
+                continue
+            if value is not None:
+                merged[field] = value
 
-2. **Pricing** (CRITICAL)
-   - Are dollars_per_million_tokens_input/output correct?
-   - If pricing tier shown (free/paid), is PAID tier used?
-   - Conversion correct? (e.g., $2.50/1M tokens = 2.50)
-   - NEVER suggest price changes unless you see explicit pricing in the docs
+        return merged
 
-3. **Token Limits** (CRITICAL)
-   - max_input_tokens should be context_window - max_output_tokens
-   - NOT the same as context window!
-   - Zero values are errors unless model truly has no limit
+    def _load_expected_models(self, provider: str, sources_dir: Path) -> Dict[str, Dict[str, Any]]:
+        expected: Dict[str, Dict[str, Any]] = {}
+        base_dir = sources_dir / provider
+        if not base_dir.exists():
+            return expected
 
-4. **Capabilities**
-   - supports_vision: check if multimodal
-   - supports_function_calling: check for tool/function support
-   - supports_json_mode: check for structured output
-   - supports_streaming: most models support this
-   - supports_temperature: check if model allows temperature control
-   - supports_system_message: check if system role is supported
-   - supports_pdf_input: check if PDFs can be directly processed
-   - Other capability flags match documentation
+        snapshot_files = sorted(base_dir.glob("*.extracted.json"))
+        if not snapshot_files:
+            snapshot_files = sorted(base_dir.glob("*.md"))
+        for snapshot in snapshot_files:
+            try:
+                text = snapshot.read_text()
+            except Exception as exc:
+                logger.warning(f"Failed to read snapshot {snapshot}: {exc}")
+                continue
 
-5. **Constraints & Parameters**
-   - api_endpoint: correct API route if specified
-   - requires_flat_input: check if message flattening required
-   - temperature_values: verify allowed temperature values (if constrained)
-   - max_temperature/min_temperature: verify temperature bounds
-   - max_tools: verify tool count limits
-   - supports_tool_choice: check if tool_choice parameter supported
-   - tool_call_format: verify tool call format specification
+            def _normalize_entries(raw_entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+                normalized: List[Dict[str, Any]] = []
+                for entry in raw_entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    normalized.append(normalize_model_data(entry))
+                return normalized
 
-6. **Description & Metadata**
-   - Description captures key capabilities
-   - Use cases appropriate (if provided)
-
-RULES:
-- Flag as ERROR if: pricing wrong, token limits obviously incorrect, model name wrong
-- Flag as WARNING if: missing optional data, unclear capability
-- Flag as INFO if: could add more detail but not wrong
-- If you see zero prices or token limits, that's an ERROR (unless docs say unlimited)
-- Only suggest fixes if you're certain from the documentation
-
-Validate thoroughly and return structured results."""
-
-    async def _validate_single_model(
-        self,
-        provider: str,
-        model_key: str,
-        model_data: dict,
-        source_files: List[Path],
-        timeout_seconds: int = 120
-    ) -> ModelValidationResult:
-        """Validate a single model against source documentation."""
-
-        logger.info(f"Validating {model_key}")
-
-        # Create prompt
-        validation_prompt = self._create_validation_prompt(provider, model_data)
-
-        # Prepare content with source documents
-        # Use first document for now (could iterate through all)
-        if source_files:
-            # Find the most relevant document (prefer PDFs/screenshots with "pricing" or "models")
-            relevant_docs = [f for f in source_files if any(keyword in f.name.lower()
-                            for keyword in ['pricing', 'model', 'rate'])]
-            if not relevant_docs:
-                relevant_docs = source_files[:3]  # Use first 3 docs
-
-            doc = relevant_docs[0]
-            if doc.suffix.lower() == '.md':
-                markdown_content = doc.read_text()
-                content = f"{validation_prompt}\n\n--- SOURCE DOCUMENTATION ---\n{markdown_content}\n--- END ---"
+            entries: List[Dict[str, Any]] = []
+            if snapshot.suffix == ".md":
+                block = self._extract_json_from_markdown(text)
+                if block:
+                    try:
+                        parsed = json.loads(block)
+                        if isinstance(parsed, dict) and isinstance(parsed.get("models"), dict):
+                            entries = _normalize_entries(list(parsed["models"].values()))
+                        elif isinstance(parsed, list):
+                            entries = _normalize_entries(parsed)
+                    except json.JSONDecodeError:
+                        continue
             else:
-                content = create_file_content(str(doc), validation_prompt)
-        else:
-            # No source docs available
-            content = validation_prompt + "\n\nNote: No source documents available for validation."
+                try:
+                    parsed = json.loads(text)
+                except Exception as exc:
+                    logger.warning(f"Failed to parse JSON snapshot {snapshot}: {exc}")
+                    continue
 
-        # Create request
-        request = LLMRequest(
-            messages=[Message(role="user", content=content)],
-            model="validator",  # Use validator alias from lockfile
-            temperature=0,
-            response_format={
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "validation_result",
-                    "schema": self._validation_response_schema(),
-                    "strict": True
-                }
-            }
-        )
+                if isinstance(parsed, dict) and isinstance(parsed.get("models"), dict):
+                    entries = _normalize_entries(list(parsed["models"].values()))
+                elif isinstance(parsed, list):
+                    entries = _normalize_entries(parsed)
+                else:
+                    continue
 
-        # Call LLM with timeout
+            for model in entries:
+                if not isinstance(model, dict):
+                    continue
+                if not self._is_paid_model(model):
+                    continue
+                model_name = model.get("model_name")
+                if not model_name:
+                    continue
+
+                if model_name in expected:
+                    expected[model_name] = self._merge_model_record(expected[model_name], model)
+                else:
+                    expected[model_name] = model
+
+        return expected
+
+    @staticmethod
+    def _extract_json_from_markdown(text: str) -> Optional[str]:
+        marker = "<JSON>"
+        end_marker = "</JSON>"
+        start = text.find(marker)
+        if start == -1:
+            return None
+        start += len(marker)
+        end = text.find(end_marker, start)
+        if end == -1:
+            return None
+        return text[start:end].strip()
+
+    def _to_float(self, value: Any) -> Optional[float]:
+        if value is None:
+            return None
         try:
-            response = await asyncio.wait_for(
-                self.service.chat(request),
-                timeout=timeout_seconds
-            )
+            return float(value)
+        except (TypeError, ValueError):
+            return None
 
-            # Parse response
-            parsed = getattr(response, "parsed", None)
-            if parsed:
-                result_data = parsed
-            else:
-                result_data = json.loads(response.content)
+    def _to_int(self, value: Any) -> Optional[int]:
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
 
-            # Build result
-            issues = []
-            for issue_data in result_data.get("issues", []):
+    def _compare_models(
+        self,
+        model_key: str,
+        expected: Dict[str, Any],
+        actual: Dict[str, Any]
+    ) -> List[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+        pricing_fields = {
+            "dollars_per_million_tokens_input",
+            "dollars_per_million_tokens_output",
+            "dollars_per_million_tokens_cached_input",
+            "dollars_per_million_tokens_cache_write_5m",
+            "dollars_per_million_tokens_cache_write_1h",
+            "dollars_per_million_tokens_cache_read",
+            "dollars_per_million_tokens_input_long_context",
+            "dollars_per_million_tokens_output_long_context",
+            "dollars_per_million_tokens_output_thinking",
+            "cache_storage_cost_per_million_tokens_per_hour",
+        }
+        int_fields = {"max_input_tokens", "max_output_tokens", "requires_tier", "long_context_threshold_tokens"}
+        list_fields = {"model_aliases", "recommended_use_cases"}
+
+        for field, expected_value in expected.items():
+            actual_value = actual.get(field)
+
+            if field in pricing_fields:
+                expected_float = self._to_float(expected_value)
+                actual_float = self._to_float(actual_value)
+                if expected_float is None:
+                    continue
+                if actual_float is None or abs(expected_float - actual_float) > 1e-6:
+                    issues.append(ValidationIssue(
+                        model_key=model_key,
+                        severity="error",
+                        field=field,
+                        issue=f"Expected {expected_float}, found {actual_value}",
+                        suggested_fix=f"Set {field} to {expected_float}"
+                    ))
+                continue
+
+            if field in int_fields:
+                expected_int = self._to_int(expected_value)
+                actual_int = self._to_int(actual_value)
+                if expected_int is None:
+                    continue
+                if actual_int != expected_int:
+                    issues.append(ValidationIssue(
+                        model_key=model_key,
+                        severity="error",
+                        field=field,
+                        issue=f"Expected {expected_int}, found {actual_value}",
+                        suggested_fix=f"Set {field} to {expected_int}"
+                    ))
+                continue
+
+            if field in list_fields:
+                expected_list = expected_value or []
+                actual_list = actual_value or []
+                if sorted(expected_list) != sorted(actual_list):
+                    issues.append(ValidationIssue(
+                        model_key=model_key,
+                        severity="warning",
+                        field=field,
+                        issue=f"Expected {expected_list}, found {actual_list}",
+                        suggested_fix=f"Update {field} to {expected_list}"
+                    ))
+                continue
+
+            if field.startswith("supports_") or field in {"is_active", "requires_waitlist"}:
+                expected_bool = bool(expected_value)
+                actual_bool = bool(actual_value)
+                if expected_bool != actual_bool:
+                    issues.append(ValidationIssue(
+                        model_key=model_key,
+                        severity="error",
+                        field=field,
+                        issue=f"Expected {expected_bool}, found {actual_bool}",
+                        suggested_fix=f"Set {field} to {expected_bool}"
+                    ))
+                continue
+
+            # Compare strings or other scalar values
+            if expected_value is not None and actual_value is not None:
+                if str(expected_value).strip() != str(actual_value).strip():
+                    issues.append(ValidationIssue(
+                        model_key=model_key,
+                        severity="warning",
+                        field=field,
+                        issue=f"Expected '{expected_value}', found '{actual_value}'",
+                        suggested_fix=f"Update {field} to '{expected_value}'"
+                    ))
+            elif expected_value is not None and actual_value is None:
                 issues.append(ValidationIssue(
                     model_key=model_key,
-                    severity=issue_data["severity"],
-                    field=issue_data.get("field", "general"),
-                    issue=issue_data["issue"],
-                    suggested_fix=issue_data.get("suggested_fix")
+                    severity="warning",
+                    field=field,
+                    issue=f"Expected value '{expected_value}' but field is missing",
+                    suggested_fix=f"Add {field} with value '{expected_value}'"
                 ))
 
-            return ModelValidationResult(
-                model_key=model_key,
-                is_valid=result_data.get("is_valid", False),
-                issues=issues,
-                confidence_score=result_data.get("confidence_score", 0.5)
-            )
+        return issues
 
-        except asyncio.TimeoutError:
-            logger.error(f"Timeout validating {model_key}")
-            return ModelValidationResult(
-                model_key=model_key,
-                is_valid=False,
-                issues=[ValidationIssue(
-                    model_key=model_key,
-                    severity="error",
-                    field="general",
-                    issue="Validation timeout"
-                )],
-                confidence_score=0.0
-            )
-        except Exception as e:
-            logger.error(f"Error validating {model_key}: {e}")
-            return ModelValidationResult(
-                model_key=model_key,
-                is_valid=False,
-                issues=[ValidationIssue(
-                    model_key=model_key,
-                    severity="error",
-                    field="general",
-                    issue=f"Validation failed: {str(e)}"
-                )],
-                confidence_score=0.0
-            )
-
-    async def validate_draft_async(
+    def validate(
         self,
+        provider: str,
         draft_path: Path,
-        sources_dir: Path,
-        timeout_per_model: int = 120,
-        sample_size: Optional[int] = None
+        sources_dir: Path
     ) -> Dict[str, Any]:
-        """
-        Validate all models in a draft file.
-
-        Args:
-            draft_path: Path to draft JSON file
-            sources_dir: Directory containing source documents
-            timeout_per_model: Timeout in seconds per model validation
-            sample_size: If set, only validate this many models (for testing)
-
-        Returns:
-            Validation report dict
-        """
-        # Load draft
         with open(draft_path) as f:
             draft_data = json.load(f)
 
-        provider = draft_data.get("provider", "unknown")
-        models = draft_data.get("models", {})
+        draft_models = draft_data.get("models", {})
+        draft_by_name = {}
+        for key, model in draft_models.items():
+            name = model.get("model_name")
+            if name:
+                draft_by_name[name] = (key, model)
 
-        click.echo(f"\n🔍 Validating {len(models)} models for {provider}...")
+        expected_map = self._load_expected_models(provider, sources_dir)
 
-        # Find source documents
-        provider_sources = sources_dir / provider
-        source_files = []
-        if provider_sources.exists():
-            source_files.extend(provider_sources.glob("*.png"))
-            source_files.extend(provider_sources.glob("*.pdf"))
-            source_files.extend(provider_sources.glob("*.md"))
-            source_files = sorted(source_files)
+        click.echo(f"\n🔍 Validating {len(draft_models)} models for {provider} using local snapshots...")
 
-        if not source_files:
-            click.echo(f"⚠️  No source documents found in {provider_sources}")
-        else:
-            click.echo(f"📁 Found {len(source_files)} source documents")
-
-        # Sample if requested
-        model_items = list(models.items())
-        if sample_size and sample_size < len(model_items):
-            import random
-            model_items = random.sample(model_items, sample_size)
-            click.echo(f"📊 Sampling {sample_size} models for validation")
-
-        # Validate each model
         results: List[ModelValidationResult] = []
-        for i, (model_key, model_data) in enumerate(model_items, 1):
-            click.echo(f"  [{i}/{len(model_items)}] Validating {model_key}...")
+        all_issues: List[ValidationIssue] = []
 
-            result = await self._validate_single_model(
-                provider=provider,
-                model_key=model_key,
-                model_data=model_data,
-                source_files=source_files,
-                timeout_seconds=timeout_per_model
-            )
-            results.append(result)
+        for key, model in draft_models.items():
+            model_name = model.get("model_name")
+            if not model_name:
+                issue = ValidationIssue(
+                    model_key=key,
+                    severity="error",
+                    field="model_name",
+                    issue="Model entry missing model_name"
+                )
+                all_issues.append(issue)
+                results.append(ModelValidationResult(key, False, [issue], 0.0))
+                continue
 
-            # Show immediate feedback
-            if result.is_valid:
-                click.echo(f"    ✅ Valid (confidence: {result.confidence_score:.2f})")
+            expected = expected_map.get(model_name)
+            if not expected:
+                issue = ValidationIssue(
+                    model_key=key,
+                    severity="error",
+                    field="model_name",
+                    issue="No extracted data found for this model"
+                )
+                all_issues.append(issue)
+                results.append(ModelValidationResult(key, False, [issue], 0.0))
+                continue
+
+            issues = self._compare_models(key, expected, model)
+            if issues:
+                all_issues.extend(issues)
+                results.append(ModelValidationResult(key, False, issues, 0.0))
             else:
-                click.echo(f"    ❌ Issues found: {len(result.issues)}")
-                for issue in result.issues[:2]:  # Show first 2 issues
-                    click.echo(f"       {issue.severity.upper()}: {issue.issue[:80]}")
+                results.append(ModelValidationResult(key, True, [], 1.0))
 
-        # Generate report
-        total_models = len(results)
+        # Detect models present in documentation but missing in draft
+        for model_name, expected in expected_map.items():
+            if model_name not in draft_by_name:
+                issue = ValidationIssue(
+                    model_key=f"{provider}:{model_name}",
+                    severity="error",
+                    field="model_name",
+                    issue="Model extracted from documentation but missing in draft",
+                    suggested_fix="Add this model to the draft or confirm it should be excluded"
+                )
+                all_issues.append(issue)
+                results.append(ModelValidationResult(f"{provider}:{model_name}", False, [issue], 0.0))
+
+        total_models = len(draft_models)
         valid_models = sum(1 for r in results if r.is_valid)
         models_with_errors = sum(1 for r in results if any(i.severity == "error" for i in r.issues))
-        models_with_warnings = sum(1 for r in results if any(i.severity == "warning" for i in r.issues))
-
-        all_issues = []
-        for result in results:
-            for issue in result.issues:
-                all_issues.append({
-                    "model": result.model_key,
-                    "severity": issue.severity,
-                    "field": issue.field,
-                    "issue": issue.issue,
-                    "suggested_fix": issue.suggested_fix
-                })
+        models_with_warnings = sum(1 for r in results if not any(i.severity == "error" for i in r.issues) and r.issues)
 
         report = {
             "provider": provider,
@@ -365,33 +390,38 @@ Validate thoroughly and return structured results."""
                 "valid_models": valid_models,
                 "models_with_errors": models_with_errors,
                 "models_with_warnings": models_with_warnings,
-                "average_confidence": sum(r.confidence_score for r in results) / total_models if results else 0
+                "average_confidence": sum(r.confidence_score for r in results) / len(results) if results else 0.0
             },
-            "issues": all_issues,
+            "issues": [
+                {
+                    "model": issue.model_key,
+                    "severity": issue.severity,
+                    "field": issue.field,
+                    "issue": issue.issue,
+                    "suggested_fix": issue.suggested_fix
+                }
+                for issue in all_issues
+            ],
             "model_results": [
                 {
                     "model_key": r.model_key,
                     "is_valid": r.is_valid,
                     "confidence": r.confidence_score,
-                    "issue_count": len(r.issues)
+                    "issues": [
+                        {
+                            "severity": i.severity,
+                            "field": i.field,
+                            "issue": i.issue,
+                            "suggested_fix": i.suggested_fix
+                        }
+                        for i in r.issues
+                    ]
                 }
                 for r in results
             ]
         }
 
         return report
-
-    def validate_draft(
-        self,
-        draft_path: Path,
-        sources_dir: Path,
-        timeout_per_model: int = 120,
-        sample_size: Optional[int] = None
-    ) -> Dict[str, Any]:
-        """Synchronous wrapper for validation."""
-        return asyncio.run(
-            self.validate_draft_async(draft_path, sources_dir, timeout_per_model, sample_size)
-        )
 
 
 @click.command(name="validate")
@@ -400,8 +430,6 @@ Validate thoroughly and return structured results."""
 @click.option("--drafts-dir", default="drafts", type=click.Path(), help="Directory containing drafts")
 @click.option("--sources-dir", default="sources", type=click.Path(), help="Directory containing source documents")
 @click.option("--output", type=click.Path(), help="Output path for validation report (default: drafts/<provider>.validation.json)")
-@click.option("--timeout", default=120, help="Timeout per model in seconds (default: 120)")
-@click.option("--sample", type=int, help="Validate only N random models (for testing)")
 @click.option("--debug", is_flag=True, help="Enable debug logging")
 def validate_command(
     provider: str,
@@ -409,19 +437,9 @@ def validate_command(
     drafts_dir: str,
     sources_dir: str,
     output: Optional[str],
-    timeout: int,
-    sample: Optional[int],
     debug: bool
 ):
-    """Validate extracted models against source documentation.
-
-    This command uses an LLM to validate each model in a draft file by:
-    1. Checking the extracted data against source documentation
-    2. Identifying errors, warnings, and missing data
-    3. Suggesting corrections where possible
-
-    The validation report is saved as JSON and can be reviewed before promotion.
-    """
+    """Validate a draft against the locally extracted source snapshots."""
     drafts_path = Path(drafts_dir)
     sources_path = Path(sources_dir)
 
@@ -450,11 +468,10 @@ def validate_command(
     validator = ModelValidator(debug=debug)
 
     try:
-        report = validator.validate_draft(
+        report = validator.validate(
+            provider=provider,
             draft_path=draft_path,
-            sources_dir=sources_path,
-            timeout_per_model=timeout,
-            sample_size=sample
+            sources_dir=sources_path
         )
 
         # Save report

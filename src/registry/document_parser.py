@@ -8,9 +8,10 @@ Supports multiple document types:
 
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import List, Optional
+from copy import deepcopy
+from typing import Any, Dict, List, Optional
 import asyncio
 
 import click
@@ -48,6 +49,15 @@ class ModelInfo:
     release_date: Optional[str]
     deprecation_date: Optional[str]
     notes: Optional[str]
+    dollars_per_million_tokens_cached_input: Optional[float] = None
+    dollars_per_million_tokens_cache_write_5m: Optional[float] = None
+    dollars_per_million_tokens_cache_write_1h: Optional[float] = None
+    dollars_per_million_tokens_cache_read: Optional[float] = None
+    dollars_per_million_tokens_input_long_context: Optional[float] = None
+    dollars_per_million_tokens_output_long_context: Optional[float] = None
+    dollars_per_million_tokens_output_thinking: Optional[float] = None
+    cache_storage_cost_per_million_tokens_per_hour: Optional[float] = None
+    long_context_threshold_tokens: Optional[int] = None
 
     # Model name synonyms (e.g., ["gpt-5"] for "gpt-5-2025-08-07")
     model_aliases: Optional[List[str]] = None
@@ -60,6 +70,8 @@ class ModelInfo:
     supports_logprobs: bool = False
     supports_multiple_responses: bool = False
     supports_caching: bool = False
+    supports_thinking: bool = False
+    supports_long_context_pricing: bool = False
     is_reasoning_model: bool = False
 
     # New capability flags for enhanced model constraints
@@ -157,6 +169,42 @@ class DocumentParser:
                 },
                 "dollars_per_million_tokens_input": {"type": "number"},
                 "dollars_per_million_tokens_output": {"type": "number"},
+                "dollars_per_million_tokens_cached_input": {
+                    "type": "number",
+                    "description": "Cached input pricing (if available)"
+                },
+                "dollars_per_million_tokens_cache_write_5m": {
+                    "type": "number",
+                    "description": "Anthropic 5-minute cache write pricing"
+                },
+                "dollars_per_million_tokens_cache_write_1h": {
+                    "type": "number",
+                    "description": "Anthropic 1-hour cache write pricing"
+                },
+                "dollars_per_million_tokens_cache_read": {
+                    "type": "number",
+                    "description": "Cache read pricing"
+                },
+                "dollars_per_million_tokens_input_long_context": {
+                    "type": "number",
+                    "description": "Long-context input pricing"
+                },
+                "dollars_per_million_tokens_output_long_context": {
+                    "type": "number",
+                    "description": "Long-context output pricing"
+                },
+                "dollars_per_million_tokens_output_thinking": {
+                    "type": "number",
+                    "description": "Thinking token pricing"
+                },
+                "cache_storage_cost_per_million_tokens_per_hour": {
+                    "type": "number",
+                    "description": "Explicit cache storage cost"
+                },
+                "long_context_threshold_tokens": {
+                    "type": "integer",
+                    "description": "Token threshold for long-context pricing"
+                },
                 # Single types for cross-provider compatibility
                 "max_input_tokens": {"type": "integer"},
                 "max_output_tokens": {"type": "integer"},
@@ -166,6 +214,9 @@ class DocumentParser:
                 "supports_parallel_tool_calls": {"type": "boolean"},
                 "supports_streaming": {"type": "boolean"},
                 "supports_documents": {"type": "boolean"},
+                "supports_caching": {"type": "boolean"},
+                "supports_thinking": {"type": "boolean"},
+                "supports_long_context_pricing": {"type": "boolean"},
                 "is_active": {"type": "boolean"},
             },
             "required": [
@@ -304,7 +355,6 @@ class DocumentParser:
 
         try:
             try:
-                # Create request with accumulated context
                 request = self._create_request(provider, processed_path, accumulated_models)
                 response = await self._chat_with_timeout(request, timeout_seconds)
             except asyncio.TimeoutError:
@@ -368,12 +418,19 @@ class DocumentParser:
                     click.echo(f"       (Use --debug flag for full traceback)")
                     return accumulated_models
 
-            models_data = self._parse_models_from_response(response, doc_path)
+            models_data = self._parse_models_from_response(response, doc_path) or []
+            models_data = self._filter_paid_models(models_data)
             if models_data:
+                self._write_doc_snapshot(doc_path, models_data)
                 click.echo(
                     f"    ✅ Extracted {len(models_data)} models from {doc_path.name}"
                 )
-            return models_data or []
+
+            if not accumulated_models:
+                return models_data
+
+            merged_models = self._merge_document_models(accumulated_models, models_data)
+            return merged_models
         finally:
             if temp_created:
                 try:
@@ -400,22 +457,104 @@ class DocumentParser:
         logger.info(f"Saved intermediate results to {filepath}")
         click.echo(f"    💾 Intermediate results saved: {filepath}")
 
+    def _write_doc_snapshot(self, doc_path: Path, models_data: list) -> None:
+        """Persist extraction results for a single document next to the source."""
+        try:
+            snapshot_path = doc_path.with_suffix(f"{doc_path.suffix}.extracted.json")
+            with open(snapshot_path, "w") as f:
+                json.dump(models_data, f, indent=2)
+            logger.debug(f"Saved document snapshot to {snapshot_path}")
+        except Exception as exc:
+            logger.warning(f"Failed to write snapshot for {doc_path}: {exc}")
+
+    def _models_to_dict(self, models: list) -> Dict[str, Dict[str, Any]]:
+        model_map: Dict[str, Dict[str, Any]] = {}
+        for model in models:
+            if isinstance(model, ModelInfo):
+                data = asdict(model)
+            elif isinstance(model, dict):
+                data = model
+            else:
+                continue
+            model_id = data.get("model_id") or data.get("model_name")
+            if not model_id:
+                continue
+            model_map[model_id] = deepcopy(data)
+        return model_map
+
+    def _merge_document_models(self, accumulated: list, new_models: list) -> list:
+        if not new_models:
+            return accumulated
+
+        accumulated_map = self._models_to_dict(accumulated)
+        new_map = self._models_to_dict(new_models)
+
+        for model_id, new_data in new_map.items():
+            if model_id in accumulated_map:
+                merged = self._merge_model_record(accumulated_map[model_id], new_data)
+                accumulated_map[model_id] = merged
+            else:
+                accumulated_map[model_id] = new_data
+
+        return list(accumulated_map.values())
+
+    def _is_paid_model(self, model) -> bool:
+        """Return True if the model has strictly positive paid pricing."""
+        try:
+            if isinstance(model, ModelInfo):
+                input_price = float(model.dollars_per_million_tokens_input)
+                output_price = float(model.dollars_per_million_tokens_output)
+            else:
+                input_price = float(model.get("dollars_per_million_tokens_input", 0))
+                output_price = float(model.get("dollars_per_million_tokens_output", 0))
+        except (TypeError, ValueError, AttributeError):
+            return False
+        return input_price > 0 and output_price > 0
+
+    def _filter_paid_models(self, models: list) -> list:
+        """Filter out models that do not have paid pricing."""
+        return [model for model in models if self._is_paid_model(model)]
+
     def _validate_and_filter_models(self, models: list) -> list:
         """Validate models have required pricing information."""
         valid_models = []
         for model in models:
             # Check if model has valid pricing
-            input_price = model.get("dollars_per_million_tokens_input", 0) or 0
-            output_price = model.get("dollars_per_million_tokens_output", 0) or 0
+            input_price = model.get("dollars_per_million_tokens_input")
+            output_price = model.get("dollars_per_million_tokens_output")
 
-            if input_price <= 0 or output_price <= 0:
+            # Enforce presence of base pricing; allow 0 only if explicitly documented
+            if input_price is None or output_price is None:
                 model_name = model.get("model_name") or model.get("model_id") or "Unknown"
                 logger.warning(
-                    f"Skipping model {model_name} - invalid pricing: "
-                    f"input=${input_price}, output=${output_price}"
+                    f"Skipping model {model_name} - missing required base pricing"
                 )
                 click.echo(
-                    f"    ⚠️  Skipping {model_name} - missing or zero pricing"
+                    f"    ⚠️  Skipping {model_name} - missing required base pricing"
+                )
+                continue
+
+            try:
+                base_input = float(input_price)
+                base_output = float(output_price)
+            except (TypeError, ValueError):
+                model_name = model.get("model_name") or model.get("model_id") or "Unknown"
+                logger.warning(
+                    f"Skipping model {model_name} - non-numeric pricing: input={input_price}, output={output_price}"
+                )
+                click.echo(
+                    f"    ⚠️  Skipping {model_name} - non-numeric pricing values"
+                )
+                continue
+
+            # Pricing should be non-negative; allow zero if explicitly stated (some cache tiers)
+            if base_input < 0 or base_output < 0:
+                model_name = model.get("model_name") or model.get("model_id") or "Unknown"
+                logger.warning(
+                    f"Skipping model {model_name} - negative pricing detected"
+                )
+                click.echo(
+                    f"    ⚠️  Skipping {model_name} - negative pricing values"
                 )
                 continue
 
@@ -434,9 +573,55 @@ class DocumentParser:
             )
 
         models: List[ModelInfo] = []
+        model_map: dict = {}
+
+        def _maybe_float(value):
+            if value is None:
+                return None
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return None
+
+        def _maybe_int(value):
+            if value is None:
+                return None
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return None
+
+        def _coerce_optional_float(value, allow_zero: bool = False):
+            val = _maybe_float(value)
+            if val is None:
+                return None
+            if val < 0:
+                return None
+            if not allow_zero and val == 0:
+                return None
+            return val
+
+        def _coerce_optional_int(value, allow_zero: bool = False):
+            val = _maybe_int(value)
+            if val is None:
+                return None
+            if val < 0:
+                return None
+            if not allow_zero and val == 0:
+                return None
+            return val
+
         for model_data in valid_models:
             try:
                 model_id = model_data.get("model_id") or model_data.get("model_name")
+                if not model_id:
+                    continue
+                if model_id in model_map:
+                    merged = self._merge_model_record(model_map[model_id], model_data)
+                    if merged:
+                        model_map[model_id] = merged
+                    continue
+
                 display_name = model_data.get("display_name") or model_id
                 description = model_data.get("description") or ""
                 use_cases = (
@@ -444,8 +629,8 @@ class DocumentParser:
                     or model_data.get("recommended_use_cases")
                     or []
                 )
-                max_input_tokens = model_data.get("max_input_tokens", 0) or 0
-                max_output_tokens = model_data.get("max_output_tokens")
+                max_input_tokens = _maybe_int(model_data.get("max_input_tokens")) or 0
+                max_output_tokens = _maybe_int(model_data.get("max_output_tokens"))
                 supports_vision = bool(model_data.get("supports_vision", False))
                 supports_function_calling = bool(
                     model_data.get("supports_function_calling", False)
@@ -454,12 +639,29 @@ class DocumentParser:
                 supports_parallel_tool_calls = bool(
                     model_data.get("supports_parallel_tool_calls", False)
                 )
-                dollars_in = float(
-                    model_data.get("dollars_per_million_tokens_input", 0) or 0
-                )
-                dollars_out = float(
-                    model_data.get("dollars_per_million_tokens_output", 0) or 0
-                )
+                dollars_in = _maybe_float(model_data.get("dollars_per_million_tokens_input"))
+                dollars_out = _maybe_float(model_data.get("dollars_per_million_tokens_output"))
+
+                if dollars_in is None or dollars_out is None or dollars_in <= 0 or dollars_out <= 0:
+                    model_name = model_data.get("model_name") or model_data.get("model_id") or "Unknown"
+                    logger.warning(
+                        f"Skipping model {model_name} - base pricing must be > 0 for paid tiers: input={dollars_in}, output={dollars_out}"
+                    )
+                    click.echo(
+                        f"    ⚠️  Skipping {model_name} - missing or non-positive paid pricing"
+                    )
+                    continue
+
+                cached_in = _coerce_optional_float(model_data.get("dollars_per_million_tokens_cached_input"))
+                cache_write_5m = _coerce_optional_float(model_data.get("dollars_per_million_tokens_cache_write_5m"))
+                cache_write_1h = _coerce_optional_float(model_data.get("dollars_per_million_tokens_cache_write_1h"))
+                cache_read = _coerce_optional_float(model_data.get("dollars_per_million_tokens_cache_read"))
+                long_input = _coerce_optional_float(model_data.get("dollars_per_million_tokens_input_long_context"))
+                long_output = _coerce_optional_float(model_data.get("dollars_per_million_tokens_output_long_context"))
+                thinking_output = _coerce_optional_float(model_data.get("dollars_per_million_tokens_output_thinking"))
+                cache_storage = _coerce_optional_float(model_data.get("cache_storage_cost_per_million_tokens_per_hour"), allow_zero=True)
+                long_threshold = _coerce_optional_int(model_data.get("long_context_threshold_tokens"))
+
                 release_date = model_data.get("release_date")
                 deprecation_date = model_data.get("deprecated_date") or model_data.get(
                     "deprecation_date"
@@ -470,6 +672,35 @@ class DocumentParser:
                 model_aliases = model_data.get("model_aliases")
                 if model_aliases and not isinstance(model_aliases, list):
                     model_aliases = [model_aliases] if model_aliases else None
+
+                provider_name = model_data.get("provider")
+
+                cache_pricing_values = [
+                    cached_in,
+                    cache_write_5m,
+                    cache_write_1h,
+                    cache_read,
+                    cache_storage,
+                ]
+                supports_caching_flag = bool(model_data.get("supports_caching", False)) or any(
+                    value is not None for value in cache_pricing_values
+                )
+                if provider_name == "anthropic":
+                    supports_caching_flag = True
+
+                supports_thinking_flag = bool(model_data.get("supports_thinking", False)) or (
+                    thinking_output is not None
+                )
+                if provider_name == "anthropic":
+                    supports_thinking_flag = True
+
+                supports_long_context_flag = bool(
+                    model_data.get("supports_long_context_pricing", False)
+                ) or (
+                    long_input is not None
+                    or long_output is not None
+                    or long_threshold is not None
+                )
 
                 mi = ModelInfo(
                     model_id=model_id,
@@ -487,6 +718,15 @@ class DocumentParser:
                     release_date=release_date,
                     deprecation_date=deprecation_date,
                     notes=notes,
+                    dollars_per_million_tokens_cached_input=cached_in,
+                    dollars_per_million_tokens_cache_write_5m=cache_write_5m,
+                    dollars_per_million_tokens_cache_write_1h=cache_write_1h,
+                    dollars_per_million_tokens_cache_read=cache_read,
+                    dollars_per_million_tokens_input_long_context=long_input,
+                    dollars_per_million_tokens_output_long_context=long_output,
+                    dollars_per_million_tokens_output_thinking=thinking_output,
+                    cache_storage_cost_per_million_tokens_per_hour=cache_storage,
+                    long_context_threshold_tokens=long_threshold,
                     model_aliases=model_aliases,
                     supports_streaming=bool(model_data.get("supports_streaming", True)),
                     supports_audio=bool(model_data.get("supports_audio", False)),
@@ -496,11 +736,13 @@ class DocumentParser:
                     supports_multiple_responses=bool(
                         model_data.get("supports_multiple_responses", False)
                     ),
-                    supports_caching=bool(model_data.get("supports_caching", False)),
+                    supports_caching=supports_caching_flag,
+                    supports_thinking=supports_thinking_flag,
+                    supports_long_context_pricing=supports_long_context_flag,
                     is_reasoning_model=bool(model_data.get("is_reasoning_model", False)),
                     speed_tier=model_data.get("speed_tier"),
                     intelligence_tier=model_data.get("intelligence_tier"),
-                    requires_tier=model_data.get("requires_tier"),
+                    requires_tier=_maybe_int(model_data.get("requires_tier")) or 0,
                     requires_waitlist=bool(model_data.get("requires_waitlist", False)),
                     model_family=model_data.get("model_family"),
                     recommended_use_cases=model_data.get("recommended_use_cases"),
@@ -508,10 +750,156 @@ class DocumentParser:
                     added_date=model_data.get("added_date"),
                 )
                 models.append(mi)
+                model_map[model_id] = asdict(mi)  # Store as dict for merging
             except Exception:
                 # Skip invalid items silently during validation flow
                 continue
         return models
+
+    def _merge_model_record(self, existing: dict, new: dict) -> dict:
+        """
+        Merge two model records using field-level voting.
+
+        Only fields that are present with legal types count as votes.
+        Missing fields or wrong types are ignored (not votes).
+        """
+        # Initialize vote tracking if not present
+        if "_votes" not in existing:
+            existing["_votes"] = {}
+            # Seed with existing data as first vote
+            for field, value in existing.items():
+                if field.startswith("_"):
+                    continue
+                existing["_votes"][field] = [value]
+
+        # Record votes from new data (only legal types)
+        for field, value in new.items():
+            if field.startswith("_"):
+                continue
+
+            # Determine expected type and validate
+            is_legal = False
+
+            # Pricing fields: float or int (will be converted to float)
+            if "dollars_per_million" in field or "cache_storage_cost" in field:
+                is_legal = isinstance(value, (int, float))
+            # Token counts: int
+            elif "_tokens" in field or field == "requires_tier":
+                is_legal = isinstance(value, int)
+            # Boolean fields
+            elif field.startswith("supports_") or field.startswith("is_") or field.startswith("requires_"):
+                is_legal = isinstance(value, bool)
+            # String fields
+            elif field in ["provider", "model_name", "model_id", "display_name", "description",
+                          "release_date", "deprecation_date", "notes", "speed_tier",
+                          "intelligence_tier", "model_family", "added_date", "api_endpoint",
+                          "tool_call_format"]:
+                is_legal = isinstance(value, str)
+            # List fields
+            elif field in ["model_aliases", "use_cases", "recommended_use_cases",
+                          "temperature_values"]:
+                is_legal = isinstance(value, list)
+            # Numeric fields (float)
+            elif field in ["max_temperature", "min_temperature"]:
+                is_legal = isinstance(value, (int, float))
+            else:
+                # Unknown field - accept any non-None value as legal
+                is_legal = value is not None
+
+            if is_legal:
+                if field not in existing["_votes"]:
+                    existing["_votes"][field] = []
+                existing["_votes"][field].append(value)
+
+        return existing
+
+    def _resolve_votes(self, models_with_votes: list) -> list:
+        """
+        Resolve voting for each model by picking the most common value for each field.
+
+        For pricing fields: prefer most common positive value, ignore zeros unless unanimous.
+        For other fields: pick most common value overall.
+        """
+        from collections import Counter
+
+        resolved_models = []
+
+        for model_data in models_with_votes:
+            if "_votes" not in model_data:
+                # No votes tracked, use as-is
+                resolved_models.append(model_data)
+                continue
+
+            votes = model_data["_votes"]
+            resolved = {}
+
+            for field, value_list in votes.items():
+                if not value_list:
+                    continue
+
+                # Pricing fields: prefer positive values
+                if "dollars_per_million" in field or "cache_storage_cost" in field:
+                    # Filter to positive values only
+                    positive_values = [v for v in value_list if isinstance(v, (int, float)) and v > 0]
+
+                    if positive_values:
+                        # Pick most common positive value
+                        counter = Counter(positive_values)
+                        resolved[field] = counter.most_common(1)[0][0]
+                    elif all(v == 0 or v is None for v in value_list):
+                        # All votes are zero/null - keep None
+                        resolved[field] = None
+                    else:
+                        # Mixed, prefer any positive value
+                        for v in value_list:
+                            if isinstance(v, (int, float)) and v > 0:
+                                resolved[field] = v
+                                break
+
+                # Integer fields: prefer positive values, except requires_tier which can be 0
+                elif "_tokens" in field or field == "requires_tier":
+                    int_values = [v for v in value_list if isinstance(v, int)]
+                    if field == "requires_tier":
+                        # requires_tier can be 0
+                        if int_values:
+                            counter = Counter(int_values)
+                            resolved[field] = counter.most_common(1)[0][0]
+                    else:
+                        # Token fields should prefer positive values
+                        positive_values = [v for v in int_values if v > 0]
+                        if positive_values:
+                            counter = Counter(positive_values)
+                            resolved[field] = counter.most_common(1)[0][0]
+                        elif int_values:
+                            # All zeros or mixed - take most common
+                            counter = Counter(int_values)
+                            resolved[field] = counter.most_common(1)[0][0]
+                        else:
+                            resolved[field] = None
+
+                # Boolean fields: most common value
+                elif field.startswith("supports_") or field.startswith("is_") or field.startswith("requires_"):
+                    bool_values = [v for v in value_list if isinstance(v, bool)]
+                    if bool_values:
+                        counter = Counter(bool_values)
+                        resolved[field] = counter.most_common(1)[0][0]
+
+                # All other fields: most common non-None value
+                else:
+                    non_none_values = [v for v in value_list if v is not None]
+                    if non_none_values:
+                        counter = Counter(str(v) if isinstance(v, (list, dict)) else v for v in non_none_values)
+                        # Reconstruct original value from most common
+                        most_common_key = counter.most_common(1)[0][0]
+                        for v in non_none_values:
+                            if (str(v) if isinstance(v, (list, dict)) else v) == most_common_key:
+                                resolved[field] = v
+                                break
+
+            # Don't include internal vote tracking in final output
+            resolved_models.append(resolved)
+
+        return resolved_models
 
     async def parse_provider_docs_async(
         self, provider: str, doc_paths: List[Path], timeout_seconds: int | None = 180,
@@ -553,8 +941,7 @@ class DocumentParser:
                 provider, doc_path, accumulated_models, timeout_seconds
             )
 
-            if updated_models:
-                # Replace accumulated models with the updated complete list
+            if updated_models is not None:
                 accumulated_models = updated_models
                 click.echo(f"    Total models after {doc_path.name}: {len(accumulated_models)}")
 
@@ -562,11 +949,15 @@ class DocumentParser:
                 if save_intermediate and i < len(doc_paths) - 1:
                     self._save_intermediate_results(provider, accumulated_models, i+1)
 
-        # Final validation and conversion
+        # Resolve votes to get final field values
         click.echo(f"\n    📊 Final extraction results for {provider}:")
         click.echo(f"    Total models found: {len(accumulated_models)}")
+        click.echo(f"    Resolving votes from all documents...")
 
-        final_models = self._map_models(accumulated_models)
+        resolved_models = self._resolve_votes(accumulated_models)
+        click.echo(f"    Resolved {len(resolved_models)} models from voting")
+
+        final_models = self._filter_paid_models(self._map_models(resolved_models))
         click.echo(f"    ✅ Models with valid pricing: {len(final_models)}")
 
         return final_models
@@ -608,18 +999,28 @@ Now analyze this new screenshot and:
 4. CRITICAL: Fix any max_input_tokens that incorrectly used the context window value
    - Remember: max_input_tokens = context_window - max_output_tokens
    - Context window is the TOTAL, not the input limit!
-5. Update pricing for any models that have 0 or missing prices, but ONLY if you are 100% sure
-   - Look for pricing tables, cost information, rate cards
+5. Update pricing for any models that have missing fields, but ONLY if you are 100% sure
+   - Capture cached token pricing if shown (OpenAI, Anthropic, Google)
+   - Anthropic cache writes: include BOTH 5-minute and 1-hour rates when present
+   - Anthropic cache reads: include the discounted rate
+   - Google long-context tiers: include separate input/output pricing and the threshold tokens
+   - Thinking tokens: capture distinct pricing when different from base output
+   - Cache storage costs: include explicit pricing per million tokens per hour when shown
    - ALWAYS use PAID tier pricing, never free tier
-   - NEVER update prices if unsure - better to have no price than wrong price
+   - NEVER update prices if unsure - better to leave null than add incorrect numbers
+6. Update capability flags:
+   - supports_caching must align with cache pricing fields
+   - supports_thinking only if thinking pricing or capability is documented
+   - supports_long_context_pricing only if long-context pricing/threshold is present
 
 PRICING RULES:
-- If you see pricing information for a model we already have, UPDATE the prices
+- If you see pricing information for a model we already have, UPDATE all relevant price fields
 - If there are multiple tiers (free, standard, paid), use the PAID tier
 - Convert to dollars per million tokens:
   - Price per 1K tokens → multiply by 1000
   - Price per 1M tokens → use as-is
   - Price per token → multiply by 1,000,000
+- For fields the provider doesn’t publish, leave them null (do NOT guess)
 
 Important:
 - Return the COMPLETE updated list of ALL models (both existing and new)
@@ -639,8 +1040,17 @@ Extract information for ALL models mentioned. For each model, include:
     "display_name": "human-friendly name",
     "description": "comprehensive description of the model's capabilities and strengths",
     "model_aliases": ["list", "of", "alternative", "names"] or [],
-    "dollars_per_million_tokens_input": input_cost,
-    "dollars_per_million_tokens_output": output_cost,
+    "dollars_per_million_tokens_input": base_input_cost,
+    "dollars_per_million_tokens_output": base_output_cost,
+    "dollars_per_million_tokens_cached_input": cached_input_cost_or_null,
+    "dollars_per_million_tokens_cache_write_5m": cache_write_5m_cost_or_null,
+    "dollars_per_million_tokens_cache_write_1h": cache_write_1h_cost_or_null,
+    "dollars_per_million_tokens_cache_read": cache_read_cost_or_null,
+    "dollars_per_million_tokens_input_long_context": long_context_input_cost_or_null,
+    "dollars_per_million_tokens_output_long_context": long_context_output_cost_or_null,
+    "dollars_per_million_tokens_output_thinking": thinking_output_cost_or_null,
+    "cache_storage_cost_per_million_tokens_per_hour": cache_storage_cost_or_null,
+    "long_context_threshold_tokens": threshold_tokens_or_null,
     "max_output_tokens": maximum_output_tokens,
     "max_input_tokens": maximum_input_tokens,  // NOT the context window! See note below
     "supports_vision": boolean,
@@ -649,6 +1059,9 @@ Extract information for ALL models mentioned. For each model, include:
     "supports_parallel_tool_calls": boolean,
     "supports_streaming": boolean,
     "supports_documents": boolean,
+    "supports_caching": boolean,
+    "supports_thinking": boolean,
+    "supports_long_context_pricing": boolean,
     "is_active": boolean
 }}
 
@@ -660,13 +1073,17 @@ CRITICAL - CONTEXT WINDOW vs MAX INPUT TOKENS:
   → max_output_tokens = 4000
 - NEVER use the context window value directly as max_input_tokens!
 
-Important notes:
-1. Extract EXACT model IDs as used in API calls
-2. If a model has multiple names (e.g., gpt-4 and gpt-4-0125-preview):
-   - Use the most explicit/versioned name as model_name
-   - Add simpler names to model_aliases
-3. Convert all pricing to dollars per million tokens
-4. If pricing has multiple tiers (free/paid), use the paid tier
-5. Be comprehensive in descriptions
+PRICING RULES:
+- Include cached token pricing if the provider publishes it (OpenAI, Anthropic, Google Gemini)
+- If cached pricing appears, set "supports_caching": true; if a model explicitly lacks cached pricing, set it to false and ensure cached fields are null
+- Anthropic cache writes: capture BOTH 5-minute and 1-hour rates if shown
+- Anthropic cache reads: include the discounted rate
+- Google long-context models: capture long context pricing and threshold tokens
+- Whenever long-context pricing or threshold exists, set "supports_long_context_pricing": true; otherwise false
+- Thinking tokens (Google, Anthropic) must use dedicated pricing if different from base output; if thinking pricing exists, set "supports_thinking": true
+- Cache storage costs (Google explicit caching) should be captured when present
+- Convert all pricing to USD per million tokens
+- Omit fields entirely if the provider does not publish that pricing; do not guess or insert 0
+- If a field is not applicable, leave it out so the parser can treat it as null
 
 Return ONLY the JSON array, no other text."""

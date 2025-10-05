@@ -69,6 +69,8 @@ def normalize_model_data(model: Dict[str, Any]) -> Dict[str, Any]:
         "supports_logprobs",
         "supports_multiple_responses",
         "supports_caching",
+        "supports_thinking",
+        "supports_long_context_pricing",
         "is_reasoning_model",
         "requires_waitlist",
         "is_active",
@@ -87,7 +89,7 @@ def normalize_model_data(model: Dict[str, Any]) -> Dict[str, Any]:
                 normalized[field] = True  # Assume active unless stated otherwise
             elif field in ["supports_temperature", "supports_system_message", "supports_tool_choice"]:
                 normalized[field] = True  # Most models support these
-            elif field in ["supports_pdf_input", "requires_flat_input"]:
+            elif field in ["supports_pdf_input", "requires_flat_input", "supports_long_context_pricing", "supports_thinking", "supports_caching"]:
                 normalized[field] = False  # These are special capabilities
             else:
                 normalized[field] = False
@@ -123,6 +125,65 @@ def normalize_model_data(model: Dict[str, Any]) -> Dict[str, Any]:
         if field in normalized and normalized[field] is not None:
             # Ensure it's numeric
             normalized[field] = float(normalized[field]) if "temperature" in field else int(normalized[field])
+
+    optional_float_fields = {
+        "dollars_per_million_tokens_cached_input": False,
+        "dollars_per_million_tokens_cache_write_5m": False,
+        "dollars_per_million_tokens_cache_write_1h": False,
+        "dollars_per_million_tokens_cache_read": False,
+        "dollars_per_million_tokens_input_long_context": False,
+        "dollars_per_million_tokens_output_long_context": False,
+        "dollars_per_million_tokens_output_thinking": False,
+        "cache_storage_cost_per_million_tokens_per_hour": True,
+    }
+    for field, allow_zero in optional_float_fields.items():
+        value = normalized.get(field)
+        if value is None:
+            continue
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            value = None
+        if value is None:
+            normalized[field] = None
+        elif value < 0:
+            normalized[field] = None
+        elif value == 0 and not allow_zero:
+            normalized[field] = None
+        else:
+            normalized[field] = value
+
+    long_context_threshold = normalized.get("long_context_threshold_tokens")
+    if long_context_threshold is not None:
+        try:
+            long_context_threshold = int(long_context_threshold)
+        except (TypeError, ValueError):
+            long_context_threshold = None
+        if long_context_threshold is not None and long_context_threshold > 0:
+            normalized["long_context_threshold_tokens"] = long_context_threshold
+        else:
+            normalized["long_context_threshold_tokens"] = None
+
+    cache_fields = [
+        normalized.get("dollars_per_million_tokens_cached_input"),
+        normalized.get("dollars_per_million_tokens_cache_write_5m"),
+        normalized.get("dollars_per_million_tokens_cache_write_1h"),
+        normalized.get("dollars_per_million_tokens_cache_read"),
+        normalized.get("cache_storage_cost_per_million_tokens_per_hour"),
+    ]
+    normalized["supports_caching"] = bool(normalized.get("supports_caching", False) or any(cache_fields))
+
+    normalized["supports_thinking"] = bool(
+        normalized.get("supports_thinking", False)
+        or normalized.get("dollars_per_million_tokens_output_thinking") is not None
+    )
+
+    normalized["supports_long_context_pricing"] = bool(
+        normalized.get("supports_long_context_pricing", False)
+        or normalized.get("dollars_per_million_tokens_input_long_context") is not None
+        or normalized.get("dollars_per_million_tokens_output_long_context") is not None
+        or normalized.get("long_context_threshold_tokens") is not None
+    )
 
     return normalized
 
@@ -276,10 +337,95 @@ def generate_schema_report(draft_data: Dict[str, Any]) -> Dict[str, Any]:
         # Check pricing
         input_price = model_data.get("dollars_per_million_tokens_input")
         output_price = model_data.get("dollars_per_million_tokens_output")
+        cached_input_price = model_data.get("dollars_per_million_tokens_cached_input")
+        cache_write_5m = model_data.get("dollars_per_million_tokens_cache_write_5m")
+        cache_write_1h = model_data.get("dollars_per_million_tokens_cache_write_1h")
+        cache_read = model_data.get("dollars_per_million_tokens_cache_read")
+        long_input_price = model_data.get("dollars_per_million_tokens_input_long_context")
+        long_output_price = model_data.get("dollars_per_million_tokens_output_long_context")
+        thinking_output_price = model_data.get("dollars_per_million_tokens_output_thinking")
+
         if input_price is not None and input_price <= 0:
             model_issues.append(f"Invalid input pricing: {input_price}")
         if output_price is not None and output_price <= 0:
             model_issues.append(f"Invalid output pricing: {output_price}")
+
+        if cached_input_price is not None and input_price is not None:
+            if cached_input_price < 0:
+                model_issues.append("Cached input pricing must be >= 0")
+            if cached_input_price > input_price:
+                model_issues.append("Cached input pricing must be <= input pricing")
+
+        if cache_write_5m is not None and cache_write_5m < 0:
+            model_issues.append("5m cache write pricing must be >= 0")
+        if cache_write_1h is not None and cache_write_1h < 0:
+            model_issues.append("1h cache write pricing must be >= 0")
+        if cache_write_5m is not None and cache_write_1h is not None:
+            if cache_write_1h < cache_write_5m:
+                model_issues.append("1h cache write pricing must be >= 5m cache write pricing")
+        if cache_read is not None:
+            if cache_read < 0:
+                model_issues.append("Cache read pricing must be >= 0")
+            if input_price is not None and cache_read > input_price:
+                model_issues.append("Cache read pricing must be <= input pricing")
+
+        cache_storage = model_data.get("cache_storage_cost_per_million_tokens_per_hour")
+        if cache_storage is not None and cache_storage < 0:
+            model_issues.append("Cache storage cost must be >= 0")
+
+        if long_input_price is not None and input_price is not None:
+            if long_input_price < input_price:
+                model_issues.append("Long-context input pricing must be >= base input pricing")
+        if long_output_price is not None and output_price is not None:
+            if long_output_price < output_price:
+                model_issues.append("Long-context output pricing must be >= base output pricing")
+        if thinking_output_price is not None and thinking_output_price < 0:
+            model_issues.append("Thinking output pricing must be >= 0")
+
+        # Capability flags consistency
+        supports_caching = model_data.get("supports_caching", False)
+        cache_fields = [
+            cached_input_price,
+            cache_write_5m,
+            cache_write_1h,
+            cache_read,
+            cache_storage,
+        ]
+        if supports_caching and all(value is None for value in cache_fields):
+            model_issues.append("supports_caching is true but no cache pricing fields are populated")
+        if not supports_caching and any(value is not None for value in cache_fields):
+            model_issues.append("Cache pricing present but supports_caching is false")
+
+        supports_long_context = model_data.get("supports_long_context_pricing", False)
+        long_threshold = model_data.get("long_context_threshold_tokens")
+        if supports_long_context:
+            if long_input_price is None and long_output_price is None:
+                model_issues.append(
+                    "supports_long_context_pricing is true but no long-context pricing fields provided"
+                )
+            if long_threshold is None:
+                model_issues.append(
+                    "supports_long_context_pricing is true but long_context_threshold_tokens is missing"
+                )
+        else:
+            if long_input_price is not None or long_output_price is not None or long_threshold is not None:
+                model_issues.append(
+                    "Long-context pricing or threshold provided but supports_long_context_pricing is false"
+                )
+
+        supports_thinking = model_data.get("supports_thinking", False)
+        if supports_thinking and thinking_output_price is None:
+            model_issues.append(
+                "supports_thinking is true but dollars_per_million_tokens_output_thinking is missing"
+            )
+        if not supports_thinking and thinking_output_price is not None:
+            model_issues.append(
+                "Thinking output pricing provided but supports_thinking is false"
+            )
+
+        # Note: Provider-specific validation removed - the normalize_model_data function
+        # already auto-detects and sets capability flags based on pricing presence.
+        # No need for strict provider-specific requirements here.
 
         if model_issues:
             models_with_issues += 1
