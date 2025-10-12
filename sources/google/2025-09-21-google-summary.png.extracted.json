@@ -1,0 +1,165 @@
+[
+  {
+    "supports_json_mode": true,
+    "long_context_threshold_tokens": 128000,
+    "display_name": "Gemini 1.5 Flash",
+    "model_aliases": [
+      "gemini-1.5-flash-latest",
+      "gemini-1.5-flash-001"
+    ],
+    "supports_caching": true,
+    "dollars_per_million_tokens_output": 1.05,
+    "supports_function_calling": true,
+    "supports_long_context_pricing": true,
+    "supports_vision": true,
+    "supports_parallel_tool_calls": false,
+    "supports_streaming": false,
+    "supports_thinking": false,
+    "dollars_per_million_tokens_input": 0.35,
+    "dollars_per_million_tokens_output_long_context": 2.1,
+    "max_input_tokens": 1048576,
+    "supports_documents": false,
+    "description": "Gemini 1.5 Flash is a fast and versatile multimodal model for scaling across diverse tasks. It supports audio, images, video, and text as inputs.",
+    "model_name": "gemini-1.5-flash",
+    "dollars_per_million_tokens_input_long_context": 0.7,
+    "max_output_tokens": 8192,
+    "is_active": false
+  },
+  {
+    "supports_caching": true,
+    "display_name": "Gemini 2.5 Pro",
+    "supports_json_mode": true,
+    "max_output_tokens": 65536,
+    "supports_vision": true,
+    "dollars_per_million_tokens_input": 2.1,
+    "max_input_tokens": 1048576,
+    "supports_documents": true,
+    "supports_function_calling": true,
+    "supports_thinking": true,
+    "is_active": true,
+    "dollars_per_million_tokens_output": 6.3,
+    "description": "Our most powerful thinking model with maximum response accuracy and state-of-the-art performance",
+    "model_name": "gemini-2.5-pro"
+  },
+  {
+    "supports_vision": true,
+    "is_active": true,
+    "supports_thinking": true,
+    "display_name": "Gemini 2.5 Flash",
+    "dollars_per_million_tokens_output": 1.05,
+    "dollars_per_million_tokens_input": 0.35,
+    "model_name": "gemini-2.5-flash",
+    "description": "Our best model in terms of price-performance, offering well-rounded capabilities."
+  },
+  {
+    "model_name": "gemini-2.5-flash-lite",
+    "supports_vision": true,
+    "is_active": true,
+    "display_name": "Gemini 2.5 Flash-Lite",
+    "dollars_per_million_tokens_output": 1.05,
+    "description": "A Gemini 2.5 Flash model optimized for cost efficiency and low latency.",
+    "dollars_per_million_tokens_input": 0.35
+  },
+  {
+    "display_name": "Gemini 2.5 Flash Live",
+    "dollars_per_million_tokens_output": 1.05,
+    "supports_vision": true,
+    "description": "Low-latency bidirectional voice and video interactions",
+    "dollars_per_million_tokens_input": 0.35,
+    "model_name": "gemini-live-2.5-flash-preview",
+    "is_active": true
+  },
+  {
+    "model_aliases": [
+      "gemini-2.5-flash-exp-native-audio-thinking-dialog"
+    ],
+    "dollars_per_million_tokens_output": 1.05,
+    "is_active": true,
+    "model_name": "gemini-2.5-flash-preview-native-audio-dialog",
+    "supports_thinking": true,
+    "display_name": "Gemini 2.5 Flash Native Audio",
+    "dollars_per_million_tokens_input": 0.35,
+    "description": "High quality, natural conversational audio outputs, with or without thinking",
+    "supports_vision": true
+  },
+  {
+    "is_active": true,
+    "model_name": "gemini-2.5-flash-image-preview",
+    "dollars_per_million_tokens_input": 0.35,
+    "description": "Precise, conversational image generation and editing",
+    "display_name": "Gemini 2.5 Flash Image Preview",
+    "dollars_per_million_tokens_output": 1.05,
+    "supports_vision": true
+  },
+  {
+    "display_name": "Gemini 2.5 Flash Preview TTS",
+    "model_name": "gemini-2.5-flash-preview-tts",
+    "is_active": true,
+    "description": "Low latency, controllable, single- and multi-speaker text-to-speech audio generation",
+    "dollars_per_million_tokens_input": 0.35,
+    "dollars_per_million_tokens_output": 1.05
+  },
+  {
+    "description": "Low latency, controllable, single- and multi-speaker text-to-speech audio generation",
+    "model_name": "gemini-2.5-pro-preview-tts",
+    "display_name": "Gemini 2.5 Pro Preview TTS",
+    "dollars_per_million_tokens_input": 2.1,
+    "dollars_per_million_tokens_output": 6.3,
+    "is_active": true
+  },
+  {
+    "dollars_per_million_tokens_output": 1.05,
+    "supports_streaming": true,
+    "supports_vision": true,
+    "description": "Next generation features, speed, and realtime streaming.",
+    "is_active": true,
+    "model_name": "gemini-2.0-flash",
+    "dollars_per_million_tokens_input": 0.35,
+    "display_name": "Gemini 2.0 Flash"
+  },
+  {
+    "model_name": "gemini-2.0-flash-preview-image-generation",
+    "description": "Conversational image generation and editing",
+    "is_active": true,
+    "supports_vision": true,
+    "display_name": "Gemini 2.0 Flash Preview Image Generation",
+    "dollars_per_million_tokens_output": 1.05,
+    "dollars_per_million_tokens_input": 0.35
+  },
+  {
+    "description": "Cost efficiency and low latency",
+    "model_name": "gemini-2.0-flash-lite",
+    "is_active": true,
+    "supports_vision": true,
+    "display_name": "Gemini 2.0 Flash-Lite",
+    "dollars_per_million_tokens_input": 0.35,
+    "dollars_per_million_tokens_output": 1.05
+  },
+  {
+    "display_name": "Gemini 2.0 Flash Live",
+    "description": "Low-latency bidirectional voice and video interactions",
+    "model_name": "gemini-2.0-flash-live-001",
+    "dollars_per_million_tokens_input": 0.35,
+    "supports_vision": true,
+    "dollars_per_million_tokens_output": 1.05,
+    "is_active": true
+  },
+  {
+    "dollars_per_million_tokens_output": 1.05,
+    "dollars_per_million_tokens_input": 0.35,
+    "supports_vision": true,
+    "model_name": "gemini-1.5-flash-8b",
+    "is_active": false,
+    "display_name": "Gemini 1.5 Flash-8B",
+    "description": "High volume and lower intelligence tasks"
+  },
+  {
+    "is_active": false,
+    "display_name": "Gemini 1.5 Pro",
+    "description": "Complex reasoning tasks requiring more intelligence",
+    "model_name": "gemini-1.5-pro",
+    "supports_vision": true,
+    "dollars_per_million_tokens_output": 6.3,
+    "dollars_per_million_tokens_input": 2.1
+  }
+]

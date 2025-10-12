@@ -1,0 +1,136 @@
+{
+  "provider": "anthropic",
+  "draft_file": "drafts/anthropic.2025-10-05.draft.json",
+  "validation_date": "2025-10-05T20:26:57.669501",
+  "summary": {
+    "total_models": 6,
+    "valid_models": 0,
+    "models_with_errors": 6,
+    "models_with_warnings": 0,
+    "average_confidence": 0.0
+  },
+  "issues": [
+    {
+      "model": "anthropic:claude-opus-4-1-20250805",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "No extracted data found for this model",
+      "suggested_fix": null
+    },
+    {
+      "model": "anthropic:claude-opus-4-20250514",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "No extracted data found for this model",
+      "suggested_fix": null
+    },
+    {
+      "model": "anthropic:claude-sonnet-4-20250514",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "No extracted data found for this model",
+      "suggested_fix": null
+    },
+    {
+      "model": "anthropic:claude-3-7-sonnet-20250219",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "No extracted data found for this model",
+      "suggested_fix": null
+    },
+    {
+      "model": "anthropic:claude-3-5-haiku-20241022",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "No extracted data found for this model",
+      "suggested_fix": null
+    },
+    {
+      "model": "anthropic:claude-3-haiku-20240307",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "No extracted data found for this model",
+      "suggested_fix": null
+    }
+  ],
+  "model_results": [
+    {
+      "model_key": "anthropic:claude-opus-4-1-20250805",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "No extracted data found for this model",
+          "suggested_fix": null
+        }
+      ]
+    },
+    {
+      "model_key": "anthropic:claude-opus-4-20250514",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "No extracted data found for this model",
+          "suggested_fix": null
+        }
+      ]
+    },
+    {
+      "model_key": "anthropic:claude-sonnet-4-20250514",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "No extracted data found for this model",
+          "suggested_fix": null
+        }
+      ]
+    },
+    {
+      "model_key": "anthropic:claude-3-7-sonnet-20250219",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "No extracted data found for this model",
+          "suggested_fix": null
+        }
+      ]
+    },
+    {
+      "model_key": "anthropic:claude-3-5-haiku-20241022",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "No extracted data found for this model",
+          "suggested_fix": null
+        }
+      ]
+    },
+    {
+      "model_key": "anthropic:claude-3-haiku-20240307",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "No extracted data found for this model",
+          "suggested_fix": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "supports_documents": false,
+    "max_output_tokens": 32768,
+    "supports_vision": true,
+    "max_input_tokens": 1014808,
+    "model_aliases": [],
+    "supports_function_calling": true,
+    "display_name": "GPT-4.1",
+    "dollars_per_million_tokens_cached_input": 0.5,
+    "supports_parallel_tool_calls": true,
+    "is_active": true,
+    "dollars_per_million_tokens_output": 8,
+    "model_name": "gpt-4.1",
+    "supports_long_context_pricing": false,
+    "supports_json_mode": true,
+    "supports_streaming": true,
+    "description": "GPT-4.1 excels at instruction following and tool calling, with broad knowledge across domains. It features a 1M token context window, and low latency without a reasoning step.",
+    "dollars_per_million_tokens_input": 2,
+    "supports_caching": true,
+    "supports_thinking": false
+  }
+]

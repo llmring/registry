@@ -1,0 +1,320 @@
+{
+  "provider": "google",
+  "draft_file": "drafts/google.2025-10-05.draft.json",
+  "validation_date": "2025-10-05T20:22:05.308897",
+  "summary": {
+    "total_models": 15,
+    "valid_models": 13,
+    "models_with_errors": 10,
+    "models_with_warnings": 0,
+    "average_confidence": 0.5652173913043478
+  },
+  "issues": [
+    {
+      "model": "google:gemini-1.5-flash-8b",
+      "severity": "error",
+      "field": "max_input_tokens",
+      "issue": "Expected 1048576, found 0",
+      "suggested_fix": "Set max_input_tokens to 1048576"
+    },
+    {
+      "model": "google:gemini-1.5-flash-8b",
+      "severity": "error",
+      "field": "max_output_tokens",
+      "issue": "Expected 8192, found 0",
+      "suggested_fix": "Set max_output_tokens to 8192"
+    },
+    {
+      "model": "google:gemini-1.5-pro",
+      "severity": "error",
+      "field": "max_output_tokens",
+      "issue": "Expected 8192, found 0",
+      "suggested_fix": "Set max_output_tokens to 8192"
+    },
+    {
+      "model": "google:gemini-1.5-pro",
+      "severity": "error",
+      "field": "max_input_tokens",
+      "issue": "Expected 2097152, found 0",
+      "suggested_fix": "Set max_input_tokens to 2097152"
+    },
+    {
+      "model": "google:gemini-1.5-flash-8b-latest",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "Model extracted from documentation but missing in draft",
+      "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+    },
+    {
+      "model": "google:gemini-1.5-flash-8b-001",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "Model extracted from documentation but missing in draft",
+      "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+    },
+    {
+      "model": "google:gemini-1.5-flash-latest",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "Model extracted from documentation but missing in draft",
+      "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+    },
+    {
+      "model": "google:gemini-1.5-flash-001",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "Model extracted from documentation but missing in draft",
+      "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+    },
+    {
+      "model": "google:gemini-1.5-flash-002",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "Model extracted from documentation but missing in draft",
+      "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+    },
+    {
+      "model": "google:gemini-1.5-pro-latest",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "Model extracted from documentation but missing in draft",
+      "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+    },
+    {
+      "model": "google:gemini-1.5-pro-001",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "Model extracted from documentation but missing in draft",
+      "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+    },
+    {
+      "model": "google:gemini-1.5-pro-002",
+      "severity": "error",
+      "field": "model_name",
+      "issue": "Model extracted from documentation but missing in draft",
+      "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+    }
+  ],
+  "model_results": [
+    {
+      "model_key": "google:gemini-1.5-flash",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.5-pro",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.5-flash",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.5-flash-lite",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-live-2.5-flash-preview",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.5-flash-preview-native-audio-dialog",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.5-flash-image-preview",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.5-flash-preview-tts",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.5-pro-preview-tts",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.0-flash",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.0-flash-preview-image-generation",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.0-flash-lite",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-2.0-flash-live-001",
+      "is_valid": true,
+      "confidence": 1.0,
+      "issues": []
+    },
+    {
+      "model_key": "google:gemini-1.5-flash-8b",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "max_input_tokens",
+          "issue": "Expected 1048576, found 0",
+          "suggested_fix": "Set max_input_tokens to 1048576"
+        },
+        {
+          "severity": "error",
+          "field": "max_output_tokens",
+          "issue": "Expected 8192, found 0",
+          "suggested_fix": "Set max_output_tokens to 8192"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-pro",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "max_output_tokens",
+          "issue": "Expected 8192, found 0",
+          "suggested_fix": "Set max_output_tokens to 8192"
+        },
+        {
+          "severity": "error",
+          "field": "max_input_tokens",
+          "issue": "Expected 2097152, found 0",
+          "suggested_fix": "Set max_input_tokens to 2097152"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-flash-8b-latest",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "Model extracted from documentation but missing in draft",
+          "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-flash-8b-001",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "Model extracted from documentation but missing in draft",
+          "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-flash-latest",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "Model extracted from documentation but missing in draft",
+          "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-flash-001",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "Model extracted from documentation but missing in draft",
+          "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-flash-002",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "Model extracted from documentation but missing in draft",
+          "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-pro-latest",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "Model extracted from documentation but missing in draft",
+          "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-pro-001",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "Model extracted from documentation but missing in draft",
+          "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+        }
+      ]
+    },
+    {
+      "model_key": "google:gemini-1.5-pro-002",
+      "is_valid": false,
+      "confidence": 0.0,
+      "issues": [
+        {
+          "severity": "error",
+          "field": "model_name",
+          "issue": "Model extracted from documentation but missing in draft",
+          "suggested_fix": "Add this model to the draft or confirm it should be excluded"
+        }
+      ]
+    }
+  ]
+}
