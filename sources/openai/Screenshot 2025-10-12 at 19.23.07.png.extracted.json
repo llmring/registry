@@ -1,0 +1,60 @@
+[
+  {
+    "display_name": "GPT-5-Codex",
+    "dollars_per_million_tokens_output": 10,
+    "supports_function_calling": true,
+    "max_input_tokens": 272000,
+    "max_output_tokens": 128000,
+    "model_aliases": [],
+    "supports_caching": true,
+    "supports_vision": true,
+    "description": "GPT-5-Codex is a version of GPT-5 optimized for agentic coding tasks in Codex or similar environments. It's available in the Responses API only and the underlying model snapshot will be regularly updated.",
+    "supports_json_mode": true,
+    "dollars_per_million_tokens_input": 1.25,
+    "is_active": true,
+    "dollars_per_million_tokens_cached_input": 0.125,
+    "supports_streaming": true,
+    "model_name": "gpt-5-codex"
+  },
+  {
+    "description": "GPT-5 is our flagship model for coding, reasoning, and agentic tasks across domains.",
+    "max_input_tokens": 272000,
+    "is_active": true,
+    "model_name": "gpt-5-2025-08-07",
+    "supports_thinking": true,
+    "dollars_per_million_tokens_cached_input": 0.125,
+    "display_name": "GPT-5",
+    "supports_json_mode": true,
+    "supports_function_calling": true,
+    "supports_vision": true,
+    "max_output_tokens": 128000,
+    "dollars_per_million_tokens_output": 10,
+    "supports_streaming": true,
+    "supports_caching": true,
+    "dollars_per_million_tokens_input": 1.25,
+    "model_aliases": [
+      "gpt-5-codex",
+      "gpt-5"
+    ]
+  },
+  {
+    "supports_caching": true,
+    "supports_thinking": true,
+    "model_aliases": [
+      "gpt-5-mini"
+    ],
+    "dollars_per_million_tokens_cached_input": 0.025,
+    "max_input_tokens": 272000,
+    "model_name": "gpt-5-mini-2025-08-07",
+    "dollars_per_million_tokens_input": 0.25,
+    "max_output_tokens": 128000,
+    "supports_vision": true,
+    "dollars_per_million_tokens_output": 2,
+    "supports_function_calling": true,
+    "display_name": "GPT-5 mini",
+    "supports_json_mode": true,
+    "description": "GPT-5 mini is a faster, more cost-efficient version of GPT-5. It's great for well-defined tasks and precise prompts.",
+    "is_active": true,
+    "supports_streaming": true
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "model_name": "gpt-5-2025-08-07",
+    "dollars_per_million_tokens_cached_input": 0.125,
+    "dollars_per_million_tokens_input": 1.25,
+    "supports_function_calling": true,
+    "display_name": "GPT-5",
+    "is_active": true,
+    "model_aliases": [
+      "gpt-5-codex",
+      "gpt-5"
+    ],
+    "supports_vision": true,
+    "dollars_per_million_tokens_output": 10,
+    "description": "GPT-5 is our flagship model for coding, reasoning, and agentic tasks across domains.",
+    "max_output_tokens": 128000,
+    "supports_json_mode": true,
+    "supports_streaming": true,
+    "max_input_tokens": 272000,
+    "supports_caching": true,
+    "supports_thinking": true
+  }
+]

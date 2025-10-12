@@ -1,0 +1,379 @@
+[
+  {
+    "dollars_per_million_tokens_output": 10,
+    "dollars_per_million_tokens_cached_input": 0.125,
+    "max_input_tokens": 272000,
+    "model_aliases": [],
+    "max_output_tokens": 128000,
+    "description": "GPT-5-Codex is a version of GPT-5 optimized for agentic coding tasks in Codex or similar environments. It's available in the Responses API only and the underlying model snapshot will be regularly updated.",
+    "supports_function_calling": true,
+    "supports_json_mode": true,
+    "display_name": "GPT-5-Codex",
+    "dollars_per_million_tokens_input": 1.25,
+    "cache_storage_cost_per_million_tokens_per_hour": 0,
+    "is_active": true,
+    "supports_streaming": true,
+    "supports_vision": true,
+    "supports_caching": true,
+    "model_name": "gpt-5-codex"
+  },
+  {
+    "is_active": true,
+    "supports_json_mode": true,
+    "dollars_per_million_tokens_input": 1.25,
+    "cache_storage_cost_per_million_tokens_per_hour": 0,
+    "model_aliases": [
+      "gpt-5-codex",
+      "gpt-5"
+    ],
+    "model_name": "gpt-5-2025-08-07",
+    "description": "GPT-5 is our flagship model for coding, reasoning, and agentic tasks across domains.",
+    "supports_function_calling": true,
+    "max_output_tokens": 128000,
+    "supports_caching": true,
+    "dollars_per_million_tokens_cached_input": 0.125,
+    "max_input_tokens": 272000,
+    "dollars_per_million_tokens_output": 10,
+    "supports_streaming": true,
+    "supports_thinking": true,
+    "display_name": "GPT-5",
+    "supports_vision": true
+  },
+  {
+    "supports_vision": true,
+    "display_name": "GPT-5 mini",
+    "supports_thinking": true,
+    "dollars_per_million_tokens_cached_input": 0.025,
+    "model_name": "gpt-5-mini-2025-08-07",
+    "supports_function_calling": true,
+    "max_output_tokens": 128000,
+    "max_input_tokens": 272000,
+    "model_aliases": [
+      "gpt-5-mini"
+    ],
+    "is_active": true,
+    "supports_caching": true,
+    "dollars_per_million_tokens_output": 2,
+    "cache_storage_cost_per_million_tokens_per_hour": 0,
+    "dollars_per_million_tokens_input": 0.25,
+    "supports_json_mode": true,
+    "supports_streaming": true,
+    "description": "GPT-5 mini is a faster, more cost-efficient version of GPT-5. It's great for well-defined tasks and precise prompts."
+  },
+  {
+    "description": "GPT-5 Nano is our fastest, cheapest version of GPT-5. It's great for summarization and classification tasks.",
+    "max_output_tokens": 128000,
+    "model_aliases": [
+      "gpt-5-nano"
+    ],
+    "supports_vision": true,
+    "supports_json_mode": true,
+    "dollars_per_million_tokens_input": 0.05,
+    "max_input_tokens": 272000,
+    "dollars_per_million_tokens_output": 0.4,
+    "cache_storage_cost_per_million_tokens_per_hour": 0,
+    "supports_thinking": true,
+    "supports_streaming": true,
+    "supports_function_calling": true,
+    "model_name": "gpt-5-nano-2025-08-07",
+    "supports_caching": true,
+    "dollars_per_million_tokens_cached_input": 0.005,
+    "is_active": true,
+    "display_name": "GPT-5 nano"
+  },
+  {
+    "supports_thinking": true,
+    "max_input_tokens": 128000,
+    "model_name": "gpt-5-pro-2025-10-06",
+    "supports_vision": true,
+    "supports_streaming": false,
+    "supports_function_calling": true,
+    "supports_documents": true,
+    "display_name": "GPT-5 pro",
+    "dollars_per_million_tokens_input": 15,
+    "is_active": true,
+    "supports_json_mode": true,
+    "description": "GPT-5 pro uses more compute to think harder and provide consistently better answers. GPT-5 pro is available in the Responses API only to enable support for multi-turn model interactions before responding to API requests, and other advanced API features in the future. Since GPT-5 pro is designed to tackle tough problems, some requests may take several minutes to finish. To avoid timeouts, try using background mode. As our most advanced reasoning model, GPT-5 pro defaults to (and only supports) reasoning.effort: high. GPT-5 pro does not support code interpreter.",
+    "max_output_tokens": 272000,
+    "model_aliases": [
+      "gpt-5-pro"
+    ],
+    "dollars_per_million_tokens_output": 120
+  },
+  {
+    "dollars_per_million_tokens_cached_input": 2.5,
+    "description": "o3-deep-research is our most advanced model for deep research, designed to tackle complex, multi-step research tasks. It can search and synthesize information from across the internet as well as from your own data\u2014brought in through MCP connectors.",
+    "display_name": "o3-deep-research",
+    "supports_json_mode": false,
+    "max_input_tokens": 100000,
+    "supports_thinking": true,
+    "supports_function_calling": false,
+    "dollars_per_million_tokens_input": 10,
+    "max_output_tokens": 100000,
+    "supports_streaming": true,
+    "model_name": "o3-deep-research-2025-06-26",
+    "supports_caching": true,
+    "model_aliases": [
+      "o3-deep-research"
+    ],
+    "supports_vision": true,
+    "is_active": true,
+    "dollars_per_million_tokens_output": 40
+  },
+  {
+    "supports_caching": true,
+    "dollars_per_million_tokens_cached_input": 0.5,
+    "display_name": "o4-mini-deep-research",
+    "max_output_tokens": 100000,
+    "supports_json_mode": false,
+    "model_aliases": [
+      "o4-mini-deep-research"
+    ],
+    "max_input_tokens": 100000,
+    "dollars_per_million_tokens_output": 8,
+    "description": "o4-mini-deep-research is our faster, more affordable deep research model\u2014ideal for tackling complex, multi-step research tasks. It can search and synthesize information from across the internet as well as from your own data, brought in through MCP connectors.",
+    "dollars_per_million_tokens_input": 2,
+    "model_name": "o4-mini-deep-research-2025-06-26",
+    "supports_vision": true,
+    "is_active": true,
+    "supports_thinking": true,
+    "supports_streaming": true,
+    "supports_function_calling": false
+  },
+  {
+    "display_name": "o3-pro",
+    "max_output_tokens": 100000,
+    "description": "The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.\n\no3-pro is available in the Responses API only to enable support for multi-turn model interactions before responding to API requests, and other advanced API features in the future. Since o3-pro is designed to tackle tough problems, some requests may take several minutes to finish. To avoid timeouts, try using background mode.",
+    "dollars_per_million_tokens_input": 20,
+    "max_input_tokens": 100000,
+    "supports_thinking": true,
+    "model_aliases": [
+      "o3-pro"
+    ],
+    "model_name": "o3-pro-2025-06-10",
+    "dollars_per_million_tokens_output": 80,
+    "supports_vision": true,
+    "supports_streaming": false,
+    "supports_json_mode": true,
+    "supports_function_calling": true,
+    "is_active": true
+  },
+  {
+    "display_name": "o3",
+    "max_input_tokens": 100000,
+    "dollars_per_million_tokens_input": 2,
+    "max_output_tokens": 100000,
+    "is_active": true,
+    "supports_thinking": true,
+    "supports_vision": true,
+    "dollars_per_million_tokens_cached_input": 0.5,
+    "supports_caching": true,
+    "model_aliases": [
+      "o3"
+    ],
+    "supports_json_mode": true,
+    "supports_function_calling": true,
+    "dollars_per_million_tokens_output": 8,
+    "supports_streaming": true,
+    "model_name": "o3-2025-04-16",
+    "description": "o3 is a well-rounded and powerful model across domains. It sets a new standard for math, science, coding, and visual reasoning tasks. It also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images."
+  },
+  {
+    "is_active": true,
+    "supports_thinking": true,
+    "model_name": "o4-mini-2025-04-16",
+    "supports_function_calling": true,
+    "dollars_per_million_tokens_output": 4.4,
+    "model_aliases": [
+      "o4-mini"
+    ],
+    "display_name": "o4-mini",
+    "supports_caching": true,
+    "dollars_per_million_tokens_input": 1.1,
+    "max_input_tokens": 100000,
+    "supports_vision": true,
+    "dollars_per_million_tokens_cached_input": 0.275,
+    "supports_streaming": true,
+    "max_output_tokens": 100000,
+    "description": "o4-mini is our latest small o-series model. It's optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. It's succeeded by GPT-5 mini.",
+    "supports_json_mode": true
+  },
+  {
+    "supports_caching": true,
+    "model_aliases": [
+      "gpt-4.1"
+    ],
+    "description": "GPT-4.1 excels at instruction following and tool calling, with broad knowledge across domains. It features a 1M token context window, and low latency without a reasoning step.",
+    "supports_json_mode": true,
+    "dollars_per_million_tokens_output": 8,
+    "supports_vision": true,
+    "model_name": "gpt-4.1-2025-04-14",
+    "supports_streaming": true,
+    "dollars_per_million_tokens_cached_input": 0.5,
+    "supports_function_calling": true,
+    "max_output_tokens": 32768,
+    "is_active": true,
+    "dollars_per_million_tokens_input": 2,
+    "max_input_tokens": 1014808,
+    "display_name": "GPT-4.1"
+  },
+  {
+    "max_input_tokens": 1014808,
+    "dollars_per_million_tokens_output": 1.6,
+    "dollars_per_million_tokens_input": 0.4,
+    "display_name": "GPT-4.1 mini",
+    "supports_json_mode": true,
+    "supports_streaming": true,
+    "max_output_tokens": 32768,
+    "supports_function_calling": true,
+    "is_active": true,
+    "dollars_per_million_tokens_cached_input": 0.1,
+    "model_name": "gpt-4.1-mini-2025-04-14",
+    "supports_caching": true,
+    "model_aliases": [
+      "gpt-4.1-mini"
+    ],
+    "supports_vision": true,
+    "description": "GPT-4.1 mini excels at instruction following and tool calling. It features a 1M token context window, and low latency without a reasoning step. Note that we recommend starting with GPT-5 mini for more complex tasks."
+  },
+  {
+    "supports_vision": true,
+    "dollars_per_million_tokens_input": 0.1,
+    "dollars_per_million_tokens_output": 0.4,
+    "model_name": "gpt-4.1-nano-2025-04-14",
+    "supports_caching": true,
+    "is_active": true,
+    "supports_function_calling": true,
+    "display_name": "GPT-4.1 nano",
+    "max_input_tokens": 1014808,
+    "dollars_per_million_tokens_cached_input": 0.025,
+    "model_aliases": [
+      "gpt-4.1-nano"
+    ],
+    "supports_thinking": false,
+    "max_output_tokens": 32768,
+    "supports_json_mode": true,
+    "supports_streaming": true,
+    "description": "GPT-4.1 nano excels at instruction following and tool calling. It features a 1M token context window, and low latency without a reasoning step. Note that we recommend starting with GPT-5 nano for more complex tasks."
+  },
+  {
+    "supports_json_mode": true,
+    "supports_thinking": true,
+    "dollars_per_million_tokens_output": 600,
+    "is_active": true,
+    "supports_vision": true,
+    "model_name": "o1-pro-2025-03-19",
+    "model_aliases": [
+      "o1-pro"
+    ],
+    "description": "The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers. o1-pro is available in the Responses API only to enable support for multi-turn model interactions before responding to API requests, and other advanced API features in the future.",
+    "max_output_tokens": 100000,
+    "dollars_per_million_tokens_input": 150,
+    "supports_function_calling": true,
+    "display_name": "o1-pro",
+    "supports_streaming": false,
+    "max_input_tokens": 100000
+  },
+  {
+    "supports_thinking": true,
+    "description": "o3-mini is our newest small reasoning model, providing high intelligence at the same cost and latency targets of o1-mini. o3-mini supports key developer features, like Structured Outputs, function calling, and Batch API.",
+    "max_output_tokens": 100000,
+    "is_active": true,
+    "model_name": "o3-mini-2025-01-31",
+    "model_aliases": [
+      "o3-mini"
+    ],
+    "supports_caching": true,
+    "supports_function_calling": true,
+    "dollars_per_million_tokens_output": 4.4,
+    "display_name": "o3-mini",
+    "supports_json_mode": true,
+    "dollars_per_million_tokens_cached_input": 0.55,
+    "supports_streaming": true,
+    "dollars_per_million_tokens_input": 1.1,
+    "supports_vision": false,
+    "max_input_tokens": 100000
+  },
+  {
+    "max_output_tokens": 100000,
+    "supports_function_calling": true,
+    "supports_thinking": true,
+    "display_name": "o1",
+    "dollars_per_million_tokens_output": 60,
+    "is_active": true,
+    "supports_streaming": true,
+    "dollars_per_million_tokens_input": 15,
+    "max_input_tokens": 100000,
+    "model_name": "o1-2024-12-17",
+    "dollars_per_million_tokens_cached_input": 7.5,
+    "description": "The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.",
+    "supports_json_mode": true,
+    "supports_vision": true,
+    "model_aliases": [
+      "o1",
+      "o1-preview",
+      "o1-preview-2024-09-12"
+    ],
+    "supports_caching": true
+  },
+  {
+    "supports_streaming": true,
+    "supports_vision": true,
+    "dollars_per_million_tokens_cached_input": 1.25,
+    "model_name": "gpt-4o-2024-08-06",
+    "dollars_per_million_tokens_input": 2.5,
+    "supports_function_calling": true,
+    "supports_json_mode": true,
+    "model_aliases": [
+      "gpt-4o",
+      "gpt-4o-2024-11-20",
+      "gpt-4o-2024-05-13"
+    ],
+    "description": "GPT-4o (\u201co\u201d for \u201comni\u201d) is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.",
+    "supports_caching": true,
+    "display_name": "GPT-4o",
+    "max_input_tokens": 111616,
+    "max_output_tokens": 16384,
+    "is_active": true,
+    "dollars_per_million_tokens_output": 10
+  },
+  {
+    "display_name": "GPT-4o mini",
+    "dollars_per_million_tokens_input": 0.15,
+    "model_name": "gpt-4o-mini-2024-07-18",
+    "supports_caching": true,
+    "supports_streaming": true,
+    "description": "GPT-4o mini (\u201co\u201d for \u201comni\u201d) is a fast, affordable small model for focused tasks. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is ideal for fine-tuning, and model outputs from a larger model like GPT-4o can be distilled to GPT-4o-mini to produce similar results at lower cost and latency.",
+    "supports_json_mode": true,
+    "supports_function_calling": true,
+    "model_aliases": [
+      "gpt-4o-mini"
+    ],
+    "max_output_tokens": 16384,
+    "supports_vision": true,
+    "is_active": true,
+    "dollars_per_million_tokens_cached_input": 0.075,
+    "dollars_per_million_tokens_output": 0.6,
+    "max_input_tokens": 111616
+  },
+  {
+    "is_active": true,
+    "display_name": "GPT-4 Turbo",
+    "max_output_tokens": 4096,
+    "model_name": "gpt-4-turbo-2024-04-09",
+    "dollars_per_million_tokens_input": 10,
+    "supports_streaming": true,
+    "supports_vision": true,
+    "supports_json_mode": true,
+    "supports_function_calling": true,
+    "model_aliases": [
+      "gpt-4-turbo",
+      "gpt-4-turbo-preview",
+      "gpt-4-0125-preview",
+      "gpt-4-1106-vision-preview"
+    ],
+    "dollars_per_million_tokens_output": 30,
+    "max_input_tokens": 123904,
+    "description": "GPT-4 Turbo is the next generation of GPT-4, an older high-intelligence GPT model. It was designed to be a cheaper, better version of GPT-4. Today, we recommend using a newer model like GPT-4o."
+  }
+]

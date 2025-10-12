@@ -5,8 +5,8 @@
     "openai": {
       "file": "models/openai.json",
       "model_count": 13,
-      "last_updated": "2025-09-28",
-      "version": 2
+      "last_updated": "2025-10-12",
+      "version": 4
     },
     "anthropic": {
       "file": "models/anthropic.json",

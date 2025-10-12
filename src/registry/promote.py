@@ -8,9 +8,105 @@ import hashlib
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import click
+
+# Field categories for merging
+PRICING_FIELDS = {
+    "dollars_per_million_tokens_input",
+    "dollars_per_million_tokens_output",
+}
+
+CAPABILITY_FIELDS = {
+    "supports_vision",
+    "supports_function_calling",
+    "supports_json_mode",
+    "supports_parallel_tool_calls",
+    "supports_streaming",
+    "supports_audio",
+    "supports_documents",
+    "supports_json_schema",
+    "supports_logprobs",
+    "supports_multiple_responses",
+    "supports_caching",
+    "supports_temperature",
+    "supports_system_message",
+    "supports_pdf_input",
+    "supports_tool_choice",
+    "is_reasoning_model",
+    "is_active",
+    "deprecated_date",
+    "release_date",
+    "max_input_tokens",
+    "max_output_tokens",
+    "max_temperature",
+    "min_temperature",
+    "max_tools",
+    "temperature_values",
+    "speed_tier",
+    "intelligence_tier",
+    "requires_tier",
+    "requires_waitlist",
+    "api_endpoint",
+    "requires_flat_input",
+    "tool_call_format",
+}
+
+# Fields that are always updated from draft (pricing + capabilities)
+UPDATE_FIELDS = PRICING_FIELDS | CAPABILITY_FIELDS
+
+
+def _merge_model(current: Dict[str, Any], draft: Dict[str, Any]) -> Dict[str, Any]:
+    """Merge draft model into current model.
+
+    Updates pricing and capability fields from draft, preserves all other fields
+    from current model.
+    """
+    merged = current.copy()
+
+    # Update pricing and capability fields from draft
+    for field in UPDATE_FIELDS:
+        if field in draft:
+            merged[field] = draft[field]
+
+    return merged
+
+
+def _merge_registry(current: Dict[str, Any], draft: Dict[str, Any]) -> Dict[str, Any]:
+    """Merge draft registry into current registry.
+
+    - Models in draft: merge with current (if exists) or add new
+    - Models not in draft: keep as-is
+
+    Returns merged registry with updated models dict.
+    """
+    # Start with current registry structure
+    merged = current.copy()
+
+    current_models = current.get("models", {})
+    draft_models = draft.get("models", {})
+
+    # Create merged models dict
+    merged_models = current_models.copy()
+
+    for model_key, draft_model in draft_models.items():
+        if model_key in current_models:
+            # Merge draft into current
+            merged_models[model_key] = _merge_model(current_models[model_key], draft_model)
+        else:
+            # New model - add it
+            merged_models[model_key] = draft_model
+
+    merged["models"] = merged_models
+
+    # Update metadata from draft
+    if "extraction_date" in draft:
+        merged["extraction_date"] = draft["extraction_date"]
+    if "sources" in draft:
+        merged["sources"] = draft["sources"]
+
+    return merged
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -137,6 +233,33 @@ def promote(provider: str, drafts_dir: str, models_dir: str, pages_dir: str, man
             # Validate
             _validate_for_production(draft_data)
 
+            # Load current registry for merging
+            pages_path = Path(pages_dir)
+            pages_provider_dir = pages_path / prov
+            published_file = pages_provider_dir / "models.json"
+
+            if published_file.exists():
+                current_data = _load_json(published_file)
+                click.echo(f"  📋 Merging with existing registry ({len(current_data.get('models', {}))} models)")
+
+                # Merge draft into current
+                merged_data = _merge_registry(current_data, draft_data)
+
+                # Check if anything actually changed (simple: compare hash of models)
+                current_hash = _calculate_hash(current_data.get("models", {}))
+                merged_hash = _calculate_hash(merged_data.get("models", {}))
+
+                if current_hash == merged_hash:
+                    click.echo(f"  ⏭️  No changes detected - skipping promotion")
+                    successful.append(prov)
+                    continue
+
+                click.echo(f"  ✨ Changes detected - promoting")
+                data_to_promote = merged_data
+            else:
+                click.echo(f"  🆕 No existing registry - creating new")
+                data_to_promote = draft_data
+
             # Version management
             models_path = Path(models_dir)
             models_path.mkdir(exist_ok=True)
@@ -144,26 +267,22 @@ def promote(provider: str, drafts_dir: str, models_dir: str, pages_dir: str, man
             new_version = current_version + 1
 
             # Update production
-            draft_data["version"] = new_version
-            draft_data["updated_at"] = datetime.now().isoformat()
-            draft_data["content_sha256_jcs"] = _calculate_hash(draft_data)
+            data_to_promote["version"] = new_version
+            data_to_promote["updated_at"] = datetime.now().isoformat()
+            data_to_promote["content_sha256_jcs"] = _calculate_hash(data_to_promote)
 
             # Write production to models/ (for local consumers)
             out_models_file = models_path / f"{prov}.json"
-            out_models_file.write_text(json.dumps(draft_data, indent=2))
+            out_models_file.write_text(json.dumps(data_to_promote, indent=2))
 
             # Publish to pages/<provider>/models.json
-            pages_path = Path(pages_dir)
-            pages_provider_dir = pages_path / prov
-            pages_provider_dir.mkdir(parents=True, exist_ok=True)
-            published_file = pages_provider_dir / "models.json"
-            published_file.write_text(json.dumps(draft_data, indent=2))
+            published_file.write_text(json.dumps(data_to_promote, indent=2))
 
             # Archive snapshot under pages/<provider>/v/<new_version>/models.json
             archive_dir = pages_provider_dir / "v" / str(new_version)
             archive_dir.mkdir(parents=True, exist_ok=True)
             archive_file = archive_dir / "models.json"
-            archive_file.write_text(json.dumps(draft_data, indent=2))
+            archive_file.write_text(json.dumps(data_to_promote, indent=2))
 
             # Archive source documents for this version
             _archive_sources(prov, new_version, Path(sources_dir), archive_dir)
