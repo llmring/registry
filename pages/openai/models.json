@@ -74,7 +74,7 @@
       "supports_logprobs": false,
       "supports_multiple_responses": false,
       "supports_caching": true,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "speed_tier": null,
       "intelligence_tier": null,
       "requires_tier": 0,
@@ -95,7 +95,8 @@
       "min_temperature": null,
       "max_tools": null,
       "supports_tool_choice": true,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:o3-deep-research": {
       "provider": "openai",
@@ -118,7 +119,7 @@
       "supports_logprobs": false,
       "supports_multiple_responses": false,
       "supports_caching": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "speed_tier": null,
       "intelligence_tier": null,
       "requires_tier": null,
@@ -139,7 +140,8 @@
       "min_temperature": null,
       "max_tools": null,
       "supports_tool_choice": true,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o4-mini-deep-research": {
       "provider": "openai",
@@ -208,7 +210,7 @@
       "supports_logprobs": false,
       "supports_multiple_responses": false,
       "supports_caching": true,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "speed_tier": null,
       "intelligence_tier": null,
       "requires_tier": 0,
@@ -229,7 +231,8 @@
       "min_temperature": null,
       "max_tools": null,
       "supports_tool_choice": true,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:gpt-5-2025-08-07": {
       "provider": "openai",
@@ -255,7 +258,7 @@
       "supports_logprobs": false,
       "supports_multiple_responses": false,
       "supports_caching": true,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "speed_tier": null,
       "intelligence_tier": null,
       "requires_tier": 0,
@@ -276,7 +279,8 @@
       "min_temperature": null,
       "max_tools": null,
       "supports_tool_choice": true,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:gpt-5-chat-latest": {
       "provider": "openai",
@@ -299,7 +303,7 @@
       "supports_logprobs": false,
       "supports_multiple_responses": false,
       "supports_caching": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "speed_tier": null,
       "intelligence_tier": null,
       "requires_tier": null,
@@ -322,7 +326,8 @@
       "min_temperature": null,
       "max_tools": 0,
       "supports_tool_choice": true,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:gpt-4.1-mini": {
       "provider": "openai",
@@ -852,7 +857,8 @@
       "min_temperature": null,
       "max_tools": 0,
       "supports_tool_choice": false,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o1-pro": {
       "provider": "openai",
@@ -898,7 +904,8 @@
       "min_temperature": null,
       "max_tools": 0,
       "supports_tool_choice": false,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o3-pro": {
       "provider": "openai",
@@ -921,7 +928,7 @@
       "supports_logprobs": false,
       "supports_multiple_responses": false,
       "supports_caching": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "speed_tier": null,
       "intelligence_tier": null,
       "requires_tier": null,
@@ -942,7 +949,8 @@
       "min_temperature": null,
       "max_tools": null,
       "supports_tool_choice": true,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o3": {
       "provider": "openai",
@@ -965,7 +973,7 @@
       "supports_logprobs": false,
       "supports_multiple_responses": false,
       "supports_caching": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "speed_tier": null,
       "intelligence_tier": null,
       "requires_tier": null,
@@ -986,7 +994,8 @@
       "min_temperature": null,
       "max_tools": null,
       "supports_tool_choice": true,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o4-mini": {
       "provider": "openai",
@@ -1053,7 +1062,7 @@
       "supports_logprobs": false,
       "supports_multiple_responses": false,
       "supports_caching": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "speed_tier": null,
       "intelligence_tier": null,
       "requires_tier": 0,
@@ -1074,7 +1083,8 @@
       "min_temperature": null,
       "max_tools": null,
       "supports_tool_choice": true,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o1-mini": {
       "provider": "openai",
@@ -1120,7 +1130,8 @@
       "min_temperature": null,
       "max_tools": 0,
       "supports_tool_choice": false,
-      "tool_call_format": null
+      "tool_call_format": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:codex-mini-latest": {
       "provider": "openai",
@@ -1330,7 +1341,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1351,7 +1362,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:gpt-5-mini": {
       "provider": "openai",
@@ -1385,7 +1397,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1406,7 +1418,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:gpt-5-pro": {
       "provider": "openai",
@@ -1440,7 +1453,7 @@
       "supports_caching": false,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1461,7 +1474,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:GPT-4.1": {
       "provider": "openai",
@@ -1605,7 +1619,7 @@
       "supports_caching": true,
       "supports_thinking": false,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1626,7 +1640,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:gpt-5-nano-2025-08-07": {
       "provider": "openai",
@@ -1662,7 +1677,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1683,7 +1698,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:gpt-5-pro-2025-10-06": {
       "provider": "openai",
@@ -1719,7 +1735,7 @@
       "supports_caching": false,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1740,7 +1756,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 2000
     },
     "openai:o3-deep-research-2025-06-26": {
       "provider": "openai",
@@ -1776,7 +1793,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1797,7 +1814,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o4-mini-deep-research-2025-06-26": {
       "provider": "openai",
@@ -1890,7 +1908,7 @@
       "supports_caching": false,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1911,7 +1929,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o3-2025-04-16": {
       "provider": "openai",
@@ -1947,7 +1966,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -1968,7 +1987,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o4-mini-2025-04-16": {
       "provider": "openai",
@@ -2232,7 +2252,7 @@
       "supports_caching": false,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -2253,7 +2273,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o3-mini-2025-01-31": {
       "provider": "openai",
@@ -2289,7 +2310,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -2310,7 +2331,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:o1-2024-12-17": {
       "provider": "openai",
@@ -2348,7 +2370,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "supports_long_context_pricing": false,
-      "is_reasoning_model": false,
+      "is_reasoning_model": true,
       "supports_temperature": true,
       "supports_system_message": true,
       "supports_pdf_input": false,
@@ -2369,7 +2391,8 @@
       "is_active": true,
       "release_date": null,
       "deprecated_date": null,
-      "added_date": null
+      "added_date": null,
+      "min_recommended_reasoning_tokens": 5000
     },
     "openai:gpt-4o-2024-08-06": {
       "provider": "openai",
