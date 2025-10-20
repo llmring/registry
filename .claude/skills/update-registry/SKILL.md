@@ -318,6 +318,11 @@ This will:
 2. Show Juan what changed
 3. Prepare git commit
 
+**Draft cleanup:**
+- The promote command automatically deletes draft files after successful promotion
+- If promotion fails or is aborted, manually clean up with: `rm -rf drafts/`
+- Draft files are in .gitignore and should never be committed
+
 ## Phase 5: Commit Changes
 
 ```bash
