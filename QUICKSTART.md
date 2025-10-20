@@ -1,6 +1,6 @@
 # Registry Quick Start Guide
 
-Quick reference for common registry operations.
+Quick reference for common registry operations using the simplified Claude-guided workflow.
 
 ## Setup
 
@@ -8,158 +8,172 @@ Quick reference for common registry operations.
 # Install dependencies
 uv sync
 
-# Install Playwright for screenshots (first time only)
-uv run playwright install chromium
-
-# Set up API keys (create .env file)
-echo "ANTHROPIC_API_KEY=your_key" > .env
-echo "GOOGLE_API_KEY=your_key" >> .env
+# That's it! No API keys or browser automation needed.
 ```
 
-## Common Commands
+## Updating Models (Claude-Guided Workflow)
 
-### 1. Find Documentation Sources
+The simplest way to update the registry is using the `update-registry` skill in Claude Code:
 
-```bash
-# Show where to get provider documentation
-uv run llmring-registry sources
+```
+In Claude Code:
+> Update the anthropic registry
 
-# For specific provider
-uv run llmring-registry sources --provider openai
+Claude will guide you through:
+1. Saving the latest documentation
+2. Extracting models
+3. Reviewing changes
+4. Promoting to production
+5. Committing changes
 ```
 
-### 2. Extract Models
+## Manual Commands
 
-```bash
-# Extract from documents in sources/<provider>/
-uv run llmring-registry extract --provider openai
+If you prefer to work with individual commands:
 
-# Extract all providers
-uv run llmring-registry extract --provider all
+### 1. Save Source Documentation
 
-# Increase timeout for large documents
-uv run llmring-registry extract --provider openai --timeout 300
-```
+Manually save provider documentation to `sources/{provider}/YYYY-MM-DD-models.md`
 
-### 3. Validate Extracted Data (NEW!)
+**Provider URLs:**
+- **Anthropic**: https://docs.anthropic.com/en/docs/about-claude/models/overview
+- **OpenAI**: https://platform.openai.com/docs/models
+- **Google**: https://ai.google.dev/gemini-api/docs/models
 
-```bash
-# Validate all models in draft
-uv run llmring-registry validate --provider openai
+### 2. Extract Models (with Claude)
 
-# Quick check (5 random models)
-uv run llmring-registry validate --provider openai --sample 5
+Ask Claude Code to read the source file and create a draft JSON following the registry schema.
 
-# With debug output
-uv run llmring-registry validate --provider openai --debug
-```
+The draft should be saved to: `drafts/{provider}.YYYY-MM-DD.draft.json`
 
-### 4. Check Schema Compliance
+See `.claude/skills/update-registry/SKILL.md` for complete extraction guidelines.
 
-```bash
-# Generate compliance report
-uv run llmring-registry normalize --provider openai --report
-
-# Apply normalization (creates backup)
-uv run llmring-registry normalize --provider openai
-
-# Dry run (preview changes)
-uv run llmring-registry normalize --provider openai --dry-run
-```
-
-### 5. Review Changes
+### 3. Review Changes
 
 ```bash
 # Show diff against current registry
-uv run llmring-registry review-draft --provider openai
+uv run llmring-registry review-draft --provider anthropic
 
-# Accept all changes
-uv run llmring-registry review-draft --provider openai --accept-all
+# This creates: drafts/anthropic.YYYY-MM-DD.draft.diff.json
 ```
 
-### 6. Promote to Production
+### 4. Promote to Production
 
 ```bash
 # Promote single provider
-uv run llmring-registry promote --provider openai
+uv run llmring-registry promote --provider anthropic
 
 # Promote all available drafts
 uv run llmring-registry promote --provider all
 ```
 
-## Full Workflow Example
+### 5. Commit Changes
 
 ```bash
-# 1. Check where to get docs
-uv run llmring-registry sources --provider openai
-
-# 2. Add screenshots/PDFs to sources/openai/
-#    (manually download from URLs shown by sources command)
-
-# 3. Extract models
-uv run llmring-registry extract --provider openai
-
-# 4. Validate extracted data
-uv run llmring-registry validate --provider openai
-
-# 5. Review validation report
-cat drafts/openai.validation.json | jq '.issues[] | select(.severity=="error")'
-
-# 6. Fix any critical issues in the draft file
-#    (edit drafts/openai.YYYY-MM-DD.draft.json)
-
-# 7. Re-validate after fixes
-uv run llmring-registry validate --provider openai
-
-# 8. Check compliance
-uv run llmring-registry normalize --provider openai --report
-
-# 9. Promote to production
-uv run llmring-registry promote --provider openai
+git add sources/ pages/ models/ manifest.json
+git commit -m "Update Anthropic models - 2025-10-20"
+git push
 ```
 
 ## Utility Commands
+
+### Check Schema Compliance
+
+```bash
+# Generate compliance report
+uv run llmring-registry normalize --provider anthropic --report
+
+# Apply normalization (creates backup)
+uv run llmring-registry normalize --provider anthropic
+
+# Dry run (preview changes)
+uv run llmring-registry normalize --provider anthropic --dry-run
+```
+
+### List and Export
 
 ```bash
 # List available drafts
 uv run llmring-registry list-drafts
 
 # Show registry statistics
-uv run llmring-registry stats --provider openai
+uv run llmring-registry stats --provider anthropic
 
 # Export data
 uv run llmring-registry export --output markdown
+```
+
+## Full Workflow Example
+
+```bash
+# In Claude Code:
+> Update the OpenAI registry
+
+# Claude asks you to save documentation
+# Visit: https://platform.openai.com/docs/models
+# Save to: sources/openai/2025-10-20-models.md
+
+# Claude extracts models and creates draft
+# Claude runs review and shows you changes
+# You approve
+# Claude promotes to production
+# Claude commits changes
+
+# Done!
+```
+
+## Manual Workflow Example
+
+If working without Claude Code:
+
+```bash
+# 1. Save documentation manually
+# Visit provider docs and save to sources/openai/2025-10-20-models.md
+
+# 2. Create draft JSON manually (or ask Claude to help)
+# Follow schema in .claude/skills/update-registry/SKILL.md
+# Save to: drafts/openai.2025-10-20.draft.json
+
+# 3. Review changes
+uv run llmring-registry review-draft --provider openai
+
+# 4. Check the diff
+cat drafts/openai.2025-10-20.draft.diff.json
+
+# 5. Promote if satisfied
+uv run llmring-registry promote --provider openai
+
+# 6. Commit
+git add sources/openai/ pages/openai/ models/openai.json manifest.json
+git commit -m "Update OpenAI models - 2025-10-20"
+git push
 ```
 
 ## File Structure
 
 ```
 registry/
-├── sources/                    # Source documents (INPUT)
-│   ├── openai/
-│   │   ├── 2025-09-30-openai-pricing.png
-│   │   ├── 2025-09-30-openai-models.png
-│   │   └── ...
+├── sources/                    # Source documentation
 │   ├── anthropic/
+│   │   └── 2025-10-20-models.md
+│   ├── openai/
 │   └── google/
 │
 ├── drafts/                     # Work in progress
-│   ├── openai.2025-09-30.draft.json
-│   ├── openai.validation.json
-│   └── ...
+│   ├── anthropic.2025-10-20.draft.json
+│   └── anthropic.2025-10-20.draft.diff.json
 │
-├── models/                     # Current production (OUTPUT)
-│   ├── openai.json
+├── models/                     # Current production
 │   ├── anthropic.json
+│   ├── openai.json
 │   └── google.json
 │
 └── pages/                      # Published with versions
-    ├── openai/
-    │   ├── models.json         # Current version
-    │   └── v/
-    │       ├── 1/models.json
-    │       └── 2/models.json   # Archived versions
-    └── ...
+    └── {provider}/
+        ├── models.json         # Current version
+        └── v/{N}/
+            ├── models.json     # Archived versions
+            └── sources/        # Archived source docs
 ```
 
 ## Troubleshooting
@@ -169,103 +183,43 @@ registry/
 # Check drafts directory
 ls -la drafts/
 
-# Extract first if no draft exists
-uv run llmring-registry extract --provider openai
+# Create draft manually or use Claude Code
 ```
 
-### "No source documents found"
+### "Promote validation fails"
 ```bash
-# Check sources directory
-ls -la sources/openai/
+# Check the error message
+# Common issues:
+# - Missing required fields (model_name, pricing)
+# - Invalid JSON syntax
+# - Negative pricing values
 
-# Use sources command to find URLs
-uv run llmring-registry sources --provider openai
-
-# Download documentation and save to sources/openai/
+# Edit draft and retry
+vim drafts/openai.2025-10-20.draft.json
+uv run llmring-registry promote --provider openai
 ```
 
-### Validation timeout
+### "Changes not detected"
 ```bash
-# Increase timeout (default: 120s)
-uv run llmring-registry validate --provider openai --timeout 300
+# Check if draft is actually different
+uv run llmring-registry review-draft --provider openai
+
+# If no changes in diff, that's expected
 ```
-
-### Extraction fails
-```bash
-# Enable debug logging
-uv run llmring-registry extract --provider openai --debug
-
-# Check for image size issues (will auto-resize)
-# Check API key is set in .env
-```
-
-## Configuration
-
-### Model Aliases (llmring.lock)
-
-The registry uses two model aliases:
-
-- **extractor**: Used for extraction (default: `gemini-2.5-pro`)
-- **validator**: Used for validation (default: `claude-3-7-sonnet`)
-
-To change:
-
-```toml
-[[profiles.default.bindings]]
-alias = "extractor"
-provider = "openai"
-model = "gpt-5"
-
-[[profiles.default.bindings]]
-alias = "validator"
-provider = "anthropic"
-model = "claude-opus-4-1"
-```
-
-## Best Practices
-
-1. **Always validate after extraction**
-   ```bash
-   uv run llmring-registry extract --provider openai
-   uv run llmring-registry validate --provider openai
-   ```
-
-2. **Fix critical errors before promotion**
-   - Zero token limits
-   - Missing/zero pricing
-   - Incorrect model names
-
-3. **Use descriptive file names** for sources
-   - Good: `2025-09-30-openai-gpt5-pricing.png`
-   - Bad: `screenshot.png`
-
-4. **Keep sources organized**
-   - One directory per provider
-   - Include date in filename
-   - Save both overview and detail pages
-
-5. **Review validation reports carefully**
-   ```bash
-   # Focus on errors first
-   jq '.issues[] | select(.severity=="error")' drafts/openai.validation.json
-   ```
 
 ## Getting Help
 
 ```bash
 # Command help
 uv run llmring-registry --help
-uv run llmring-registry validate --help
+uv run llmring-registry promote --help
 
 # Verbose output
-uv run llmring-registry -v extract --provider openai
-
-# Debug mode
-uv run llmring-registry extract --provider openai --debug
+uv run llmring-registry -v promote --provider openai
 ```
 
 ## See Also
 
-- [VALIDATION_WORKFLOW.md](VALIDATION_WORKFLOW.md) - Detailed validation workflow
 - [README.md](README.md) - Full documentation
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contributing guidelines
+- [.claude/skills/update-registry/SKILL.md](.claude/skills/update-registry/SKILL.md) - Extraction schema
