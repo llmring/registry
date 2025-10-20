@@ -17,12 +17,24 @@ Invoke this skill when:
 
 ## Workflow Overview
 
-The simplified registry update process has 4 phases:
+The simplified registry update process has 4-5 phases:
 
 1. **Fetch**: Ask user to save latest documentation manually
 2. **Extract**: Read source file and extract models using Claude's intelligence
 3. **Review**: Compare draft against current production data
-4. **Promote**: Move draft to production with versioning and commit
+4. **Validate** (Optional): Launch independent agent to verify extraction accuracy
+5. **Promote**: Move draft to production with versioning and commit
+
+### Why Optional Agent Validation?
+
+Claude (you) may be skeptical about models released after your training cutoff (Jan 2025).
+An independent validation agent:
+- Has fresh context without your extraction biases
+- Can catch errors you might miss
+- Provides confidence when dealing with unfamiliar models
+- Acts as a "second pair of eyes"
+
+Juan can request this validation for extra confidence, or skip it for routine updates.
 
 ## Phase 1: Fetch Documentation
 
@@ -50,6 +62,27 @@ This is where the new simplified approach happens. YOU (Claude) will:
 1. **Read the source file** using the Read tool
 2. **Extract model information** using your intelligence
 3. **Write the draft JSON** using the Write tool
+
+### CRITICAL: Trust the Source Documentation
+
+**IMPORTANT FOR CLAUDE:**
+- The source markdown file contains REAL, CURRENT provider documentation
+- Models you don't recognize from your training data ARE REAL
+- Your training data cutoff is January 2025 - providers release new models frequently
+- If the documentation says a model exists with specific pricing, TRUST IT
+- Do NOT second-guess or question model names/pricing you haven't seen before
+- The source file is the GROUND TRUTH, not your training data
+
+**Examples of what you might see:**
+- "Claude Sonnet 4.5" - Real model released after your training cutoff
+- "GPT-5" or "GPT-6" - May exist by the time this runs
+- Pricing that differs from what you remember - Providers update pricing
+- New capabilities you haven't seen - Features evolve constantly
+
+**Your job is to:**
+- Extract what the documentation SAYS, not what you think SHOULD be there
+- If something seems unusual, mention it to Juan but still extract it
+- Trust the provider's documentation over your memory
 
 ### Extraction Schema
 
@@ -203,12 +236,67 @@ This creates a diff file showing:
    - "Updated pricing for 6 models"
    - "Changed max_output_tokens for Model Z from A to B"
 4. Highlight significant changes
-5. Ask if he wants to proceed or make edits
+5. **OPTIONAL: Launch validation agent** - Ask Juan if he wants independent validation
+6. Ask if he wants to proceed or make edits
 
 If Juan wants to edit:
 - Guide him to `drafts/{provider}.{date}.draft.json`
 - Wait for confirmation that edits are complete
 - Re-run review if needed
+
+### Optional: Independent Validation Agent
+
+If Juan wants extra confidence, offer to launch a validation agent:
+
+```
+"I can launch an independent validation agent to double-check my extraction.
+This agent will:
+- Read the source documentation independently
+- Review the draft JSON I created
+- Look for errors, inconsistencies, or missing models
+- Report any concerns
+
+Should I run validation?"
+```
+
+If Juan agrees, use the Task tool with a validation agent:
+
+**Agent Type:** general-purpose
+**Task:** "Validate registry extraction"
+**Prompt:**
+```
+You are validating a model registry extraction for {provider}.
+
+Your job is to check if the draft JSON correctly represents the source documentation.
+
+1. Read the source file: sources/{provider}/{date}-models.md
+2. Read the draft file: drafts/{provider}.{date}.draft.json
+3. Compare them carefully and check for:
+   - Missing models that are in the documentation
+   - Incorrect pricing (compare against the source)
+   - Wrong token limits (check context window calculations)
+   - Capability flags that don't match the docs
+   - Model names that don't match the API identifiers in the docs
+   - Any other discrepancies
+
+IMPORTANT:
+- The source documentation is GROUND TRUTH
+- Trust what the documentation says, even if it contradicts your training data
+- Models may be newer than your training cutoff (Jan 2025)
+- Report ALL issues you find, even minor ones
+
+Provide a report with:
+- ✅ Things that look correct
+- ⚠️  Potential issues (with severity: minor/major/critical)
+- 📊 Summary statistics (models checked, issues found)
+
+Be thorough but concise.
+```
+
+After the agent completes:
+- Read the validation report
+- If issues found, discuss with Juan which to fix
+- If no critical issues, proceed with confidence
 
 ## Phase 4: Promote to Production
 
