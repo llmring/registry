@@ -61,13 +61,13 @@ def _merge_model(current: Dict[str, Any], draft: Dict[str, Any]) -> Dict[str, An
     """Merge draft model into current model.
 
     Updates pricing and capability fields from draft, preserves all other fields
-    from current model.
+    from current model. Only updates fields where draft has non-null values.
     """
     merged = current.copy()
 
     # Update pricing and capability fields from draft
     for field in UPDATE_FIELDS:
-        if field in draft:
+        if field in draft and draft[field] is not None:
             merged[field] = draft[field]
 
     return merged
