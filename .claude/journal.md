@@ -90,3 +90,149 @@ Models extracted (5 total):
 
 **Context usage:** ~60K tokens total (6% of budget) - very efficient!
 
+# Google Model Registry Validation Report
+Date: 2025-10-20
+
+## Validation Methodology
+Compared extracted registry data against 13 source screenshots, focusing on:
+- Pricing (PAID TIER only)
+- Token limits
+- Capability flags
+- Model metadata
+
+---
+
+## ✅ GEMINI 2.5 PRO
+**Screenshot data:**
+- Model: gemini-2.5-pro
+- Tokens: 1,048,576 in / 65,536 out
+- Pricing: $1.25 (≤200k) → $2.50 (>200k) input / $10 (≤200k) → $15 (>200k) output
+- Cache read: $0.125 (≤200k) → $0.25 (>200k)
+- Cache storage: $4.50/1M/hour
+- Thinking: Supported, Caching: Supported, Audio gen: Not supported
+
+**Registry data:**
+- ✅ Tokens correct: 1,048,576 / 65,536
+- ✅ Base pricing correct: $1.25 / $10.00
+- ✅ Long context pricing captured: threshold 200k, $2.50 / $15.00
+- ✅ Cache read: $0.125 (base tier)
+- ⚠️  Cache read >200k: $0.25 NOT CAPTURED (schema limitation - no field for tiered cache read)
+- ✅ Cache storage: $4.50
+- ✅ Capabilities: All correct
+
+**Status: ACCEPTABLE** - Long context pricing captured, tiered cache read is schema limitation
+
+---
+
+## ✅ GEMINI 2.5 FLASH
+**Screenshot data:**
+- Model: gemini-2.5-flash
+- Tokens: 1,048,576 in / 65,536 out
+- Pricing: $0.30 (text/image/video), $1.00 (audio) input / $2.50 output
+- Cache: $0.03 (text/image/video), $0.1 (audio) read / $1.00 storage
+- Description: "First hybrid reasoning model"
+- Thinking: Supported, Audio: Supported inputs
+
+**Registry data:**
+- ✅ Tokens correct: 1,048,576 / 65,536
+- ✅ Pricing: $0.30 / $2.50 (using text/image/video tier)
+- ⚠️  Audio pricing different but schema doesn't support modality-specific pricing
+- ✅ Cache: $0.03 / $1.00 storage
+- ✅ is_reasoning_model: true ✓
+- ✅ Capabilities: All correct (thinking, audio, caching)
+
+**Status: CORRECT** - Audio pricing variance is schema limitation
+
+---
+
+## ✅ GEMINI 2.5 FLASH PREVIEW
+**Screenshot data:**
+- Model: gemini-2.5-flash-preview-09-2025
+- Same pricing as base 2.5 Flash
+
+**Registry data:**
+- ✅ All fields match base 2.5 Flash
+- ✅ Correctly added as alias to gemini-2.5-flash
+
+**Status: CORRECT**
+
+---
+
+## ✅ GEMINI 2.5 FLASH-LITE
+**Screenshot data:**
+- Model: gemini-2.5-flash-lite
+- Tokens: 1,048,576 in / 65,536 out
+- Pricing: $0.10 (text/image/video), $0.30 (audio) input / $0.40 output
+- Cache: $0.025 (text/image/video), $0.125 (audio) read / $1.00 storage
+- Thinking: Supported, Audio: Supported
+
+**Registry data:**
+- ✅ Tokens correct: 1,048,576 / 65,536
+- ✅ Pricing: $0.10 / $0.40
+- ✅ Cache: $0.025 / $1.00 storage
+- ✅ Capabilities: All correct
+
+**Status: CORRECT**
+
+---
+
+## ✅ GEMINI 2.0 FLASH
+**Screenshot data:**
+- Model: gemini-2.0-flash
+- Tokens: 1,048,576 in / 8,192 out (note smaller output!)
+- Pricing: $0.10 (text/image/video), $0.70 (audio) input / $0.40 output
+- Cache: $0.025 (text/image/video), $0.175 (audio) read / $1.00 storage
+- Thinking: Experimental (not production-ready)
+- Versions: Latest, Stable (001), Experimental (exp)
+
+**Registry data:**
+- ✅ Tokens correct: 1,048,576 / 8,192
+- ✅ Pricing: $0.10 / $0.40
+- ✅ Cache: $0.025 / $1.00 storage
+- ✅ Thinking: false (correct - only experimental)
+- ✅ Aliases: gemini-2.0-flash-001, gemini-2.0-flash-exp
+
+**Status: CORRECT**
+
+---
+
+## ✅ GEMINI 2.0 FLASH-LITE
+**Screenshot data:**
+- Model: gemini-2.0-flash-lite
+- Tokens: 1,048,576 in / 8,192 out
+- Pricing: $0.075 / $0.30
+- Caching: NOT AVAILABLE
+- Thinking: NOT SUPPORTED
+
+**Registry data:**
+- ✅ Tokens correct: 1,048,576 / 8,192
+- ✅ Pricing: $0.075 / $0.30
+- ✅ Caching: false
+- ✅ Cache fields: null (correct)
+- ✅ Thinking: false
+- ✅ Aliases: gemini-2.0-flash-lite-001
+
+**Status: CORRECT**
+
+---
+
+## SUMMARY
+
+**Total Models Validated: 5 base models + aliases**
+
+**Issues Found: 0 CRITICAL**
+**Warnings: 2 SCHEMA LIMITATIONS**
+1. Modality-specific pricing (audio vs text/image/video) - schema doesn't support
+2. Tiered cache read pricing for 2.5 Pro >200k - schema doesn't support
+
+**All Extractions: ACCURATE**
+- All pricing uses PAID TIER ✓
+- All token limits correct ✓
+- All capability flags accurate ✓
+- All aliases properly consolidated ✓
+
+**Recommendation: NO CHANGES NEEDED**
+The schema limitations are acceptable and don't affect core functionality. All critical data (base pricing, tokens, capabilities) is correct.
+
+---
+
