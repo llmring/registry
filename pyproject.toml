@@ -19,20 +19,9 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
-    "beautifulsoup4>=4.13.4",
     "click>=8.2.1",
-    "llmring",
-    "pillow>=11.3.0",
-    "playwright>=1.54.0",
-    "python-dotenv>=1.1.1",
-    "requests>=2.32.4",
 ]
 urls = {"Homepage" = "https://llmring.ai", "Repository" = "https://github.com/llmring/registry", "Issues" = "https://github.com/llmring/registry/issues"}
-
-[project.optional-dependencies]
-playwright = [
-    "playwright>=1.45.0",
-]
 
 [project.scripts]
 llmring-registry = "registry.__main__:main"
@@ -51,7 +40,6 @@ dev = [
     "mypy>=1.17.1",
     "pytest>=8.4.1",
     "ruff>=0.12.9",
-    "types-requests>=2.32.0.20240914",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -65,5 +53,4 @@ include = [
     "pages",
 ]
 
-[tool.uv.sources]
-llmring = { path = "../llmring" }
+# No external dependencies requiring source configuration
