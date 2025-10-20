@@ -11,7 +11,6 @@ import click
 from .review import review_draft
 from .promote import promote
 from .export_cmd import export_cmd
-from .normalize import normalize_command
 from .sources_info import sources_info
 
 # Configure logging
@@ -38,7 +37,6 @@ def cli(ctx, verbose):
 
 # Add commands
 cli.add_command(sources_info, name="sources")
-cli.add_command(normalize_command, name="normalize")
 cli.add_command(review_draft, name="review-draft")
 cli.add_command(promote, name="promote")
 cli.add_command(export_cmd, name="export")
