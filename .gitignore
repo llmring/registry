@@ -149,6 +149,7 @@ cython_debug/
 /data/
 /logs/
 /tmp/
+drafts/
 secrets.yaml
 config.local.yaml
 *.db
