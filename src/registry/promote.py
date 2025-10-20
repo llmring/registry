@@ -289,6 +289,7 @@ def promote(provider: str, drafts_dir: str, models_dir: str, pages_dir: str, man
             out_models_file.write_text(json.dumps(data_to_promote, indent=2))
 
             # Publish to pages/<provider>/models.json
+            pages_provider_dir.mkdir(parents=True, exist_ok=True)
             published_file.write_text(json.dumps(data_to_promote, indent=2))
 
             # Archive snapshot under pages/<provider>/v/<new_version>/models.json
