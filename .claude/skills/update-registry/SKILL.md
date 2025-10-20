@@ -194,7 +194,7 @@ When extracting, create a JSON file with this structure:
 5. **Provider-Specific:**
    - **Anthropic:** Always supports function_calling, json_schema, json_mode, caching
    - **OpenAI:** Check for reasoning models (o1, o3, gpt-5 series)
-   - **Google:** Watch for long-context pricing tiers
+   - **Google:** ALWAYS use Paid Tier pricing (ignore Free Tier column), watch for long-context pricing tiers
 
 ### Extraction Process
 
