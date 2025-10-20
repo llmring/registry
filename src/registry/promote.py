@@ -16,6 +16,15 @@ import click
 PRICING_FIELDS = {
     "dollars_per_million_tokens_input",
     "dollars_per_million_tokens_output",
+    "dollars_per_million_tokens_cached_input",
+    "dollars_per_million_tokens_cache_write_5m",
+    "dollars_per_million_tokens_cache_write_1h",
+    "dollars_per_million_tokens_cache_read",
+    "dollars_per_million_tokens_input_long_context",
+    "dollars_per_million_tokens_output_long_context",
+    "dollars_per_million_tokens_output_thinking",
+    "cache_storage_cost_per_million_tokens_per_hour",
+    "long_context_threshold_tokens",
 }
 
 CAPABILITY_FIELDS = {
@@ -30,6 +39,8 @@ CAPABILITY_FIELDS = {
     "supports_logprobs",
     "supports_multiple_responses",
     "supports_caching",
+    "supports_thinking",
+    "supports_long_context_pricing",
     "supports_temperature",
     "supports_system_message",
     "supports_pdf_input",
@@ -48,6 +59,8 @@ CAPABILITY_FIELDS = {
     "intelligence_tier",
     "requires_tier",
     "requires_waitlist",
+    "model_family",
+    "recommended_use_cases",
     "api_endpoint",
     "requires_flat_input",
     "tool_call_format",
