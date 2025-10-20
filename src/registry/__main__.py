@@ -11,10 +11,7 @@ import click
 from .review import review_draft
 from .promote import promote
 from .export_cmd import export_cmd
-from .extract import extract_from_documents
-from .validate import validate_command
 from .normalize import normalize_command
-from .sources_cmd import sources_command
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
@@ -28,7 +25,10 @@ def cli(ctx, verbose):
     """
     Registry CLI for managing LLM model data.
 
-    Extract and version model information from provider documentation.
+    Version and publish model information from provider documentation.
+
+    Note: Model extraction is now done interactively with Claude.
+    Use the 'update-registry' skill for the complete workflow.
     """
     if verbose:
         logging.getLogger().setLevel(logging.INFO)
@@ -36,11 +36,6 @@ def cli(ctx, verbose):
 
 
 # Add commands
-cli.add_command(sources_command, name="sources")
-cli.add_command(extract_from_documents, name="extract-from-documents")
-cli.add_command(extract_from_documents, name="extract-from-screenshot")  # Backward compatibility
-cli.add_command(extract_from_documents, name="extract")  # Simplified alias
-cli.add_command(validate_command, name="validate")
 cli.add_command(normalize_command, name="normalize")
 cli.add_command(review_draft, name="review-draft")
 cli.add_command(promote, name="promote")
