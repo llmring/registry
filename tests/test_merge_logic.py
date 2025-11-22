@@ -1,5 +1,4 @@
-# ABOUTME: Comprehensive tests for the merge logic in promote.py
-# ABOUTME: Tests critical behaviors for preserving production data during registry updates
+"""Comprehensive tests for the merge logic in promote.py Tests critical behaviors for preserving production data during registry updates"""
 
 import pytest
 from src.registry.promote import _merge_model, _merge_registry, UPDATE_FIELDS
