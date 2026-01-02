@@ -1,9 +1,9 @@
 {
   "provider": "anthropic",
-  "extraction_date": "2025-10-20T16:00:00Z",
+  "extraction_date": "2026-01-02T00:00:00Z",
   "sources": {
     "documents": 2,
-    "models_extracted": 8
+    "models_extracted": 10
   },
   "models": {
     "anthropic:claude-opus-4-1-20250805": {
@@ -35,10 +35,7 @@
       "requires_tier": 0,
       "requires_waitlist": false,
       "model_family": "claude-4",
-      "recommended_use_cases": [
-        "specialized reasoning",
-        "complex analysis"
-      ],
+      "recommended_use_cases": [],
       "is_active": true,
       "release_date": "2025-08-05",
       "deprecated_date": null,
@@ -195,7 +192,7 @@
       "requires_waitlist": false,
       "model_family": "claude-3",
       "recommended_use_cases": [],
-      "is_active": true,
+      "is_active": false,
       "release_date": "2025-02-19",
       "deprecated_date": null,
       "added_date": null,
@@ -546,9 +543,70 @@
       "release_date": null,
       "deprecated_date": null,
       "added_date": null
+    },
+    "anthropic:claude-opus-4-5-20251101": {
+      "provider": "anthropic",
+      "model_name": "claude-opus-4-5-20251101",
+      "display_name": "Claude Opus 4.5",
+      "description": "Premium model combining maximum intelligence with practical performance. Our most capable model with exceptional reasoning.",
+      "model_aliases": [
+        "claude-opus-4-5"
+      ],
+      "dollars_per_million_tokens_input": 5.0,
+      "dollars_per_million_tokens_output": 25.0,
+      "dollars_per_million_tokens_cached_input": null,
+      "dollars_per_million_tokens_cache_write_5m": 6.25,
+      "dollars_per_million_tokens_cache_write_1h": 10.0,
+      "dollars_per_million_tokens_cache_read": 0.5,
+      "dollars_per_million_tokens_input_long_context": null,
+      "dollars_per_million_tokens_output_long_context": null,
+      "dollars_per_million_tokens_output_thinking": null,
+      "cache_storage_cost_per_million_tokens_per_hour": null,
+      "long_context_threshold_tokens": null,
+      "max_input_tokens": 136000,
+      "max_output_tokens": 64000,
+      "supports_vision": true,
+      "supports_function_calling": true,
+      "supports_json_mode": true,
+      "supports_parallel_tool_calls": true,
+      "supports_streaming": true,
+      "supports_audio": false,
+      "supports_documents": true,
+      "supports_json_schema": true,
+      "supports_logprobs": false,
+      "supports_multiple_responses": false,
+      "supports_caching": true,
+      "supports_thinking": true,
+      "supports_long_context_pricing": false,
+      "is_reasoning_model": false,
+      "supports_temperature": true,
+      "supports_system_message": true,
+      "supports_pdf_input": false,
+      "api_endpoint": null,
+      "requires_flat_input": false,
+      "temperature_values": null,
+      "max_temperature": null,
+      "min_temperature": null,
+      "max_tools": null,
+      "supports_tool_choice": true,
+      "tool_call_format": null,
+      "speed_tier": "moderate",
+      "intelligence_tier": "exceptional",
+      "requires_tier": 0,
+      "requires_waitlist": false,
+      "model_family": "claude-4",
+      "recommended_use_cases": [
+        "complex reasoning",
+        "advanced analysis",
+        "maximum intelligence"
+      ],
+      "is_active": true,
+      "release_date": "2025-11-01",
+      "deprecated_date": null,
+      "added_date": null
     }
   },
-  "version": 5,
-  "updated_at": "2025-10-20T16:56:01.253324",
-  "content_sha256_jcs": "edf6ab3ec310f7adedc6225c7d39795ed26cb6b8dfab96e8d85b2925df94dd58"
+  "version": 6,
+  "updated_at": "2026-01-02T23:21:21.674150",
+  "content_sha256_jcs": "35c91177b954b9449b0c5b5de4e83a67618bd87740b578d7ea4d21f67af0e9a1"
 }

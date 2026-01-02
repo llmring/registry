@@ -5,20 +5,20 @@
     "openai": {
       "file": "models/openai.json",
       "model_count": 13,
-      "last_updated": "2025-10-12",
-      "version": 4
+      "last_updated": "2026-01-02",
+      "version": 5
     },
     "anthropic": {
       "file": "models/anthropic.json",
       "model_count": 7,
-      "last_updated": "2025-10-20",
-      "version": 5
+      "last_updated": "2026-01-02",
+      "version": 6
     },
     "google": {
       "file": "models/google.json",
       "model_count": 9,
-      "last_updated": "2025-10-20",
-      "version": 3
+      "last_updated": "2026-01-02",
+      "version": 4
     }
   },
   "schema_version": "2.0",
