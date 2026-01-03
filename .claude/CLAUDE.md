@@ -12,13 +12,12 @@ This is the LLMRing Registry project - a simplified system for maintaining model
 **What this is NOT:**
 - Not an automated extraction pipeline (we deleted that - it was over-engineered)
 - Not a data validation system (we deleted that too - it was circular)
-- Not a web scraper (manual doc capture works better)
 
 ## Architecture (Simple!)
 
 ```
 Workflow:
-1. Juan saves provider docs → sources/{provider}/YYYY-MM-DD-models.md
+1. You (Claude) fetch docs via Playwright → sources/{provider}/YYYY-MM-DD-models.md
 2. You (Claude) read and extract → drafts/{provider}.YYYY-MM-DD.draft.json
 3. review-draft command → generates diff
 4. promote command → merges to production with versioning
@@ -37,7 +36,7 @@ That's it!
 **You will NOT use these (they don't exist anymore):**
 - ~~`extract`~~ - Deleted! You do extraction directly now
 - ~~`validate`~~ - Deleted! You validate as you extract
-- ~~`fetch`~~ - Deleted! Manual doc capture works better
+- ~~`fetch`~~ - Deleted! You fetch via Playwright MCP now
 
 ## The update-registry Skill
 
@@ -47,8 +46,8 @@ That's it!
 Skill command: update-registry
 ```
 
-This skill guides you through:
-1. Asking Juan to save source docs
+This skill guides you through the fully automated workflow:
+1. Fetching docs via Playwright (you do this!)
 2. Reading the source file
 3. Extracting models (YOU do this!)
 4. Reviewing changes
@@ -201,13 +200,14 @@ Deprecated:
 
 ## Dependencies
 
-**Only one dependency:** `click` (CLI framework)
+**Python dependency:** `click` (CLI framework)
 
-**Why so few?**
+**MCP tool:** Playwright (for browser automation)
+
+**Why so few Python deps?**
 - No LLM extraction (you do it!)
 - No image processing (not needed)
-- No web scraping (manual capture)
-- No browser automation (not needed)
+- Browser automation via Playwright MCP (not a Python dep)
 
 ## Remember
 

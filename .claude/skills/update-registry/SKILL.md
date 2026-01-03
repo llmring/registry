@@ -1,11 +1,11 @@
 ---
 name: update-registry
-description: Guide through the complete registry update workflow for a provider (manual fetch, Claude-guided extraction, review, promote). Use when updating model information for OpenAI, Anthropic, or Google.
+description: Guide through the complete registry update workflow for a provider (automated Playwright fetch, Claude-guided extraction, review, promote). Use when updating model information for OpenAI, Anthropic, or Google.
 ---
 
 # Registry Update Skill
 
-This skill guides you through updating the LLMRing model registry for a provider using a simplified, Claude-guided extraction workflow.
+This skill guides you through updating the LLMRing model registry for a provider using Playwright for automated documentation fetching and Claude-guided extraction.
 
 ## When to Use This Skill
 
@@ -17,9 +17,9 @@ Invoke this skill when:
 
 ## Workflow Overview
 
-The simplified registry update process has 4-5 phases:
+The registry update process has 4-5 phases:
 
-1. **Fetch**: Ask user to save latest documentation manually
+1. **Fetch**: Use Playwright to fetch documentation automatically
 2. **Extract**: Read source file and extract models using Claude's intelligence
 3. **Review**: Compare draft against current production data
 4. **Validate** (Optional): Launch independent agent to verify extraction accuracy
@@ -36,24 +36,62 @@ An independent validation agent:
 
 Juan can request this validation for extra confidence, or skip it for routine updates.
 
-## Phase 1: Fetch Documentation
+## Phase 1: Fetch Documentation (Automated with Playwright)
 
-Ask Juan to manually save the documentation page:
+Use Playwright MCP tools to fetch documentation automatically:
 
-1. Provide the correct URL for the provider:
-   - Anthropic: https://docs.anthropic.com/en/docs/about-claude/models/overview
-   - OpenAI: https://platform.openai.com/docs/models
-   - Google: https://ai.google.dev/gemini-api/docs/models
+### Provider URLs
 
-2. Ask him to save it to: `sources/{provider}/{YYYY-MM-DD}-models.md`
-   - Use today's date in the filename
-   - Markdown format is preferred
-   - If he saves as HTML/PDF, that's also fine
+| Provider | Models Page | Pricing Page |
+|----------|-------------|--------------|
+| Anthropic | https://docs.anthropic.com/en/docs/about-claude/models/overview | https://docs.anthropic.com/en/docs/about-claude/pricing |
+| OpenAI | https://platform.openai.com/docs/models | https://platform.openai.com/docs/pricing |
+| Google | https://ai.google.dev/gemini-api/docs/models | https://ai.google.dev/pricing |
 
-3. Confirm the file exists before proceeding:
-   ```bash
-   ls sources/{provider}/{date}-models.md
+### Fetch Process
+
+1. **Navigate to the page:**
    ```
+   mcp__playwright__browser_navigate(url="...")
+   ```
+
+2. **Get page snapshot** to see the content structure:
+   ```
+   mcp__playwright__browser_snapshot()
+   ```
+
+3. **Expand collapsed sections** if needed (especially for Google):
+   - Look for expandable model cards or accordions
+   - Click to expand each section before extracting
+
+4. **Extract content** using browser_evaluate:
+   ```javascript
+   mcp__playwright__browser_evaluate(function="() => document.body.innerText")
+   ```
+
+5. **Save to source file** using Write tool:
+   - Path: `sources/{provider}/{YYYY-MM-DD}-models.md`
+   - Path: `sources/{provider}/{YYYY-MM-DD}-pricing.md`
+   - Add a header with source URL and fetch date
+
+6. **Repeat for pricing page** - you need both models and pricing info
+
+### Provider-Specific Fetch Notes
+
+**Anthropic:**
+- Models and pricing are on separate pages
+- Content is mostly static, straightforward to extract
+
+**OpenAI:**
+- Models page has expandable sections
+- Pricing page has detailed tables
+- May need to scroll or expand sections
+
+**Google:**
+- Models page has collapsible cards for each model family
+- **IMPORTANT:** Click each model card to expand it before extracting
+- Use browser_click on each model heading to reveal full specs
+- Pricing page has separate sections for different model tiers
 
 ## Phase 2: Extract Models (Claude-Guided)
 
@@ -351,10 +389,17 @@ Create the commit but DO NOT push unless Juan explicitly asks.
 
 ## Error Handling
 
+### Playwright/Fetch issues
+- If browser_navigate fails, check the URL is correct
+- If page doesn't load fully, use browser_wait_for to wait for content
+- If content is behind authentication, ask Juan for help
+- If sections are collapsed, use browser_click to expand them
+- If browser isn't installed, use mcp__playwright__browser_install
+
 ### Source file issues
-- Check the file exists
-- Verify it's readable markdown/text
-- Ask Juan to re-save if corrupted
+- Check the file was saved correctly after fetch
+- Verify content extracted properly (not empty or truncated)
+- Re-fetch if content looks incomplete
 
 ### Extraction issues
 - If you're unsure about a field, ask Juan
@@ -409,22 +454,21 @@ Create the commit but DO NOT push unless Juan explicitly asks.
 ```
 Juan: "Update the Anthropic registry"
 
-Claude: "I'll help you update the Anthropic models registry.
+Claude: "I'll update the Anthropic models registry. Let me fetch the latest documentation using Playwright."
 
-Please save the latest Anthropic documentation to:
-  sources/anthropic/2025-10-20-models.md
+[Uses mcp__playwright__browser_navigate to go to models page]
+[Uses mcp__playwright__browser_snapshot to see content]
+[Uses mcp__playwright__browser_evaluate to extract text]
+[Saves to sources/anthropic/2025-10-20-models.md]
 
-Visit: https://docs.anthropic.com/en/docs/about-claude/models/overview
+[Navigates to pricing page]
+[Extracts and saves to sources/anthropic/2025-10-20-pricing.md]
 
-Let me know when you've saved it."
+Claude: "Documentation fetched. Now extracting models..."
 
-Juan: "Done"
-
-Claude: "Great! Let me read the file and extract the models..."
-
-[Claude reads sources/anthropic/2025-10-20-models.md]
-[Claude extracts model information]
-[Claude writes to drafts/anthropic.2025-10-20.draft.json]
+[Reads both source files]
+[Extracts model information]
+[Writes to drafts/anthropic.2025-10-20.draft.json]
 
 Claude: "Extraction complete! I found 10 models:
 
@@ -444,7 +488,7 @@ Let me compare this against production..."
 Claude: "Summary of changes:
 - Added: 2 new models (Sonnet 4.5, Haiku 4.5)
 - Updated: 6 models with cache pricing and capabilities
-- Removed: 0 models
+- Removed: 0 models (merge preserves existing models)
 - Changed: Pricing and capability flags for all existing models
 
 Should I proceed with promotion?"
@@ -463,27 +507,30 @@ Files updated:
 - models/anthropic.json (local copy)
 - manifest.json (updated version)
 
-Ready to commit. Suggested message:
+Ready to commit."
 
-Update Anthropic models - 2025-10-20
+[Creates commit with descriptive message]
 
-Added new models:
-- Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
-- Claude Haiku 4.5 (claude-haiku-4-5-20251001)
-
-Updated all existing models with:
-- Added caching support with 5m/1h cache write pricing
-- Added extended thinking support (where applicable)
-- Simplified descriptions
-
-Should I create this commit?"
+Claude: "Committed. Push to remote?"
 ```
+
+## Updating All Providers at Once
+
+When Juan asks to update all providers:
+
+1. Fetch all documentation first (can parallelize navigation)
+2. Extract each provider to draft
+3. Run review for each
+4. Promote all at once: `uv run llmring-registry promote --provider all`
+5. Single commit covering all changes
 
 ## Important Notes
 
-- This skill is INTERACTIVE - you work with Juan step by step
+- This skill is mostly AUTOMATED - you do most of the work
+- Only ask Juan for confirmation before promoting or pushing
 - You do the extraction using your intelligence, not an LLM pipeline
 - ALWAYS validate as you extract - you can see the source!
 - NEVER skip the review phase - Juan needs to see changes
 - DO explain your reasoning if something seems unusual
 - TRACK progress using TodoWrite throughout the workflow
+- The promote merge logic PRESERVES existing models not in the draft
