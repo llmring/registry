@@ -36,62 +36,89 @@ An independent validation agent:
 
 Juan can request this validation for extra confidence, or skip it for routine updates.
 
-## Phase 1: Fetch Documentation (Automated with Playwright)
+## Phase 1: Fetch Documentation (Copy Page as Markdown)
 
-Use Playwright MCP tools to fetch documentation automatically:
+**CRITICAL: All three providers have a "Copy page as markdown" button.** This is the ONLY way to fetch documentation. Do NOT use `document.body.innerText` or screenshots.
 
-### Provider URLs
+### Provider URLs and Copy Button Locations
 
-| Provider | Models Page | Pricing Page |
-|----------|-------------|--------------|
-| Anthropic | https://docs.anthropic.com/en/docs/about-claude/models/overview | https://docs.anthropic.com/en/docs/about-claude/pricing |
-| OpenAI | https://platform.openai.com/docs/models | https://platform.openai.com/docs/pricing |
-| Google | https://ai.google.dev/gemini-api/docs/models | https://ai.google.dev/pricing |
+| Provider | Pricing Page | Copy Button Location |
+|----------|--------------|---------------------|
+| **OpenAI** | https://platform.openai.com/docs/pricing | Top of page, next to title - labeled "Copy page" |
+| **Anthropic** | https://docs.anthropic.com/en/docs/about-claude/pricing | Top of page, next to title |
+| **Google** | https://ai.google.dev/gemini-api/docs/pricing | Next to "Gemini Developer API pricing" title - icon button with `aria-label="Copy page as markdown"` |
 
-### Fetch Process
+### Fetch Process (MUST FOLLOW EXACTLY)
 
-1. **Navigate to the page:**
-   ```
-   mcp__playwright__browser_navigate(url="...")
-   ```
+**Step 1: Navigate to pricing page**
+```
+mcp__playwright__browser_navigate(url="https://platform.openai.com/docs/pricing")
+```
 
-2. **Get page snapshot** to see the content structure:
-   ```
-   mcp__playwright__browser_snapshot()
-   ```
+**Step 2: Find and click the "Copy page" button**
 
-3. **Expand collapsed sections** if needed (especially for Google):
-   - Look for expandable model cards or accordions
-   - Click to expand each section before extracting
+For OpenAI/Anthropic - use snapshot to find the button:
+```
+mcp__playwright__browser_snapshot()
+```
+Look for a button with text "Copy page" or similar near the page title.
 
-4. **Extract content** using browser_evaluate:
-   ```javascript
-   mcp__playwright__browser_evaluate(function="() => document.body.innerText")
-   ```
+For Google - the button has `aria-label="Copy page as markdown"`:
+```javascript
+mcp__playwright__browser_evaluate(function="() => {
+  const btn = document.querySelector('button[aria-label=\"Copy page as markdown\"]');
+  return btn ? 'Found button' : 'Not found';
+}")
+```
 
-5. **Save to source file** using Write tool:
-   - Path: `sources/{provider}/{YYYY-MM-DD}-models.md`
-   - Path: `sources/{provider}/{YYYY-MM-DD}-pricing.md`
-   - Add a header with source URL and fetch date
+Then click it:
+```
+mcp__playwright__browser_click(element="Copy page as markdown button", ref="...")
+```
 
-6. **Repeat for pricing page** - you need both models and pricing info
+**Step 3: Get clipboard content using pbpaste (macOS)**
+```bash
+pbpaste > /tmp/pricing.md
+```
+Or directly read:
+```bash
+pbpaste
+```
 
-### Provider-Specific Fetch Notes
+**Step 4: Save to source file**
+Save the clipboard content to:
+- Path: `sources/{provider}/{YYYY-MM-DD}-pricing.md`
+- Add a header:
+  ```markdown
+  # {Provider} Pricing
+  Source: {URL}
+  Fetched: {YYYY-MM-DD}
 
-**Anthropic:**
-- Models and pricing are on separate pages
-- Content is mostly static, straightforward to extract
+  {clipboard content}
+  ```
 
-**OpenAI:**
-- Models page has expandable sections
-- Pricing page has detailed tables
-- May need to scroll or expand sections
+### Why This Approach?
 
-**Google:**
-- Models page has collapsible cards for each model family
-- **IMPORTANT:** Click each model card to expand it before extracting
-- Use browser_click on each model heading to reveal full specs
-- Pricing page has separate sections for different model tiers
+1. **Clean markdown** - The "Copy page" button generates well-formatted markdown with proper tables
+2. **Complete content** - Includes all sections, no scrolling or expanding needed
+3. **Reliable** - Works consistently across all three providers
+4. **Faster** - One click instead of multiple expand/scroll operations
+
+### Troubleshooting
+
+**Button not visible in snapshot?**
+- The button may render as an icon (📋 or content_copy)
+- Use browser_evaluate to find it by aria-label or class
+- Google's button class: `devsite-llm-tools-button`
+- OpenAI's button is near the h1 title
+
+**Clipboard not working?**
+- On macOS, use `pbpaste` command to read clipboard
+- The browser's clipboard API may be blocked; pbpaste is the workaround
+
+**Content truncated?**
+- The full page is always copied; check if pbpaste output was truncated
+- Use `pbpaste | wc -l` to verify line count
 
 ## Phase 2: Extract Models (Claude-Guided)
 
@@ -414,22 +441,23 @@ Create the commit but DO NOT push unless Juan explicitly asks.
 ## Provider-Specific Notes
 
 **Anthropic:**
-- Comprehensive documentation
+- Copy button: Near page title, look for "Copy page" text
 - Always includes pricing for cache writes (5m and 1h)
 - All models support function calling, JSON schema, caching
 - Watch for extended thinking support
 
 **OpenAI:**
-- Frequent updates
+- Copy button: Labeled "Copy page" near the "Pricing" h1 title
 - Reasoning models (o1, o3, gpt-5) have special constraints
 - Check for "latest" aliases
 - Cached pricing uses simpler structure
 
 **Google:**
-- Complex model families (Flash, Pro, Ultra)
-- Long-context pricing tiers
-- Experimental vs stable models
-- Watch for token count variations
+- Copy button: Icon button with `aria-label="Copy page as markdown"` next to title
+- Button class: `devsite-llm-tools-button`
+- ALWAYS use Paid Tier pricing (ignore Free Tier column)
+- Long-context pricing tiers (prices change above 200k tokens)
+- Watch for Standard vs Batch pricing tabs
 
 ## Best Practices
 
@@ -454,20 +482,25 @@ Create the commit but DO NOT push unless Juan explicitly asks.
 ```
 Juan: "Update the Anthropic registry"
 
-Claude: "I'll update the Anthropic models registry. Let me fetch the latest documentation using Playwright."
+Claude: "I'll update the Anthropic models registry. Let me fetch the latest pricing documentation."
 
-[Uses mcp__playwright__browser_navigate to go to models page]
-[Uses mcp__playwright__browser_snapshot to see content]
-[Uses mcp__playwright__browser_evaluate to extract text]
-[Saves to sources/anthropic/2025-10-20-models.md]
+# Step 1: Navigate to pricing page
+[Uses mcp__playwright__browser_navigate(url="https://docs.anthropic.com/en/docs/about-claude/pricing")]
 
-[Navigates to pricing page]
-[Extracts and saves to sources/anthropic/2025-10-20-pricing.md]
+# Step 2: Find and click "Copy page" button
+[Uses mcp__playwright__browser_snapshot() to find button ref]
+[Uses mcp__playwright__browser_click(element="Copy page button", ref="...")]
 
-Claude: "Documentation fetched. Now extracting models..."
+# Step 3: Get clipboard content
+[Uses Bash: pbpaste]
 
-[Reads both source files]
-[Extracts model information]
+# Step 4: Save to source file
+[Saves clipboard content to sources/anthropic/2025-10-20-pricing.md with header]
+
+Claude: "Documentation fetched via 'Copy page' button. Now extracting models..."
+
+[Reads the source file]
+[Extracts model information using the clean markdown tables]
 [Writes to drafts/anthropic.2025-10-20.draft.json]
 
 Claude: "Extraction complete! I found 10 models:
@@ -483,7 +516,7 @@ Existing models (6 models with updated pricing/capabilities):
 
 Let me compare this against production..."
 
-[Runs review-draft]
+[Runs: uv run llmring-registry review-draft --provider anthropic]
 
 Claude: "Summary of changes:
 - Added: 2 new models (Sonnet 4.5, Haiku 4.5)
@@ -495,9 +528,7 @@ Should I proceed with promotion?"
 
 Juan: "Yes"
 
-Claude: "Promoting to production..."
-
-[Runs promote]
+[Runs: uv run llmring-registry promote --provider anthropic]
 
 Claude: "✅ Promotion complete!
 
