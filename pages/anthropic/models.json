@@ -1,9 +1,9 @@
 {
   "provider": "anthropic",
-  "extraction_date": "2026-08-19T00:25:58.140176+00:00",
+  "extraction_date": "2026-08-19T03:51:12.257098+00:00",
   "sources": {
     "documents": 1,
-    "models_extracted": 16,
+    "models_extracted": 3,
     "source_file": "sources/anthropic/2026-08-18-pricing.md"
   },
   "models": {
@@ -351,7 +351,7 @@
       "is_reasoning_model": false,
       "supports_temperature": true,
       "supports_system_message": true,
-      "supports_pdf_input": false,
+      "supports_pdf_input": true,
       "api_endpoint": null,
       "requires_flat_input": false,
       "temperature_values": null,
@@ -412,7 +412,7 @@
       "is_reasoning_model": false,
       "supports_temperature": true,
       "supports_system_message": true,
-      "supports_pdf_input": false,
+      "supports_pdf_input": true,
       "api_endpoint": null,
       "requires_flat_input": false,
       "temperature_values": null,
@@ -582,7 +582,7 @@
       "is_reasoning_model": false,
       "supports_temperature": true,
       "supports_system_message": true,
-      "supports_pdf_input": false,
+      "supports_pdf_input": true,
       "api_endpoint": null,
       "requires_flat_input": false,
       "temperature_values": null,
@@ -1047,7 +1047,7 @@
       "added_date": null
     }
   },
-  "version": 7,
-  "updated_at": "2026-08-18T17:27:46.968480",
-  "content_sha256_jcs": "7396aefa8b9a298c09da63a15dc70e5c9038d40961f195f495cc2831985911e9"
+  "version": 8,
+  "updated_at": "2026-08-18T20:51:20.567430",
+  "content_sha256_jcs": "da0c0fa583ba500b2bf3f6bbd25bd431759c7bde051b4d5d89c36c8820b34743"
 }

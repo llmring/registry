@@ -12,7 +12,7 @@
       "file": "models/anthropic.json",
       "model_count": 7,
       "last_updated": "2026-08-18",
-      "version": 7
+      "version": 8
     },
     "google": {
       "file": "models/google.json",
