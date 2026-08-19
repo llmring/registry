@@ -1,9 +1,9 @@
 {
   "provider": "anthropic",
-  "extraction_date": "2026-08-19T03:51:12.257098+00:00",
+  "extraction_date": "2026-08-19T04:04:44.684539+00:00",
   "sources": {
     "documents": 1,
-    "models_extracted": 3,
+    "models_extracted": 6,
     "source_file": "sources/anthropic/2026-08-18-pricing.md"
   },
   "models": {
@@ -639,7 +639,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "is_reasoning_model": false,
-      "supports_temperature": true,
+      "supports_temperature": false,
       "supports_system_message": true,
       "supports_pdf_input": true,
       "api_endpoint": "chat",
@@ -694,7 +694,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "is_reasoning_model": false,
-      "supports_temperature": true,
+      "supports_temperature": false,
       "supports_system_message": true,
       "supports_pdf_input": true,
       "api_endpoint": "chat",
@@ -749,7 +749,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "is_reasoning_model": false,
-      "supports_temperature": true,
+      "supports_temperature": false,
       "supports_system_message": true,
       "supports_pdf_input": true,
       "api_endpoint": "chat",
@@ -804,7 +804,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "is_reasoning_model": false,
-      "supports_temperature": true,
+      "supports_temperature": false,
       "supports_system_message": true,
       "supports_pdf_input": true,
       "api_endpoint": "chat",
@@ -859,7 +859,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "is_reasoning_model": false,
-      "supports_temperature": true,
+      "supports_temperature": false,
       "supports_system_message": true,
       "supports_pdf_input": true,
       "api_endpoint": "chat",
@@ -969,7 +969,7 @@
       "supports_caching": true,
       "supports_thinking": true,
       "is_reasoning_model": false,
-      "supports_temperature": true,
+      "supports_temperature": false,
       "supports_system_message": true,
       "supports_pdf_input": true,
       "api_endpoint": "chat",
@@ -1047,7 +1047,7 @@
       "added_date": null
     }
   },
-  "version": 8,
-  "updated_at": "2026-08-18T20:51:20.567430",
-  "content_sha256_jcs": "da0c0fa583ba500b2bf3f6bbd25bd431759c7bde051b4d5d89c36c8820b34743"
+  "version": 9,
+  "updated_at": "2026-08-18T21:05:03.715411",
+  "content_sha256_jcs": "ca98ed1fa64c264567e0fcbde382957084d9c3973cedfdf10b003a1c1c6c3422"
 }
